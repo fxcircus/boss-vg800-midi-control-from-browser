@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="boss-blue">
+<html lang="en" data-theme="boss-blue" data-scroll="fat">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script>try{var t=localStorage.getItem('vg800_theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<script>try{var t=localStorage.getItem('vg800_theme');if(t)document.documentElement.dataset.theme=t;var s=JSON.parse(localStorage.getItem('vg800_settings')||'{}');if(s.fatScroll===false)document.documentElement.dataset.scroll='off';}catch(e){}</script>
 <title>VG800 MIDI Control</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -193,22 +193,50 @@
   .pedal-moves .st { color: var(--bone-faint); }
   .pedal-moves .mv.off { color: var(--bone-faint); font-style: italic; }
 
+  /* Chunky scrollbar (toggle in Settings) — easier to grab on touch */
+  html[data-scroll="fat"]::-webkit-scrollbar { width: 18px; height: 18px; }
+  html[data-scroll="fat"]::-webkit-scrollbar-track { background: var(--ink-2); }
+  html[data-scroll="fat"]::-webkit-scrollbar-thumb { background: var(--edge); border-radius: 10px; border: 3px solid var(--ink-2); background-clip: padding-box; }
+  html[data-scroll="fat"]::-webkit-scrollbar-thumb:hover { background: var(--brass-deep); }
+  html[data-scroll="fat"] { scrollbar-width: auto; scrollbar-color: var(--edge) var(--ink-2); }
+
+  /* All-strings: three rows (−12…−1 / 0 / +1…+12) */
+  #testBtns { margin-bottom: 30px; }
+  .trow { display: grid; grid-template-columns: repeat(12, 1fr); gap: 6px; margin-bottom: 6px; }
+  .trow.zero { grid-template-columns: 1fr; justify-items: center; margin: 8px 0; }
+  .trow.zero .tbtn { min-width: 120px; padding-left: 18px; padding-right: 18px; }
+
+  /* Artist song tooltip */
+  .card[data-ref]:hover::after {
+    content: attr(data-ref);
+    position: absolute; left: 50%; bottom: calc(100% + 9px); transform: translateX(-50%);
+    width: max-content; max-width: 220px; text-align: center;
+    background: var(--ink); color: var(--bone); border: 1px solid var(--brass-deep);
+    padding: 7px 11px; border-radius: 8px;
+    font-family: var(--sans); font-size: 11.5px; font-weight: 600; line-height: 1.35; letter-spacing: 0.2px;
+    z-index: 60; pointer-events: none; box-shadow: 0 10px 26px rgba(0,0,0,0.55);
+  }
+  .card[data-ref]:hover::before {
+    content: ''; position: absolute; left: 50%; bottom: calc(100% + 3px); transform: translateX(-50%);
+    border: 6px solid transparent; border-top-color: var(--brass-deep); z-index: 60; pointer-events: none;
+  }
+
   .fam { margin-bottom: 26px; }
   .fam-name { font-family: var(--mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--brass-deep); margin: 0 2px 12px; display: flex; align-items: center; gap: 10px; }
   .fam-name::after { content: ""; flex: 1; height: 1px; background: var(--edge-soft); }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
   .card {
     background: var(--wood); border: 1px solid var(--edge-soft); border-radius: 10px;
-    padding: 14px 15px; cursor: pointer; transition: all 0.15s; position: relative; overflow: hidden;
+    padding: 14px 15px; cursor: pointer; transition: all 0.15s; position: relative;
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 3px 8px rgba(0,0,0,0.32);
   }
-  .card:hover { border-color: var(--brass-deep); background: var(--felt); transform: translateY(-2px); box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 7px 18px rgba(0,0,0,0.42); }
+  .card:hover { border-color: var(--brass-deep); background: var(--felt); transform: translateY(-2px); z-index: 5; box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 7px 18px rgba(0,0,0,0.42); }
   .card.active { border-color: var(--brass); background: var(--felt); box-shadow: inset 3px 0 0 var(--brass), inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 18px var(--brass-glow); }
   .card-name { font-family: var(--cond); font-weight: 700; font-size: 19px; letter-spacing: 0.3px; color: var(--bone); text-transform: uppercase; line-height: 1; margin-bottom: 9px; }
   .card.active .card-name { color: var(--brass); }
   .card-notes { font-family: var(--mono); font-size: 11px; color: var(--bone-dim); display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; text-align: center; }
   .card-notes span { white-space: nowrap; }
-  .card-off { font-family: var(--mono); font-size: 10px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; text-align: center; margin-top: 7px; opacity: 0; max-height: 0; transition: opacity 0.15s, max-height 0.15s; }
+  .card-off { font-family: var(--mono); font-size: 10px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; text-align: center; margin-top: 7px; opacity: 0; max-height: 0; overflow: hidden; transition: opacity 0.15s, max-height 0.15s; }
   .card-off span { color: var(--bone-faint); }
   .card-off span.flat { color: var(--steel-blue); }
   .card-off span.sharp { color: var(--amber); }
@@ -280,6 +308,8 @@
     .mast h1 { font-size: 38px; }
     .grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 9px; }
     .card-off { opacity: 1; max-height: 20px; }
+    .trow { gap: 3px; }
+    .trow .tbtn { font-size: 10px; padding: 9px 0; }
   }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
   :focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
@@ -313,7 +343,7 @@
     <div class="rule"></div>
     <label style="font-family:var(--mono);font-size:10px;color:var(--bone-faint);display:flex;align-items:center;gap:7px;white-space:nowrap">DELAY MS <input type="number" id="gapInput" class="num" style="width:60px;padding:5px 7px" min="0" max="500" value="20"></label>
   </div>
-  <div id="testBtns" class="tgrid"></div>
+  <div id="testBtns"></div>
 
   <div class="sec" style="margin-top:8px">
     <h2>Steel Pedals</h2>
@@ -359,6 +389,7 @@
     <p style="margin-top:20px">Each string sends its pitch on its own CC. On the VG-800: INST → <em>STR BEND SW = ON</em>, <em>BEND CONTROL = 100</em>. In ASSIGN 1–6 target <em>INST:STR BEND (A) BEND DEPTH 1…6</em>, MIN −12 / MAX +12, MODE = MOMENT, SOURCE = the CC below (DEPTH 1 = high E … DEPTH 6 = low E). Prefer CC# in the <em>1–31</em> range — CC# 64–95 are MIDI switch controllers and the VG-800 may not track them continuously.</p>
     <div class="ch"><label>Channel</label><input type="number" class="num" id="chanInput" min="1" max="16" value="1"></div>
     <div class="ch"><label>String glide — ms to slide between tunings (0 = instant)</label><input type="number" class="num" id="glideInput" min="0" max="5000" step="50" value="0"></div>
+    <div class="ch"><label style="display:flex;align-items:center;gap:9px;cursor:pointer;font-size:11px;color:var(--bone-dim);text-transform:none;letter-spacing:0.2px;margin:0"><input type="checkbox" id="fatScrollChk" style="width:16px;height:16px;accent-color:var(--brass);cursor:pointer;flex-shrink:0"> Chunky scrollbar — easier to grab on touch</label></div>
     <div class="subhd">CC number per string</div>
     <div class="cc-grid" id="ccRows"></div>
     <p class="note-hint">Each must match the CC # set as the SOURCE in that string's VG-800 assign slot. Heads-up: the VG-800 only exposes CC# 0–31 and 64+ as assign sources — CC# 32–63 are not selectable.</p>
@@ -415,15 +446,15 @@ const FAMILIES = [
     {name:'Nashville', notes:'E A D G B E', offsets:[0,0,12,12,12,12]},   // high-strung: low 4 up an octave
   ]},
   { family:'Artists', tunings:[
-    {name:'NST', notes:'C G D A E G', offsets:[3,5,2,0,-2,-4]},           // Fripp — New Standard, all 5ths
-    {name:'Gambale', notes:'A D G C E A', offsets:[-7,-7,5,5,5,5]},       // Frank Gambale
-    {name:'Rain Song', notes:'D G C G C D', offsets:[-2,1,0,-2,-2,-2]},   // Jimmy Page
-    {name:'Ostrich', notes:'G A B D E G', offsets:[-9,-7,-5,-3,0,3]},     // Sonic Youth
-    {name:'Nick Drake', notes:'C G C F C E', offsets:[0,1,-2,-2,-2,-4]},  // Open C — "Pink Moon"
-    {name:'Keith Richards', notes:'G G D G B D', offsets:[-2,0,0,0,-2,3]},// 5-string Open G — "Start Me Up"
-    {name:'Am. Football', notes:'F A C G C E', offsets:[0,1,0,-2,0,1]},   // Fmaj9 — "Never Meant"
-    {name:'Soundgarden', notes:'E E B B B B', offsets:[-5,0,4,-3,-5,0]},  // Unison drone — "The Day I Tried to Live"
-    {name:'Joni Mitchell', notes:'E B E G# B E', offsets:[0,0,1,2,2,0]},  // Open E — "Big Yellow Taxi"
+    {name:'NST', notes:'C G D A E G', offsets:[3,5,2,0,-2,-4], ref:'Robert Fripp · New Standard Tuning (all fifths)'},
+    {name:'Gambale', notes:'A D G C E A', offsets:[-7,-7,5,5,5,5], ref:'Frank Gambale · fourths tuning'},
+    {name:'Rain Song', notes:'D G C G C D', offsets:[-2,1,0,-2,-2,-2], ref:'Led Zeppelin · “The Rain Song” (Jimmy Page)'},
+    {name:'Ostrich', notes:'G A B D E G', offsets:[-9,-7,-5,-3,0,3], ref:'Sonic Youth · Ostrich tuning'},
+    {name:'Nick Drake', notes:'C G C F C E', offsets:[0,1,-2,-2,-2,-4], ref:'Nick Drake · “Pink Moon” (Open C)'},
+    {name:'Keith Richards', notes:'G G D G B D', offsets:[-2,0,0,0,-2,3], ref:'Rolling Stones · “Start Me Up” (5-string Open G)'},
+    {name:'Am. Football', notes:'F A C G C E', offsets:[0,1,0,-2,0,1], ref:'American Football · “Never Meant” (Fmaj9)'},
+    {name:'Soundgarden', notes:'E E B B B B', offsets:[-5,0,4,-3,-5,0], ref:'Soundgarden · “The Day I Tried to Live”'},
+    {name:'Joni Mitchell', notes:'E B E G# B E', offsets:[0,0,1,2,2,0], ref:'Joni Mitchell · “Big Yellow Taxi” (Open E)'},
   ]},
 ];
 const BUILTIN = FAMILIES.flatMap(f=>f.tunings);
@@ -436,7 +467,8 @@ let midiAccess=null, midiOut=null;
 let curOffsets=[0,0,0,0,0,0], glideTimer=null;
 let baseOffsets=[0,0,0,0,0,0], held=new Set(), curInfo=null, pedalStateCache={}, ctrlStateCache={};
 
-function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; if(typeof s.glide!=='number') s.glide=0; return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0}; }
+function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; if(typeof s.glide!=='number') s.glide=0; if(typeof s.fatScroll!=='boolean') s.fatScroll=true; return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, fatScroll:true}; }
+function applyScroll(on){ document.documentElement.dataset.scroll = on?'fat':'off'; }
 function saveSettingsLS(){ localStorage.setItem('vg800_settings', JSON.stringify(settings)); }
 function loadCustom(){ try{ return JSON.parse(localStorage.getItem('vg800_custom'))||[]; }catch(e){ return []; } }
 function saveCustomLS(){ localStorage.setItem('vg800_custom', JSON.stringify(customs)); }
@@ -638,6 +670,7 @@ document.addEventListener('keyup', e=>{ const ctrl=KEYMAP[(e.key||'').toLowerCas
 function makeCard(t,isC){
   const c=document.createElement('div');
   c.className='card'+(isC?' custom':'')+(active===t.name?' active':'');
+  if(t.ref) c.setAttribute('data-ref', t.ref);
   const dispNotes=(t.notes||notesOf(t.offsets)).split(' ');
   const revOff=t.offsets.slice().reverse();
   const noteCells=dispNotes.map(n=>`<span>${n}</span>`).join('');
@@ -724,6 +757,7 @@ function renderSettings(){
   markThemeBtns();
   document.getElementById('chanInput').value=settings.channel;
   document.getElementById('glideInput').value=settings.glide||0;
+  document.getElementById('fatScrollChk').checked=settings.fatScroll!==false;
   const r=document.getElementById('ccRows'); r.innerHTML='';
   for(let i=0;i<6;i++){ const c=document.createElement('div'); c.className='cc-c';
     c.innerHTML=`<label>${DEPTH_LBL[i]} — CC #</label><input type="number" class="num" min="0" max="127" data-cc="${i}" value="${settings.ccs[i]}">`; r.appendChild(c);
@@ -734,12 +768,15 @@ function markThemeBtns(){ const t=document.documentElement.dataset.theme||'boss-
 function applyTheme(t){ document.documentElement.dataset.theme=t; try{ localStorage.setItem('vg800_theme',t); }catch(e){} markThemeBtns(); }
 document.querySelectorAll('[data-theme-set]').forEach(b=>b.addEventListener('click',()=>applyTheme(b.dataset.themeSet)));
 markThemeBtns();
+document.getElementById('fatScrollChk').addEventListener('change',e=>{ settings.fatScroll=e.target.checked; applyScroll(settings.fatScroll); saveSettingsLS(); });
+applyScroll(settings.fatScroll!==false);
 document.getElementById('closeSettings').addEventListener('click',()=>close('settingsModal'));
 document.getElementById('saveSettings').addEventListener('click',()=>{
   const ch=Math.max(1,Math.min(16,+document.getElementById('chanInput').value||1));
   const ccs=[]; document.querySelectorAll('#ccRows input').forEach(x=>ccs[+x.dataset.cc]=Math.max(0,Math.min(127,+x.value||0)));
   const glide=Math.max(0,Math.min(5000,+document.getElementById('glideInput').value||0));
-  settings={channel:ch,ccs,gap:settings.gap??20,glide}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
+  const fatScroll=document.getElementById('fatScrollChk').checked;
+  settings={channel:ch,ccs,gap:settings.gap??20,glide,fatScroll}; applyScroll(fatScroll); saveSettingsLS(); close('settingsModal'); toast('Settings saved');
 });
 
 function applyTest(v){
@@ -751,12 +788,13 @@ function applyTest(v){
 }
 function renderTestBtns(){
   const wrap=document.getElementById('testBtns'); wrap.innerHTML='';
-  for(let v=-12; v<=12; v++){
-    const b=document.createElement('button'); b.className='tbtn '+(v<0?'flat':v>0?'sharp':'zero');
-    b.textContent=v===0?'0':(v>0?'+'+v:''+v);
-    b.addEventListener('click',()=>applyTest(v));
-    wrap.appendChild(b);
-  }
+  const mk=v=>{ const b=document.createElement('button'); b.className='tbtn '+(v<0?'flat':v>0?'sharp':'zero'); b.textContent=v===0?'0':(v>0?'+'+v:''+v); b.addEventListener('click',()=>applyTest(v)); return b; };
+  const neg=document.createElement('div'); neg.className='trow';
+  for(let v=-12; v<=-1; v++) neg.appendChild(mk(v));
+  const zero=document.createElement('div'); zero.className='trow zero'; zero.appendChild(mk(0));
+  const pos=document.createElement('div'); pos.className='trow';
+  for(let v=1; v<=12; v++) pos.appendChild(mk(v));
+  wrap.append(neg, zero, pos);
   const g=document.getElementById('gapInput'); g.value=settings.gap??20;
   g.addEventListener('change',e=>{ settings.gap=Math.max(0,Math.min(500,+e.target.value||0)); saveSettingsLS(); });
 }
