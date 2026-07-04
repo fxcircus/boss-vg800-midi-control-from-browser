@@ -98,7 +98,7 @@ Then open **http://localhost:8765/vg800-tuner.html** in **Chrome or Edge** (Safa
 
 ## Using it
 
-- **Tuning cards** — click any tuning to retune all six strings, including an **Artists** set: Fripp (NST), Gambale, Jimmy Page (Rain Song), Sonic Youth (Ostrich), Nick Drake, Keith Richards, American Football, Soundgarden, and Joni Mitchell.
+- **Tuning cards** — click any tuning to retune all six strings: 6th/open/dominant families, **Drop** (D → A), **Modal** (DADGAD, Nashville high-strung), and an **Artists** set (Fripp NST, Gambale, Jimmy Page's Rain Song, Sonic Youth, Nick Drake, Keith Richards, American Football, Soundgarden, Joni Mitchell).
 - **Steel Pedals** — hold the on-screen **A / B** pedals and **LKL / LKR** knee levers (or keys `A`, `B`, `Z`, `X`) to bend the root / 3rd / 5th of the *current* tuning, pedal-steel style. They stack, each button previews the destination pitches for the selected tuning, and any bend that would exceed ±12 greys out. **Combos** (A+B "cry", keys `V` / `C`) engage a whole grip at once.
 - **+ Custom** — dial each string up/down from standard, name it, and save your own tuning.
 - **All strings** — buttons from −12 to +12 shift every string by a fixed amount at once; handy for verifying each string's CC tracks across its whole range. `DELAY MS` spaces out the six messages (also applied to normal tuning changes).
