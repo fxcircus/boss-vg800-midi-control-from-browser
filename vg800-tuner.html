@@ -276,6 +276,21 @@
   .stdots { display: flex; gap: 2px; }
   .stdots i { width: 4px; height: 15px; border-radius: 2px; background: var(--edge); transition: background .12s; }
   .stdots i.on { background: var(--brass); box-shadow: 0 0 5px var(--brass-glow); }
+
+  /* Panning */
+  .panmodes { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 7px; margin-bottom: 18px; }
+  .panmode { font-family: var(--mono); font-size: 11px; font-weight: 700; padding: 10px 8px; border-radius: 8px; cursor: pointer; border: 1px solid var(--edge); background: var(--wood); color: var(--bone-dim); transition: all .12s; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 5px rgba(0,0,0,0.28); }
+  .panmode:hover { border-color: var(--brass); color: var(--bone); background: var(--felt); transform: translateY(-1px); }
+  .panmode.on { border-color: var(--brass); color: var(--brass); background: var(--felt); box-shadow: inset 0 0 0 1px var(--brass-glow); }
+  .panbench { background: linear-gradient(180deg, var(--felt), var(--wood)); border: 1px solid var(--edge); border-radius: 14px; padding: 20px 18px 16px; margin-bottom: 30px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 16px 40px rgba(0,0,0,0.35); }
+  .panbench .bench-head { padding: 0 0 12px; }
+  .pan-scale { display: flex; justify-content: space-between; padding: 0 30px 0 58px; margin-bottom: 8px; font-family: var(--mono); font-size: 9px; color: var(--bone-faint); letter-spacing: 1px; }
+  .pan-row { display: grid; grid-template-columns: 58px 1fr 30px; align-items: center; height: 32px; }
+  .pan-track { position: relative; height: 4px; background: var(--ink); border-radius: 2px; }
+  .pan-mid { position: absolute; left: 50%; top: -5px; bottom: -5px; width: 1px; background: var(--edge); }
+  .pan-dot { position: absolute; top: 50%; width: 15px; height: 15px; border-radius: 50%; background: var(--brass); transform: translate(-50%,-50%); box-shadow: 0 2px 5px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.4); transition: left 0.35s cubic-bezier(.34,1.35,.5,1), background 0.2s; }
+  .pan-dot.l { background: var(--steel-blue); } .pan-dot.r { background: var(--amber); }
+  .pan-side { font-family: var(--mono); font-size: 10px; font-weight: 700; color: var(--bone-faint); text-align: right; }
   .cllbl { font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--bone-dim); letter-spacing: 0.5px; }
   .clbtn.on .cllbl { color: var(--brass); }
 
@@ -443,6 +458,13 @@
   </div>
   <div id="pedalWrap"></div>
 
+  <div class="sec" id="sec-pan" style="margin-top:8px">
+    <h2>Panning</h2>
+    <div class="rule"></div>
+    <span style="font-family:var(--mono);font-size:10px;color:var(--bone-faint);white-space:nowrap">PER-STRING STEREO</span>
+  </div>
+  <div id="panWrap"></div>
+
   <div class="bench" id="sec-current">
     <div class="bench-head">
       <span class="name std" id="nowName">Standard</span>
@@ -493,6 +515,9 @@
     <div class="subhd">CC number per string</div>
     <div class="cc-grid" id="ccRows"></div>
     <p class="note-hint">Each must match the CC # set as the SOURCE in that string's VG-800 assign slot. Heads-up: the VG-800 only exposes CC# 0–31 and 64+ as assign sources — CC# 32–63 are not selectable.</p>
+    <div class="subhd">Panning CC per string</div>
+    <div class="cc-grid" id="panCcRows"></div>
+    <p class="note-hint">Map to VG-800 <em>INST:STRING(A) PAN 1–6</em> (MIN L50 / MAX R50). PAN 1 = high E … PAN 6 = low E.</p>
     <div class="foot">
       <button class="btn" id="closeSettings">Cancel</button>
       <button class="btn go" id="saveSettings">Save settings</button>
@@ -579,8 +604,21 @@ const ETHNIC=[
   {name:'Cavaquinho', pitches:[62,67,71,74], notes:'D G B D', ref:'Samba & Choro'},
   {name:'Balalaika', pitches:[64,64,69], notes:'E E A', ref:'Russian Folk Tunes'},
 ];
+// Per-string pan positions, index 0 = high E (str 1) … 5 = low E (str 6). −1 = hard L (L50), +1 = hard R (R50).
+let activePan='center';
+const PANMODES=[
+  {id:'center',  name:'Center',         pos:[0,0,0,0,0,0]},
+  {id:'spread1', name:'Equal Spread 1', pos:[1,0.6,0.2,-0.2,-0.6,-1]},   // low E left → high E right, none centered
+  {id:'spread2', name:'Equal Spread 2', pos:[-1,-0.6,-0.2,0.2,0.6,1]},
+  {id:'split1',  name:'Split 1',        pos:[-1,-1,-1,1,1,1]},           // top 3 (high) left, bottom 3 (low) right
+  {id:'split2',  name:'Split 2',        pos:[1,1,1,-1,-1,-1]},
+  {id:'zig1',    name:'Zig-Zag 1',      pos:[-1,1,-1,1,-1,1]},           // hard-alternate L/R per string
+  {id:'zig2',    name:'Zig-Zag 2',      pos:[1,-1,1,-1,1,-1]},
+  {id:'narrow',  name:'Narrow',         pos:[0.5,0.3,0.1,-0.1,-0.3,-0.5]}, // gentle spread
+  {id:'pairs',   name:'Pairs',          pos:[-1,-1,0,0,1,1]},            // high pair L · mid pair C · low pair R
+];
 
-function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; if(typeof s.glide!=='number') s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, ...AB_DEFAULTS}; }
+function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; if(typeof s.glide!=='number') s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], ...AB_DEFAULTS}; }
 function saveSettingsLS(){ localStorage.setItem('vg800_settings', JSON.stringify(settings)); }
 function loadCustom(){ try{ return JSON.parse(localStorage.getItem('vg800_custom'))||[]; }catch(e){ return []; } }
 function saveCustomLS(){ localStorage.setItem('vg800_custom', JSON.stringify(customs)); }
@@ -912,7 +950,8 @@ function renderNav(){
     +'<a class="sub" href="#sec-ethnic">Ethnic</a>'
     +'<a class="sub" href="#sec-steel">Pedal Steel</a>'
     +'<a class="sub" href="#sec-strings">Transpose</a>'
-    +'<a class="group" href="#sec-pedals">Steel Pedals</a>';
+    +'<a class="group" href="#sec-pedals">Steel Pedals</a>'
+    +'<a class="group" href="#sec-pan">Panning</a>';
   updateSpy();
 }
 function placeBench(){
@@ -1008,6 +1047,42 @@ function applySteel(t, win){
   renderStrings(res.offsets); renderGrid(); renderEthnic(); renderSteel(); renderPedals();
 }
 function clearSteel(){ steelInst=null; steelRoot=null; steelWin=0; copedent=COPEDENTS.generic; }
+/* ===== Panning — per-string pan modes + stereo-field display ===== */
+function panToCC(p){ return Math.round((Math.max(-1,Math.min(1,p))+1)/2*127); }   // −1→L50(0), +1→R50(127)
+function applyPan(id){
+  const m=PANMODES.find(x=>x.id===id); if(!m) return;
+  activePan=id;
+  if(midiOut){ const st=0xB0|((settings.channel-1)&0x0F); m.pos.forEach((p,i)=> midiOut.send([st, settings.panCCs[i]&0x7F, panToCC(p)&0x7F])); }
+  document.querySelectorAll('.panmode').forEach(b=> b.classList.toggle('on', b.dataset.pan===id));
+  const pn=document.getElementById('panName'); if(pn) pn.textContent=m.name;
+  updatePanDisplay(m.pos);
+}
+function updatePanDisplay(pos){
+  const wrap=document.getElementById('panRows'); if(!wrap) return;
+  if(wrap.children.length!==6){
+    wrap.innerHTML='';
+    for(let i=0;i<6;i++){ const r=document.createElement('div'); r.className='pan-row';
+      r.innerHTML=`<span class="str-lbl">STR <b>${SLBL[i]}</b></span><span class="pan-track"><span class="pan-mid"></span><span class="pan-dot"></span></span><span class="pan-side"></span>`; wrap.appendChild(r); }
+  }
+  for(let i=0;i<6;i++){ const p=pos[i], row=wrap.children[i], dot=row.querySelector('.pan-dot');
+    dot.style.left=((p+1)/2*100)+'%'; dot.className='pan-dot '+(p<-0.03?'l':p>0.03?'r':'');
+    row.querySelector('.pan-side').textContent = p<-0.03?('L'+Math.round(-p*50)) : p>0.03?('R'+Math.round(p*50)) : 'C'; }
+}
+function renderPan(){
+  const wrap=document.getElementById('panWrap'); if(!wrap) return;
+  const cur=PANMODES.find(m=>m.id===activePan)||PANMODES[0];
+  const btns=PANMODES.map(m=>`<button class="panmode${activePan===m.id?' on':''}" data-pan="${m.id}">${m.name}</button>`).join('');
+  wrap.innerHTML=`<div class="panmodes">${btns}</div>
+    <div class="panbench"><div class="bench-head"><span class="name" id="panName">${cur.name}</span><span class="lbl">Stereo Field</span></div>
+    <div class="pan-scale"><span>L</span><span>C</span><span>R</span></div>
+    <div id="panRows"></div></div>`;
+  updatePanDisplay(cur.pos);
+  wrap.querySelectorAll('.panmode').forEach(b=>{
+    b.addEventListener('click',()=>applyPan(b.dataset.pan));
+    b.addEventListener('mouseenter',()=>{ const m=PANMODES.find(x=>x.id===b.dataset.pan); if(m){ updatePanDisplay(m.pos); const pn=document.getElementById('panName'); if(pn) pn.textContent=m.name; } });
+    b.addEventListener('mouseleave',()=>{ const m=PANMODES.find(x=>x.id===activePan); if(m){ updatePanDisplay(m.pos); const pn=document.getElementById('panName'); if(pn) pn.textContent=m.name; } });
+  });
+}
 function notesOf(offsets){ return offsets.map((s,i)=>nameOf(STD_MIDI[i]+s).name).reverse().join(' '); }
 function apply(t){
   if(tuningSend(t.offsets)){
@@ -1073,6 +1148,10 @@ function renderSettings(){
   for(let i=0;i<6;i++){ const c=document.createElement('div'); c.className='cc-c';
     c.innerHTML=`<label>${DEPTH_LBL[i]} — CC #</label><input type="number" class="num" min="0" max="127" data-cc="${i}" value="${settings.ccs[i]}">`; r.appendChild(c);
   }
+  const pr=document.getElementById('panCcRows'); pr.innerHTML=''; const pn=['high E','B','G','D','A','low E'];
+  for(let i=0;i<6;i++){ const c=document.createElement('div'); c.className='cc-c';
+    c.innerHTML=`<label>PAN ${i+1} · ${pn[i]}</label><input type="number" class="num" min="0" max="127" data-pcc="${i}" value="${settings.panCCs[i]}">`; pr.appendChild(c);
+  }
 }
 document.getElementById('settingsBtn').addEventListener('click',()=>{ renderSettings(); open('settingsModal'); });
 function refreshAb(id){ const el=document.getElementById(id); if(!el) return; const v=+el.value;
@@ -1092,7 +1171,8 @@ document.getElementById('saveSettings').addEventListener('click',()=>{
   const glide=Math.max(0,Math.min(5000,+document.getElementById('glideInput').value||0));
   const num=(id,lo,hi,d)=>{ const v=+document.getElementById(id).value; return isNaN(v)?d:Math.max(lo,Math.min(hi,v)); };
   const ab={ autoBend:document.getElementById('autoBendChk').checked, bendCC:num('bendCCInput',0,127,69), levelCC:num('levelCCInput',0,127,70), bendDepth:num('bendDepthInput',0,50,25), levelDip:num('levelDipInput',0,50,15), bendMs:num('bendMsInput',40,400,120) };
-  settings={channel:ch,ccs,gap:settings.gap??20,glide,keys:settings.keys,latch:settings.latch, ...ab}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
+  const panCCs=[]; document.querySelectorAll('#panCcRows input').forEach(x=>panCCs[+x.dataset.pcc]=Math.max(0,Math.min(127,+x.value||0)));
+  settings={channel:ch,ccs,gap:settings.gap??20,glide,keys:settings.keys,latch:settings.latch,panCCs, ...ab}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
 });
 
 function applyTest(v){
@@ -1126,6 +1206,7 @@ renderTestBtns();
 renderPedals();
 renderEthnic();
 renderSteel();
+renderPan();
 placeBench();
 updatePedalHint();
 initMIDI();
