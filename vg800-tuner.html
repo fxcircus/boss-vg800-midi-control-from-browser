@@ -354,6 +354,18 @@
   .subhd { font-family: var(--mono); font-size: 10px; color: var(--brass-deep); letter-spacing: 2px; text-transform: uppercase; margin: 20px 0 10px; }
   .note-hint { font-size: 11px; color: var(--bone-faint); margin: 14px 0 0; line-height: 1.5; }
 
+  .ab-slider { margin-bottom: 15px; }
+  .ab-lbl { display: flex; justify-content: space-between; align-items: baseline; font-family: var(--mono); font-size: 10px; color: var(--bone-faint); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 9px; }
+  .ab-lbl span:last-child { color: var(--brass); font-weight: 700; font-size: 13px; letter-spacing: 0; text-transform: none; }
+  .slider { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 4px; background: var(--edge); cursor: pointer; outline: none; }
+  .slider::-webkit-slider-runnable-track { height: 6px; border-radius: 4px; background: transparent; }
+  .slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 17px; height: 17px; border-radius: 50%; background: var(--brass); border: 2px solid var(--wood); box-shadow: 0 1px 5px rgba(0,0,0,0.55); cursor: pointer; margin-top: -6px; }
+  .slider::-webkit-slider-thumb:hover { filter: brightness(1.1); }
+  .slider::-moz-range-track { height: 6px; border-radius: 4px; background: var(--edge); }
+  .slider::-moz-range-progress { height: 6px; border-radius: 4px; background: var(--brass); }
+  .slider::-moz-range-thumb { width: 17px; height: 17px; border-radius: 50%; background: var(--brass); border: 2px solid var(--wood); cursor: pointer; }
+  .slider:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px var(--brass-glow); }
+
   .toast {
     position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(120px);
     background: var(--felt); border: 1px solid var(--brass-deep); color: var(--bone);
@@ -459,12 +471,11 @@
     <div class="ch"><label>Channel</label><input type="number" class="num" id="chanInput" min="1" max="16" value="1"></div>
     <div class="ch"><label>String glide — ms to slide between tunings (0 = instant)</label><input type="number" class="num" id="glideInput" min="0" max="5000" step="50" value="0"></div>
     <div class="subhd">Auto-bend</div>
-    <label class="latch-tog" style="margin-bottom:12px"><input type="checkbox" id="autoBendChk"><span>Scoop into each tuning (quick bend articulation)</span></label>
-    <div class="cc-grid">
-      <div class="cc-c"><label>Scoop depth</label><input type="number" class="num" id="bendDepthInput" min="0" max="60"></div>
-      <div class="cc-c"><label>Scoop time (ms)</label><input type="number" class="num" id="bendMsInput" min="30" max="600" step="10"></div>
-      <div class="cc-c"><label>Volume dip (0 = off)</label><input type="number" class="num" id="levelDipInput" min="0" max="60"></div>
-      <div class="cc-c"></div>
+    <label class="latch-tog" style="margin-bottom:16px"><input type="checkbox" id="autoBendChk"><span>Scoop into each tuning (quick bend articulation)</span></label>
+    <div class="ab-slider"><div class="ab-lbl"><span>Scoop depth</span><span id="bendDepthVal"></span></div><input type="range" class="slider" id="bendDepthInput" min="0" max="50"></div>
+    <div class="ab-slider"><div class="ab-lbl"><span>Scoop time</span><span id="bendMsVal"></span></div><input type="range" class="slider" id="bendMsInput" min="40" max="400" step="10"></div>
+    <div class="ab-slider"><div class="ab-lbl"><span>Volume dip</span><span id="levelDipVal"></span></div><input type="range" class="slider" id="levelDipInput" min="0" max="50"></div>
+    <div class="cc-grid" style="margin-top:2px">
       <div class="cc-c"><label>Bend Ctrl CC#</label><input type="number" class="num" id="bendCCInput" min="0" max="127"></div>
       <div class="cc-c"><label>Inst Level CC#</label><input type="number" class="num" id="levelCCInput" min="0" max="127"></div>
     </div>
@@ -999,12 +1010,19 @@ function renderSettings(){
   document.getElementById('levelDipInput').value=settings.levelDip;
   document.getElementById('bendCCInput').value=settings.bendCC;
   document.getElementById('levelCCInput').value=settings.levelCC;
+  ['bendDepthInput','bendMsInput','levelDipInput'].forEach(refreshAb);
   const r=document.getElementById('ccRows'); r.innerHTML='';
   for(let i=0;i<6;i++){ const c=document.createElement('div'); c.className='cc-c';
     c.innerHTML=`<label>${DEPTH_LBL[i]} — CC #</label><input type="number" class="num" min="0" max="127" data-cc="${i}" value="${settings.ccs[i]}">`; r.appendChild(c);
   }
 }
 document.getElementById('settingsBtn').addEventListener('click',()=>{ renderSettings(); open('settingsModal'); });
+function refreshAb(id){ const el=document.getElementById(id); if(!el) return; const v=+el.value;
+  const val=document.getElementById(id.replace('Input','Val'));
+  if(val) val.textContent = id==='bendMsInput' ? v+' ms' : (id==='levelDipInput' && v===0 ? 'off' : v);
+  const p=(v-el.min)/(el.max-el.min)*100; el.style.background=`linear-gradient(90deg, var(--brass) ${p}%, var(--edge) ${p}%)`;
+}
+['bendDepthInput','bendMsInput','levelDipInput'].forEach(id=>{ const el=document.getElementById(id); if(el) el.addEventListener('input',()=>refreshAb(id)); });
 function markThemeBtns(){ const t=document.documentElement.dataset.theme||'boss-blue'; document.querySelectorAll('[data-theme-set]').forEach(b=>b.classList.toggle('on', b.dataset.themeSet===t)); }
 function applyTheme(t){ document.documentElement.dataset.theme=t; try{ localStorage.setItem('vg800_theme',t); }catch(e){} markThemeBtns(); }
 document.querySelectorAll('[data-theme-set]').forEach(b=>b.addEventListener('click',()=>applyTheme(b.dataset.themeSet)));
@@ -1015,7 +1033,7 @@ document.getElementById('saveSettings').addEventListener('click',()=>{
   const ccs=[]; document.querySelectorAll('#ccRows input').forEach(x=>ccs[+x.dataset.cc]=Math.max(0,Math.min(127,+x.value||0)));
   const glide=Math.max(0,Math.min(5000,+document.getElementById('glideInput').value||0));
   const num=(id,lo,hi,d)=>{ const v=+document.getElementById(id).value; return isNaN(v)?d:Math.max(lo,Math.min(hi,v)); };
-  const ab={ autoBend:document.getElementById('autoBendChk').checked, bendCC:num('bendCCInput',0,127,69), levelCC:num('levelCCInput',0,127,70), bendDepth:num('bendDepthInput',0,60,12), levelDip:num('levelDipInput',0,60,8), bendMs:num('bendMsInput',30,600,90) };
+  const ab={ autoBend:document.getElementById('autoBendChk').checked, bendCC:num('bendCCInput',0,127,69), levelCC:num('levelCCInput',0,127,70), bendDepth:num('bendDepthInput',0,50,25), levelDip:num('levelDipInput',0,50,15), bendMs:num('bendMsInput',40,400,120) };
   settings={channel:ch,ccs,gap:settings.gap??20,glide,keys:settings.keys,latch:settings.latch, ...ab}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
 });
 
