@@ -98,7 +98,8 @@ Then open **http://localhost:8765/vg800-tuner.html** in **Chrome or Edge** (Safa
 - **Tuning cards** — click any tuning to retune all six strings.
 - **+ Custom** — dial each string up/down from standard, name it, and save your own tuning.
 - **All strings** — buttons from −12 to +12 shift every string by a fixed amount at once; handy for verifying each string's CC tracks across its whole range. `DELAY MS` spaces out the six messages (also applied to normal tuning changes).
-- **⚙ Settings** — MIDI channel and the per-string CC numbers.
+- **⚙ Settings** — MIDI channel, the per-string CC numbers, and **String glide** (ms to slide between tunings; 0 = instant, higher values give portamento/slide effects as the strings ramp to their new pitches).
+- **Themes** (⚙ Settings → Theme) — **BOSS Blue** (default, brushed-metal blue) or **Workbench** (warm wood/brass). Your choice is remembered.
 
 ---
 
