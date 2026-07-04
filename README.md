@@ -1,4 +1,4 @@
-# StringTable — Boss VG-800 MIDI Tuning from the browser
+# VG800 MIDI Control — Boss VG-800 tuning from the browser
 
 Pick an alternate tuning in your browser and the **Boss VG-800** retunes every string instantly over MIDI — no menu diving, no pedal dancing. It's a single self-contained HTML file (no build step, no dependencies) that uses the **Web MIDI API** to send Control Change messages to the VG-800's per-string **String Bend** engine.
 
