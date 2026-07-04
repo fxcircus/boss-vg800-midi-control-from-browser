@@ -193,6 +193,18 @@
   .pedal-moves .st { color: var(--bone-faint); }
   .pedal-moves .mv.off { color: var(--bone-faint); font-style: italic; }
 
+  /* Pedal key mapping + latch */
+  .latch-tog { display: inline-flex; align-items: center; gap: 9px; font-family: var(--mono); font-size: 11px; color: var(--bone-dim); cursor: pointer; margin-bottom: 11px; }
+  .latch-tog input { width: 16px; height: 16px; accent-color: var(--brass); cursor: pointer; flex-shrink: 0; }
+  .kb-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 30px; }
+  .kb-chip { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 66px; background: var(--wood); border: 1px solid var(--edge); border-radius: 8px; padding: 7px 10px; cursor: pointer; transition: transform .1s, border-color .12s, background .12s; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
+  .kb-chip:hover { border-color: var(--brass-deep); background: var(--felt); }
+  .kb-chip.listening { border-color: var(--brass); background: var(--felt); box-shadow: inset 0 0 0 1px var(--brass-glow); }
+  .kb-cname { font-family: var(--mono); font-size: 9px; color: var(--bone-faint); letter-spacing: 0.3px; white-space: nowrap; }
+  .kb-key { font-family: var(--cond); font-weight: 700; font-size: 15px; color: var(--bone); text-transform: uppercase; line-height: 1; }
+  .kb-chip.listening .kb-key { color: var(--brass); font-size: 10px; font-family: var(--mono); text-transform: none; }
+  .kb-reset .kb-key { color: var(--brass); font-family: var(--sans); }
+
   /* Chunky scrollbar (always on) — easier to grab on touch */
   html[data-scroll="fat"]::-webkit-scrollbar { width: 18px; height: 18px; }
   html[data-scroll="fat"]::-webkit-scrollbar-track { background: var(--ink-2); }
@@ -302,6 +314,7 @@
     border: 1px solid var(--brass-deep); border-radius: 14px; padding: 26px;
     max-width: 450px; width: 100%; box-shadow: 0 24px 60px rgba(0,0,0,0.6);
     animation: rise 0.2s cubic-bezier(.34,1.3,.5,1);
+    max-height: calc(100vh - 36px); overflow-y: auto;
   }
   @keyframes rise { from { transform: translateY(12px) scale(0.97); opacity: 0; } to { transform: none; opacity: 1; } }
   .sheet h2 { font-family: var(--cond); font-weight: 700; font-size: 26px; text-transform: uppercase; letter-spacing: 0.3px; color: var(--bone); margin-bottom: 4px; }
@@ -329,7 +342,7 @@
   .fld input:focus, .num:focus { outline: none; border-color: var(--brass); }
   .acts { display: flex; gap: 9px; margin-top: 11px; }
   .acts button { flex: 1; }
-  .foot { display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; }
+  .foot { display: flex; gap: 10px; justify-content: flex-end; position: sticky; bottom: 0; margin-top: 22px; padding-top: 14px; background: var(--wood); border-top: 1px solid var(--edge); }
   .btn { font-family: var(--mono); font-size: 11px; letter-spacing: 0.5px; padding: 9px 15px; border-radius: 8px; cursor: pointer; border: 1px solid var(--edge); background: var(--wood); color: var(--bone-dim); transition: all 0.14s; }
   .btn:hover { border-color: var(--brass-deep); color: var(--bone); }
   .btn.go { background: var(--brass); color: var(--ink); border-color: var(--brass); font-weight: 700; }
@@ -404,7 +417,7 @@
   <div class="sec" id="sec-pedals" style="margin-top:8px">
     <h2>Steel Pedals</h2>
     <div class="rule"></div>
-    <span style="font-family:var(--mono);font-size:10px;color:var(--bone-faint);white-space:nowrap">HOLD TO BEND</span>
+    <span id="pedalHint" style="font-family:var(--mono);font-size:10px;color:var(--bone-faint);white-space:nowrap">HOLD TO BEND</span>
   </div>
   <div id="pedalWrap"></div>
 
@@ -463,6 +476,7 @@ const STD_MIDI = [64,59,55,50,45,40];
 const SLBL = ['1','2','3','4','5','6'];
 function nameOf(m){ const pc=((m%12)+12)%12; return {name:NOTE[pc], oct:Math.floor(m/12)-1}; }
 function toCC(s){ const c=Math.max(-12,Math.min(12,s)); return Math.round((c+12)/24*127); }
+const DEFAULT_KEYS={A:'a',B:'s',LKL:'d',LKR:'f',AB:'g',ABR:'h'};  // ergonomic left-hand cluster
 
 const FAMILIES = [
   { family:'Reference', tunings:[ {name:'Standard', notes:'E A D G B E', offsets:[0,0,0,0,0,0]} ]},
@@ -533,7 +547,7 @@ const ETHNIC=[
   {name:'Balalaika', pitches:[64,64,69], notes:'E E A', ref:'Russian Folk Tunes'},
 ];
 
-function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; if(typeof s.glide!=='number') s.glide=0; return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0}; }
+function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; if(typeof s.glide!=='number') s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false}; }
 function saveSettingsLS(){ localStorage.setItem('vg800_settings', JSON.stringify(settings)); }
 function loadCustom(){ try{ return JSON.parse(localStorage.getItem('vg800_custom'))||[]; }catch(e){ return []; } }
 function saveCustomLS(){ localStorage.setItem('vg800_custom', JSON.stringify(customs)); }
@@ -614,19 +628,22 @@ function renderStrings(offsets){
 
 /* ===== Pedal steel simulation ===== */
 const PEDALS = [
-  {id:'A',   name:'Pedal A', key:'a', deg:'5', semis: 2, act:'5th  +1 step'},
-  {id:'B',   name:'Pedal B', key:'b', deg:'3', semis: 1, act:'3rd  +½ step'},
-  {id:'LKL', name:'LKL',     key:'z', deg:'1', semis: 1, act:'root +½ (tension)'},
-  {id:'LKR', name:'LKR',     key:'x', deg:'1', semis:-1, act:'root −½ (maj 7th)'},
+  {id:'A',   name:'Pedal A', deg:'5', semis: 2, act:'5th  +1 step'},
+  {id:'B',   name:'Pedal B', deg:'3', semis: 1, act:'3rd  +½ step'},
+  {id:'LKL', name:'LKL',     deg:'1', semis: 1, act:'root +½ (tension)'},
+  {id:'LKR', name:'LKR',     deg:'1', semis:-1, act:'root −½ (maj 7th)'},
 ];
 const COMBOS = [
-  {id:'AB',  name:'A + B',       key:'v', parts:['A','B'],       act:'the I → IV cry'},
-  {id:'ABR', name:'A + B + LKR', key:'c', parts:['A','B','LKR'], act:'IV, maj-7th color'},
+  {id:'AB',  name:'A + B',       parts:['A','B'],       act:'the I → IV cry'},
+  {id:'ABR', name:'A + B + LKR', parts:['A','B','LKR'], act:'IV, maj-7th color'},
 ];
 const DEG_INT={'1':0,'3':4,'5':7}, DEG_NM={'1':'root','3':'3rd','5':'5th'};
 const PEDAL_BY_ID=Object.fromEntries(PEDALS.map(p=>[p.id,p]));
 const COMBO_BY_ID=Object.fromEntries(COMBOS.map(c=>[c.id,c]));
-const KEYMAP={}; PEDALS.forEach(p=>KEYMAP[p.key]=p.id); COMBOS.forEach(c=>KEYMAP[c.key]=c.id);
+const KEY_CTRLS=[...PEDALS.map(p=>({id:p.id,name:p.name})), ...COMBOS.map(c=>({id:c.id,name:c.name}))];
+let KEYMAP={}, bindingCtrl=null;
+function rebuildKeymap(){ KEYMAP={}; for(const id in settings.keys){ const k=settings.keys[id]; if(k) KEYMAP[k]=id; } }
+rebuildKeymap();
 
 function pcOf(base){ return base.map((o,i)=> (((STD_MIDI[i]+o)%12)+12)%12 ); }
 function rootFromName(name){
@@ -679,14 +696,21 @@ function movesHTML(moves){
   moves.forEach(m=>{ const dir=(m.bend>=0)?'up':'dn'; const k=nameOf(m.from).name+'→'+nameOf(m.to).name+'|'+dir; (g[k]=g[k]||[]).push(SLBL[m.i]); });
   return Object.keys(g).map(k=>{ const parts=k.split('|'); return `<span class="mv"><span class="to ${parts[1]==='dn'?'dn':''}">${parts[0]}</span> <span class="st">${g[k].join('·')}</span></span>`; }).join('');
 }
-function pedalBtnHTML(ctrl, label, sub, key, st){
-  const dis=!st.avail;
+function pedalBtnHTML(ctrl, label, sub, st){
+  const dis=!st.avail, key=(settings.keys[ctrl]||'').toUpperCase();
   const body = dis ? `<span class="mv off">${st.why||'n/a here'}</span>` : movesHTML(st.moves);
   return `<button class="pedal${dis?' disabled':''}" data-ctrl="${ctrl}"${dis?' aria-disabled="true"':''}>
-    <span class="pedal-name">${label}<span class="pedal-key">${key}</span></span>
+    <span class="pedal-name">${label}${key?`<span class="pedal-key">${key}</span>`:''}</span>
     <span class="pedal-do">${sub}</span>
     <span class="pedal-moves">${body}</span>
   </button>`;
+}
+function keymapHTML(){
+  const chips=KEY_CTRLS.map(c=>{ const k=(settings.keys[c.id]||'').toUpperCase(), L=bindingCtrl===c.id;
+    return `<button class="kb-chip${L?' listening':''}" data-bind="${c.id}"><span class="kb-cname">${c.name}</span><span class="kb-key">${L?'press…':(k||'—')}</span></button>`; }).join('');
+  return `<div class="fam-name">Keys</div>
+    <label class="latch-tog"><input type="checkbox" id="latchChk"${settings.latch?' checked':''}><span>Latch — tap on/off instead of holding</span></label>
+    <div class="kb-chips">${chips}<button class="kb-chip kb-reset" data-reset="1"><span class="kb-cname">Reset</span><span class="kb-key">↺</span></button></div>`;
 }
 function renderPedals(){
   const wrap=document.getElementById('pedalWrap');
@@ -697,9 +721,9 @@ function renderPedals(){
   const info = curInfo.root==null
     ? 'No major triad in this tuning — pedals disabled.'
     : `Chord: root <b>${NOTE[curInfo.root]}</b> · 3rd <b>${NOTE[(curInfo.root+4)%12]}</b> · 5th <b>${NOTE[(curInfo.root+7)%12]}</b>`;
-  const foot=['A','B'].map(id=>pedalBtnHTML(id,PEDAL_BY_ID[id].name,PEDAL_BY_ID[id].act,PEDAL_BY_ID[id].key,pedalStateCache[id])).join('');
-  const knee=['LKL','LKR'].map(id=>pedalBtnHTML(id,PEDAL_BY_ID[id].name,PEDAL_BY_ID[id].act,PEDAL_BY_ID[id].key,pedalStateCache[id])).join('');
-  const combo=COMBOS.map(c=>pedalBtnHTML(c.id,c.name,c.act,c.key,ctrlStateCache[c.id])).join('');
+  const foot=['A','B'].map(id=>pedalBtnHTML(id,PEDAL_BY_ID[id].name,PEDAL_BY_ID[id].act,pedalStateCache[id])).join('');
+  const knee=['LKL','LKR'].map(id=>pedalBtnHTML(id,PEDAL_BY_ID[id].name,PEDAL_BY_ID[id].act,pedalStateCache[id])).join('');
+  const combo=COMBOS.map(c=>pedalBtnHTML(c.id,c.name,c.act,ctrlStateCache[c.id])).join('');
   wrap.innerHTML=`
     <div class="pedal-info">${info}</div>
     <div class="fam-name">Foot Pedals</div>
@@ -710,15 +734,21 @@ function renderPedals(){
     <p class="note-hint" style="margin:2px 2px 16px">LKR lowers the root a half step for a major-7th color; LKL raises it for tension.</p>
     <div class="fam-name">Combos</div>
     <div class="pedals">${combo}</div>
-    <p class="note-hint" style="margin:2px 2px 4px">One button, held, engages the whole grip. Greyed out when a component would exceed ±12.</p>`;
+    <p class="note-hint" style="margin:2px 2px 16px">One button, held, engages the whole grip. Greyed out when a component would exceed ±12.</p>
+    ${keymapHTML()}`;
   wrap.querySelectorAll('.pedal').forEach(b=>{
     if(b.classList.contains('disabled')) return;
     const ctrl=b.dataset.ctrl;
-    b.addEventListener('pointerdown', e=>{ e.preventDefault(); try{ b.setPointerCapture(e.pointerId); }catch(_){}; setCtrl(ctrl,true); });
-    b.addEventListener('pointerup', ()=> setCtrl(ctrl,false));
-    b.addEventListener('pointercancel', ()=> setCtrl(ctrl,false));
-    b.addEventListener('lostpointercapture', ()=> setCtrl(ctrl,false));
+    b.addEventListener('pointerdown', e=>{ e.preventDefault(); try{ b.setPointerCapture(e.pointerId); }catch(_){}; pressCtrl(ctrl); });
+    b.addEventListener('pointerup', ()=> releaseCtrl(ctrl));
+    b.addEventListener('pointercancel', ()=> releaseCtrl(ctrl));
+    b.addEventListener('lostpointercapture', ()=> releaseCtrl(ctrl));
   });
+  wrap.querySelectorAll('.pedal').forEach(b=> b.classList.toggle('on', held.has(b.dataset.ctrl)));  // keep latched state after re-render
+  const latchEl=wrap.querySelector('#latchChk');
+  if(latchEl) latchEl.addEventListener('change', e=>{ settings.latch=e.target.checked; saveSettingsLS(); updatePedalHint(); });
+  wrap.querySelectorAll('.kb-chip[data-bind]').forEach(b=> b.addEventListener('click', ()=>{ bindingCtrl=b.dataset.bind; renderPedals(); }));
+  const rb=wrap.querySelector('.kb-chip[data-reset]'); if(rb) rb.addEventListener('click', ()=>{ settings.keys={...DEFAULT_KEYS}; rebuildKeymap(); saveSettingsLS(); bindingCtrl=null; renderPedals(); });
 }
 function setCtrl(ctrl,on){
   const st=ctrlStateCache[ctrl];
@@ -729,14 +759,26 @@ function setCtrl(ctrl,on){
   if(midiOut) send(eff);
   renderStrings(eff);
 }
-document.addEventListener('keydown', e=>{
-  if(e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
+function pressCtrl(ctrl){ if(settings.latch) setCtrl(ctrl, !held.has(ctrl)); else setCtrl(ctrl, true); }
+function releaseCtrl(ctrl){ if(!settings.latch) setCtrl(ctrl, false); }
+function updatePedalHint(){ const el=document.getElementById('pedalHint'); if(el) el.textContent=settings.latch?'TAP TO LATCH':'HOLD TO BEND'; }
+document.addEventListener('keydown', e=>{                 // rebind capture
+  if(!bindingCtrl) return;
+  e.preventDefault();
+  if(e.key==='Escape'){ bindingCtrl=null; renderPedals(); return; }
+  if((e.key||'').length!==1) return;                      // wait for a printable key
+  const k=e.key.toLowerCase();
+  for(const id in settings.keys){ if(id!==bindingCtrl && settings.keys[id]===k) settings.keys[id]=''; }  // no dupes
+  settings.keys[bindingCtrl]=k; bindingCtrl=null; rebuildKeymap(); saveSettingsLS(); renderPedals();
+});
+document.addEventListener('keydown', e=>{                 // pedal engage
+  if(e.repeat || e.metaKey || e.ctrlKey || e.altKey || bindingCtrl) return;
   if(document.querySelector('.scrim.open')) return;
   const tag=e.target.tagName||''; if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT') return;
   const ctrl=KEYMAP[(e.key||'').toLowerCase()]; if(!ctrl) return;
-  const st=ctrlStateCache[ctrl]; if(st&&st.avail){ e.preventDefault(); setCtrl(ctrl,true); }
+  e.preventDefault(); pressCtrl(ctrl);
 });
-document.addEventListener('keyup', e=>{ const ctrl=KEYMAP[(e.key||'').toLowerCase()]; if(ctrl) setCtrl(ctrl,false); });
+document.addEventListener('keyup', e=>{ if(bindingCtrl) return; const ctrl=KEYMAP[(e.key||'').toLowerCase()]; if(ctrl) releaseCtrl(ctrl); });
 
 function makeCard(t,isC){
   const c=document.createElement('div');
@@ -925,7 +967,7 @@ document.getElementById('saveSettings').addEventListener('click',()=>{
   const ch=Math.max(1,Math.min(16,+document.getElementById('chanInput').value||1));
   const ccs=[]; document.querySelectorAll('#ccRows input').forEach(x=>ccs[+x.dataset.cc]=Math.max(0,Math.min(127,+x.value||0)));
   const glide=Math.max(0,Math.min(5000,+document.getElementById('glideInput').value||0));
-  settings={channel:ch,ccs,gap:settings.gap??20,glide}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
+  settings={channel:ch,ccs,gap:settings.gap??20,glide,keys:settings.keys,latch:settings.latch}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
 });
 
 function applyTest(v){
@@ -959,6 +1001,7 @@ renderTestBtns();
 renderPedals();
 renderEthnic();
 placeBench();
+updatePedalHint();
 initMIDI();
 </script>
 </body>
