@@ -272,6 +272,10 @@
   .cldots { display: flex; gap: 3px; }
   .cldots i { width: 5px; height: 16px; border-radius: 2px; background: var(--edge); transition: background .12s; }
   .cldots i.on { background: var(--brass); box-shadow: 0 0 6px var(--brass-glow); }
+  .card.steel .card-notes { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px 9px; font-size: 10px; }
+  .stdots { display: flex; gap: 2px; }
+  .stdots i { width: 4px; height: 15px; border-radius: 2px; background: var(--edge); transition: background .12s; }
+  .stdots i.on { background: var(--brass); box-shadow: 0 0 5px var(--brass-glow); }
   .cllbl { font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--bone-dim); letter-spacing: 0.5px; }
   .clbtn.on .cllbl { color: var(--brass); }
 
@@ -425,6 +429,13 @@
     <div class="rule"></div>
   </div>
   <div id="testBtns"></div>
+
+  <div class="sec" id="sec-steel" style="margin-top:8px">
+    <h2>Pedal Steel</h2>
+    <div class="rule"></div>
+    <span style="font-family:var(--mono);font-size:10px;color:var(--bone-faint);white-space:nowrap">6 OF 10 STRINGS</span>
+  </div>
+  <div id="steelWrap"></div>
 
   <div class="sec" id="sec-pedals" style="margin-top:8px">
     <h2>Steel Pedals</h2>
@@ -679,22 +690,50 @@ function renderStrings(offsets){
 }
 
 /* ===== Pedal steel simulation ===== */
-const PEDALS = [
-  {id:'A',   name:'Pedal A', deg:'5', semis: 2, act:'5th  +1 step'},
-  {id:'B',   name:'Pedal B', deg:'3', semis: 1, act:'3rd  +½ step'},
-  {id:'LKL', name:'LKL',     deg:'1', semis: 1, act:'root +½ (tension)'},
-  {id:'LKR', name:'LKR',     deg:'1', semis:-1, act:'root −½ (maj 7th)'},
-];
-const COMBOS = [
-  {id:'AB',  name:'A + B',       parts:['A','B'],       act:'the I → IV cry'},
-  {id:'ABR', name:'A + B + LKR', parts:['A','B','LKR'], act:'IV, maj-7th color'},
-];
 const DEG_INT={'1':0,'3':4,'5':7}, DEG_NM={'1':'root','3':'3rd','5':'5th'};
-const PEDAL_BY_ID=Object.fromEntries(PEDALS.map(p=>[p.id,p]));
-const COMBO_BY_ID=Object.fromEntries(COMBOS.map(c=>[c.id,c]));
-const KEY_CTRLS=[...PEDALS.map(p=>({id:p.id,name:p.name})), ...COMBOS.map(c=>({id:c.id,name:c.name}))];
+// A copedent = a set of controls; each control has one or more degree "moves".
+const COPEDENTS={
+  generic:{ controls:[
+    {id:'A',   name:'Pedal A', group:'foot', key:'a', act:'5th +1 step',    moves:[{deg:'5',semis:2}]},
+    {id:'B',   name:'Pedal B', group:'foot', key:'s', act:'3rd +½ step',    moves:[{deg:'3',semis:1}]},
+    {id:'LKL', name:'LKL',     group:'knee', key:'d', act:'root +½',         moves:[{deg:'1',semis:1}]},
+    {id:'LKR', name:'LKR',     group:'knee', key:'f', act:'root −½ (maj7)',  moves:[{deg:'1',semis:-1}]},
+    {id:'AB',  name:'A + B',   group:'combo',key:'g', act:'the I → IV cry',  moves:[{deg:'5',semis:2},{deg:'3',semis:1}]},
+    {id:'ABR', name:'A+B+LKR', group:'combo',key:'h', act:'IV, maj-7th',     moves:[{deg:'5',semis:2},{deg:'3',semis:1},{deg:'1',semis:-1}]},
+  ]},
+  e9:{ controls:[   // standard Emmons E9
+    {id:'A',   name:'Pedal A', group:'foot', key:'a', act:'5th +1 step',     moves:[{deg:'5',semis:2}]},
+    {id:'B',   name:'Pedal B', group:'foot', key:'s', act:'3rd +½ step',     moves:[{deg:'3',semis:1}]},
+    {id:'C',   name:'Pedal C', group:'foot', key:'w', act:'5th +1, root +1', moves:[{deg:'5',semis:2},{deg:'1',semis:2}]},
+    {id:'LKL', name:'LKL',     group:'knee', key:'d', act:'root +½',          moves:[{deg:'1',semis:1}]},
+    {id:'LKR', name:'LKR',     group:'knee', key:'f', act:'root −½ (maj7)',   moves:[{deg:'1',semis:-1}]},
+    {id:'VERT',name:'Vertical',group:'knee', key:'e', act:'5th −½',           moves:[{deg:'5',semis:-1}]},
+    {id:'AB',  name:'A + B',   group:'combo',key:'g', act:'the I → IV cry',   moves:[{deg:'5',semis:2},{deg:'3',semis:1}]},
+  ]},
+  c6:{ controls:[   // C6 mechanism set (distinct from E9)
+    {id:'P5', name:'P5',      group:'foot', key:'a', act:'5th −½ (9th)',     moves:[{deg:'5',semis:-1}]},
+    {id:'P6', name:'P6',      group:'foot', key:'s', act:'root +½ (alt)',    moves:[{deg:'1',semis:1}]},
+    {id:'P8', name:'Boo-wah', group:'foot', key:'d', act:'root −3 (→ 6th)',  moves:[{deg:'1',semis:-3}]},
+    {id:'LWR',name:'Min 3rd', group:'knee', key:'f', act:'3rd −½ (minor)',   moves:[{deg:'3',semis:-1}]},
+  ]},
+};
+// Pedal steel tunings — 10 strings, midi low→high (index 0 = string 10 lowest, 9 = string 1 highest).
+const STEEL=[
+  {id:'e9', name:'E9 Nashville', sub:'country · session sound', root:4,  copedent:'e9', midi:[47,50,52,54,56,59,64,68,75,78], spell:'B D E F# G# B E G# D# F#'},
+  {id:'c6', name:'C6 Swing/Jazz', sub:'western swing · jazz',   root:0,  copedent:'c6', midi:[48,53,57,60,64,67,69,72,76,86], spell:'C F A C E G A C E D'},
+  {id:'b6', name:'B6 Universal',  sub:'6th-flavored hybrid',    root:11, copedent:'e9', midi:[47,50,50,54,56,59,62,68,75,78], spell:'B D D F# G# B D G# D# F#'},
+];
+const WINDOWS=[   // contiguous 6-of-10; i0 = lowest midi index of the window
+  {label:'3–8', i0:2, desc:'the classic 6-string country setup'},
+  {label:'1–6', i0:4, desc:'the top strings'},
+  {label:'4–9', i0:1, desc:'a lower, fuller voicing'},
+  {label:'5–10',i0:0, desc:'the low strings'},
+];
+let copedent=COPEDENTS.generic, steelInst=null, steelWin=0, steelRoot=null;
 let KEYMAP={}, bindingCtrl=null;
-function rebuildKeymap(){ KEYMAP={}; for(const id in settings.keys){ const k=settings.keys[id]; if(k) KEYMAP[k]=id; } }
+function ctrlById(id){ return copedent.controls.find(c=>c.id===id); }
+function keyFor(id){ const c=ctrlById(id), ov=settings.keys[id]; return (ov!==undefined?ov:(c?c.key:'')); }
+function rebuildKeymap(){ KEYMAP={}; copedent.controls.forEach(c=>{ const k=keyFor(c.id); if(k) KEYMAP[k]=c.id; }); }
 rebuildKeymap();
 
 function pcOf(base){ return base.map((o,i)=> (((STD_MIDI[i]+o)%12)+12)%12 ); }
@@ -717,29 +756,20 @@ function chordInfo(base, name){
   }
   return {pc, root};
 }
-function pedalState(p, info, base){
-  if(info.root==null) return {avail:false, why:'no chord', strings:[], moves:[]};
-  const tPc=(info.root+DEG_INT[p.deg])%12, strings=[];
-  info.pc.forEach((x,i)=>{ if(x===tPc) strings.push(i); });
-  if(!strings.length) return {avail:false, why:'no '+DEG_NM[p.deg], strings:[], moves:[]};
-  const moves=strings.map(i=>{ const from=STD_MIDI[i]+base[i], off=base[i]+p.semis; return {i, from, to:from+p.semis, off, bend:p.semis, ok: off>=-12&&off<=12}; });
-  const avail=moves.every(m=>m.ok);
-  return {avail, why: avail?'':'out of range', strings, moves};
-}
-function comboState(c, info, base){
-  if(info.root==null) return {avail:false, why:'no chord', moves:[]};
-  const bends=[0,0,0,0,0,0]; let missing=false;
-  c.parts.forEach(id=>{ const p=PEDAL_BY_ID[id], tPc=(info.root+DEG_INT[p.deg])%12; let hit=false; info.pc.forEach((x,i)=>{ if(x===tPc){ bends[i]+=p.semis; hit=true; } }); if(!hit) missing=true; });
-  if(missing) return {avail:false, why:'degree missing', moves:[]};
+// One control = one or more degree moves, aggregated to per-string bends.
+// Greys out if the root is unknown, a target degree is absent from the window, or any string exceeds ±12.
+function controlState(ctrl, info, base){
+  if(info.root==null) return {avail:false, why:'no root', moves:[]};
+  const bends=[0,0,0,0,0,0]; let missing='';
+  ctrl.moves.forEach(mv=>{ const tPc=(info.root+DEG_INT[mv.deg])%12; let hit=false; info.pc.forEach((x,i)=>{ if(x===tPc){ bends[i]+=mv.semis; hit=true; } }); if(!hit) missing='no '+DEG_NM[mv.deg]; });
+  if(missing) return {avail:false, why:missing, moves:[]};
   const moves=[]; let ok=true;
-  bends.forEach((b,i)=>{ if(b!==0){ const off=base[i]+b; if(off<-12||off>12) ok=false; moves.push({i, from:STD_MIDI[i]+base[i], to:STD_MIDI[i]+base[i]+b, off, bend:b, ok: off>=-12&&off<=12}); } });
-  return {avail: ok, why: ok?'':'out of range', moves};
+  bends.forEach((b,i)=>{ if(b!==0){ const off=base[i]+b; if(off<-12||off>12) ok=false; moves.push({i, from:STD_MIDI[i]+base[i], to:STD_MIDI[i]+base[i]+b, off, bend:b, ok:off>=-12&&off<=12}); } });
+  return {avail:ok, why: ok?'':'out of range', moves};
 }
-function ctrlPedals(ctrl){ return COMBO_BY_ID[ctrl]? COMBO_BY_ID[ctrl].parts : (PEDAL_BY_ID[ctrl]?[ctrl]:[]); }
 function bendsFromEngaged(){
-  const bends=[0,0,0,0,0,0], ids=new Set();
-  held.forEach(ctrl=> ctrlPedals(ctrl).forEach(id=>ids.add(id)));
-  ids.forEach(id=>{ const st=pedalStateCache[id], p=PEDAL_BY_ID[id]; if(st&&st.avail&&p) st.strings.forEach(i=> bends[i]+=p.semis); });
+  const bends=[0,0,0,0,0,0];
+  held.forEach(ctrl=>{ const st=ctrlStateCache[ctrl]; if(st&&st.avail) st.moves.forEach(m=> bends[m.i]+=m.bend); });
   return bends;
 }
 function movesHTML(moves){
@@ -749,7 +779,7 @@ function movesHTML(moves){
   return Object.keys(g).map(k=>{ const parts=k.split('|'); return `<span class="mv"><span class="to ${parts[1]==='dn'?'dn':''}">${parts[0]}</span> <span class="st">${g[k].join('·')}</span></span>`; }).join('');
 }
 function pedalBtnHTML(ctrl, label, sub, st){
-  const dis=!st.avail, key=(settings.keys[ctrl]||'').toUpperCase();
+  const dis=!st.avail, key=(keyFor(ctrl)||'').toUpperCase();
   const body = dis ? `<span class="mv off">${st.why||'n/a here'}</span>` : movesHTML(st.moves);
   return `<button class="pedal${dis?' disabled':''}" data-ctrl="${ctrl}"${dis?' aria-disabled="true"':''}>
     <span class="pedal-name">${label}${key?`<span class="pedal-key">${key}</span>`:''}</span>
@@ -758,36 +788,29 @@ function pedalBtnHTML(ctrl, label, sub, st){
   </button>`;
 }
 function keymapHTML(){
-  const chips=KEY_CTRLS.map(c=>{ const k=(settings.keys[c.id]||'').toUpperCase(), L=bindingCtrl===c.id;
+  const chips=copedent.controls.map(c=>{ const k=(keyFor(c.id)||'').toUpperCase(), L=bindingCtrl===c.id;
     return `<button class="kb-chip${L?' listening':''}" data-bind="${c.id}"><span class="kb-cname">${c.name}</span><span class="kb-key">${L?'press…':(k||'—')}</span></button>`; }).join('');
   return `<div class="fam-name">Keys</div>
     <label class="latch-tog"><input type="checkbox" id="latchChk"${settings.latch?' checked':''}><span>Latch — tap on/off instead of holding</span></label>
     <div class="kb-chips">${chips}<button class="kb-chip kb-reset" data-reset="1"><span class="kb-cname">Reset</span><span class="kb-key">↺</span></button></div>`;
 }
 function renderPedals(){
-  const wrap=document.getElementById('pedalWrap');
-  curInfo=chordInfo(baseOffsets, active);
-  pedalStateCache={}; ctrlStateCache={};
-  PEDALS.forEach(p=>{ const s=pedalState(p,curInfo,baseOffsets); pedalStateCache[p.id]=s; ctrlStateCache[p.id]=s; });
-  COMBOS.forEach(c=>{ ctrlStateCache[c.id]=comboState(c,curInfo,baseOffsets); });
+  const wrap=document.getElementById('pedalWrap'); if(!wrap) return;
+  curInfo=chordInfo(baseOffsets, active); if(steelRoot!=null) curInfo.root=steelRoot;   // pedal-steel forces the real root
+  rebuildKeymap();
+  ctrlStateCache={};
+  copedent.controls.forEach(c=>{ ctrlStateCache[c.id]=controlState(c,curInfo,baseOffsets); });
   const info = curInfo.root==null
-    ? 'No major triad in this tuning — pedals disabled.'
+    ? 'No chord root here — pedals disabled.'
     : `Chord: root <b>${NOTE[curInfo.root]}</b> · 3rd <b>${NOTE[(curInfo.root+4)%12]}</b> · 5th <b>${NOTE[(curInfo.root+7)%12]}</b>`;
-  const foot=['A','B'].map(id=>pedalBtnHTML(id,PEDAL_BY_ID[id].name,PEDAL_BY_ID[id].act,pedalStateCache[id])).join('');
-  const knee=['LKL','LKR'].map(id=>pedalBtnHTML(id,PEDAL_BY_ID[id].name,PEDAL_BY_ID[id].act,pedalStateCache[id])).join('');
-  const combo=COMBOS.map(c=>pedalBtnHTML(c.id,c.name,c.act,ctrlStateCache[c.id])).join('');
-  wrap.innerHTML=`
-    <div class="pedal-info">${info}</div>
-    <div class="fam-name">Foot Pedals</div>
-    <div class="pedals">${foot}</div>
-    <p class="note-hint" style="margin:2px 2px 16px">Hold <b>A</b> and <b>B</b> together for the classic I → IV “cry”.</p>
-    <div class="fam-name">Knee Levers</div>
-    <div class="pedals">${knee}</div>
-    <p class="note-hint" style="margin:2px 2px 16px">LKR lowers the root a half step for a major-7th color; LKL raises it for tension.</p>
-    <div class="fam-name">Combos</div>
-    <div class="pedals">${combo}</div>
-    <p class="note-hint" style="margin:2px 2px 16px">One button, held, engages the whole grip. Greyed out when a component would exceed ±12.</p>
-    ${keymapHTML()}`;
+  const grp=g=> copedent.controls.filter(c=>c.group===g).map(c=>pedalBtnHTML(c.id,c.name,c.act,ctrlStateCache[c.id])).join('');
+  const foot=grp('foot'), knee=grp('knee'), combo=grp('combo');
+  let html=`<div class="pedal-info">${info}</div>`;
+  if(foot)  html+=`<div class="fam-name">Foot Pedals</div><div class="pedals">${foot}</div>`;
+  if(knee)  html+=`<div class="fam-name">Knee Levers</div><div class="pedals">${knee}</div>`;
+  if(combo) html+=`<div class="fam-name">Combos</div><div class="pedals">${combo}</div>`;
+  html+=keymapHTML();
+  wrap.innerHTML=html;
   wrap.querySelectorAll('.pedal').forEach(b=>{
     if(b.classList.contains('disabled')) return;
     const ctrl=b.dataset.ctrl;
@@ -800,7 +823,7 @@ function renderPedals(){
   const latchEl=wrap.querySelector('#latchChk');
   if(latchEl) latchEl.addEventListener('change', e=>{ settings.latch=e.target.checked; saveSettingsLS(); updatePedalHint(); });
   wrap.querySelectorAll('.kb-chip[data-bind]').forEach(b=> b.addEventListener('click', ()=>{ bindingCtrl=b.dataset.bind; renderPedals(); }));
-  const rb=wrap.querySelector('.kb-chip[data-reset]'); if(rb) rb.addEventListener('click', ()=>{ settings.keys={...DEFAULT_KEYS}; rebuildKeymap(); saveSettingsLS(); bindingCtrl=null; renderPedals(); });
+  const rb=wrap.querySelector('.kb-chip[data-reset]'); if(rb) rb.addEventListener('click', ()=>{ copedent.controls.forEach(c=> settings.keys[c.id]=c.key); rebuildKeymap(); saveSettingsLS(); bindingCtrl=null; renderPedals(); });
 }
 function setCtrl(ctrl,on){
   const st=ctrlStateCache[ctrl];
@@ -820,7 +843,7 @@ document.addEventListener('keydown', e=>{                 // rebind capture
   if(e.key==='Escape'){ bindingCtrl=null; renderPedals(); return; }
   if((e.key||'').length!==1) return;                      // wait for a printable key
   const k=e.key.toLowerCase();
-  for(const id in settings.keys){ if(id!==bindingCtrl && settings.keys[id]===k) settings.keys[id]=''; }  // no dupes
+  copedent.controls.forEach(c=>{ if(c.id!==bindingCtrl && keyFor(c.id)===k) settings.keys[c.id]=''; });  // no dupes
   settings.keys[bindingCtrl]=k; bindingCtrl=null; rebuildKeymap(); saveSettingsLS(); renderPedals();
 });
 document.addEventListener('keydown', e=>{                 // pedal engage
@@ -888,6 +911,7 @@ function renderNav(){
   box.innerHTML='<div class="nav-title">Jump to</div>'
     +'<a class="group" href="#sec-tunings">Tunings</a>'+links
     +'<a class="sub" href="#sec-ethnic">Ethnic</a>'
+    +'<a class="sub" href="#sec-steel">Pedal Steel</a>'
     +'<a class="sub" href="#sec-strings">Transpose</a>'
     +'<a class="group" href="#sec-pedals">Steel Pedals</a>';
   updateSpy();
@@ -924,9 +948,9 @@ function applyInst(inst, start){
   const res=computeCluster(inst.pitches, start);
   if(!res.ok){ toast(inst.name+' can’t fit those strings', true); return; }
   if(!tuningSend(res.offsets)) return;
-  active=inst.name; baseOffsets=[...res.offsets]; held.clear(); ethnicInst=inst; ethnicStart=start;
+  active=inst.name; baseOffsets=[...res.offsets]; held.clear(); ethnicInst=inst; ethnicStart=start; clearSteel();
   const n=document.getElementById('nowName'); n.textContent=inst.name; n.classList.remove('std');
-  renderStrings(res.offsets); renderGrid(); renderPedals(); renderEthnic();
+  renderStrings(res.offsets); renderGrid(); renderPedals(); renderEthnic(); renderSteel();
 }
 function ethnicCardHTML(inst){
   const on = ethnicInst && ethnicInst.name===inst.name;
@@ -950,13 +974,48 @@ function renderEthnic(){
   wrap.querySelectorAll('.card.inst').forEach(c=> c.addEventListener('click',()=>{ const inst=ETHNIC.find(x=>x.name===c.dataset.name); if(inst) applyInst(inst, inst===ethnicInst?ethnicStart:0); }));
   wrap.querySelectorAll('.clbtn').forEach(b=> b.addEventListener('click',()=>{ if(!b.classList.contains('disabled')&&ethnicInst) applyInst(ethnicInst, +b.dataset.start); }));
 }
+/* ===== Pedal Steel section (3 tunings + 6-of-10 window) ===== */
+function steelCardHTML(t){
+  const on = steelInst && steelInst.id===t.id;
+  const notes=t.spell.split(' ').map(x=>`<span>${x}</span>`).join('');
+  return `<div class="card steel${on?' active':''}" data-id="${t.id}" data-ref="${t.sub}"><div class="card-name">${t.name}</div><div class="card-notes stnotes">${notes}</div></div>`;
+}
+function steelWinHTML(t, win){
+  const opts=WINDOWS.map((w,idx)=>{
+    const res=computeCluster(t.midi.slice(w.i0, w.i0+6), 0);
+    const dots=[...Array(10)].map((_,d)=>{ const mi=9-d; return `<i class="${mi>=w.i0&&mi<w.i0+6?'on':''}"></i>`; }).join('');
+    return `<button class="clbtn${res.ok?'':' disabled'}${idx===win?' on':''}" data-win="${idx}"${res.ok?'':' aria-disabled="true"'}><span class="stdots">${dots}</span><span class="cllbl">${w.label}</span></button>`;
+  }).join('');
+  const res=computeCluster(t.midi.slice(WINDOWS[win].i0, WINDOWS[win].i0+6), 0);
+  const notes=notesOf(res.offsets);
+  return `<div class="cl-head"><b>${t.name} · strings ${WINDOWS[win].label}</b> — ${WINDOWS[win].desc}.<br>Voicing (low → high): <b>${notes}</b>. The pedals below re-map to this window's copedent.</div><div class="clrow">${opts}</div>`;
+}
+function renderSteel(){
+  const wrap=document.getElementById('steelWrap'); if(!wrap) return;
+  const cards=STEEL.map(steelCardHTML).join('');
+  const sel=steelInst?steelWinHTML(steelInst, steelWin):'';
+  wrap.innerHTML=`<div class="grid">${cards}</div>${sel}`;
+  wrap.querySelectorAll('.card.steel').forEach(c=> c.addEventListener('click',()=>{ const t=STEEL.find(x=>x.id===c.dataset.id); if(t) applySteel(t, t===steelInst?steelWin:0); }));
+  wrap.querySelectorAll('.clbtn[data-win]').forEach(b=> b.addEventListener('click',()=>{ if(!b.classList.contains('disabled')&&steelInst) applySteel(steelInst, +b.dataset.win); }));
+}
+function applySteel(t, win){
+  win=Math.max(0, Math.min(WINDOWS.length-1, win));
+  const res=computeCluster(t.midi.slice(WINDOWS[win].i0, WINDOWS[win].i0+6), 0);
+  if(!res.ok){ toast(t.name+' — that window won’t fit', true); return; }
+  if(!tuningSend(res.offsets)) return;
+  active=t.name; baseOffsets=[...res.offsets]; held.clear();
+  ethnicInst=null; steelInst=t; steelWin=win; steelRoot=t.root; copedent=COPEDENTS[t.copedent]||COPEDENTS.generic;
+  const n=document.getElementById('nowName'); n.textContent=t.name; n.classList.remove('std');
+  renderStrings(res.offsets); renderGrid(); renderEthnic(); renderSteel(); renderPedals();
+}
+function clearSteel(){ steelInst=null; steelRoot=null; steelWin=0; copedent=COPEDENTS.generic; }
 function notesOf(offsets){ return offsets.map((s,i)=>nameOf(STD_MIDI[i]+s).name).reverse().join(' '); }
 function apply(t){
   if(tuningSend(t.offsets)){
     active=t.name;
-    baseOffsets=[...t.offsets]; held.clear(); ethnicInst=null;
+    baseOffsets=[...t.offsets]; held.clear(); ethnicInst=null; clearSteel();
     const n=document.getElementById('nowName'); n.textContent=t.name; n.classList.toggle('std',t.name==='Standard');
-    renderStrings(t.offsets); renderGrid(); renderPedals(); renderEthnic();
+    renderStrings(t.offsets); renderGrid(); renderPedals(); renderEthnic(); renderSteel();
   }
 }
 
@@ -1039,9 +1098,9 @@ document.getElementById('saveSettings').addEventListener('click',()=>{
 
 function applyTest(v){
   if(!tuningSend([v,v,v,v,v,v])) return;
-  active=''; baseOffsets=[v,v,v,v,v,v]; held.clear(); ethnicInst=null;
+  active=''; baseOffsets=[v,v,v,v,v,v]; held.clear(); ethnicInst=null; clearSteel();
   const n=document.getElementById('nowName'); n.textContent='TEST '+(v>0?'+'+v:''+v); n.classList.remove('std');
-  renderStrings([v,v,v,v,v,v]); renderGrid(); renderPedals(); renderEthnic();
+  renderStrings([v,v,v,v,v,v]); renderGrid(); renderPedals(); renderEthnic(); renderSteel();
 }
 function renderTestBtns(){
   const wrap=document.getElementById('testBtns'); wrap.innerHTML='';
@@ -1067,6 +1126,7 @@ renderGrid();
 renderTestBtns();
 renderPedals();
 renderEthnic();
+renderSteel();
 placeBench();
 updatePedalHint();
 initMIDI();
