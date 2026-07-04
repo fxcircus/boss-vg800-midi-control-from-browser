@@ -1,6 +1,9 @@
 # VG800 MIDI Control — Boss VG-800 tuning from the browser
 
-Pick an alternate tuning in your browser and the **Boss VG-800** retunes every string instantly over MIDI — no menu diving, no pedal dancing. It's a single self-contained HTML file (no build step, no dependencies) that uses the **Web MIDI API** to send Control Change messages to the VG-800's per-string **String Bend** engine.
+Pick an alternate tuning in your browser and the **Boss VG-800** retunes every string instantly over MIDI — no menu diving. It's a single self-contained HTML file (no build step, no dependencies) that uses the **Web MIDI API** to send Control Change messages to the VG-800's per-string **String Bend** engine.
+
+**▶ Live app: https://fxcircus.github.io/boss-vg800-midi-control-from-browser/**
+(Open in Chrome or Edge, allow MIDI, and select your interface — GitHub Pages is served over HTTPS, so Web MIDI works.)
 
 ![Standard tuning](screenshots/standard_tuning.png)
 
@@ -95,7 +98,8 @@ Then open **http://localhost:8765/vg800-tuner.html** in **Chrome or Edge** (Safa
 
 ## Using it
 
-- **Tuning cards** — click any tuning to retune all six strings.
+- **Tuning cards** — click any tuning to retune all six strings, including an **Artists** set: Fripp (NST), Gambale, Jimmy Page (Rain Song), Sonic Youth (Ostrich), Nick Drake, Keith Richards, American Football, Soundgarden, and Joni Mitchell.
+- **Steel Pedals** — hold the on-screen **A / B** pedals and **LKL / LKR** knee levers (or keys `A`, `B`, `Z`, `X`) to bend the root / 3rd / 5th of the *current* tuning, pedal-steel style. They stack, each button previews the destination pitches for the selected tuning, and any bend that would exceed ±12 greys out. **Combos** (A+B "cry", keys `V` / `C`) engage a whole grip at once.
 - **+ Custom** — dial each string up/down from standard, name it, and save your own tuning.
 - **All strings** — buttons from −12 to +12 shift every string by a fixed amount at once; handy for verifying each string's CC tracks across its whole range. `DELAY MS` spaces out the six messages (also applied to normal tuning changes).
 - **⚙ Settings** — MIDI channel, the per-string CC numbers, and **String glide** (ms to slide between tunings; 0 = instant, higher values give portamento/slide effects as the strings ramp to their new pitches).

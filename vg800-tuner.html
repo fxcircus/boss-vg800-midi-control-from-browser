@@ -174,6 +174,25 @@
   .sw-blue { background: linear-gradient(135deg, #2e5c8a, #f2b34d 140%); }
   .sw-wood { background: linear-gradient(135deg, #3a2f22, #e0a53f 140%); }
 
+  /* Steel pedals */
+  .pedal-info { font-family: var(--mono); font-size: 11px; color: var(--bone-dim); margin: 0 2px 15px; letter-spacing: 0.3px; }
+  .pedal-info b { color: var(--brass); font-weight: 700; }
+  .pedals { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; margin-bottom: 8px; }
+  .pedal { position: relative; text-align: left; background: var(--wood); border: 1px solid var(--edge-soft); border-radius: 10px; padding: 12px 13px; cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 3px 8px rgba(0,0,0,0.32); transition: transform .1s, border-color .12s, background .12s, box-shadow .12s; user-select: none; -webkit-user-select: none; touch-action: none; }
+  .pedal:hover:not(.disabled) { border-color: var(--brass-deep); background: var(--felt); }
+  .pedal.on { border-color: var(--brass); background: var(--felt); box-shadow: inset 0 0 0 1px var(--brass), 0 0 22px var(--brass-glow); transform: translateY(2px) scale(0.985); }
+  .pedal.disabled { opacity: 0.42; cursor: not-allowed; filter: grayscale(0.45); box-shadow: none; }
+  .pedal-name { font-family: var(--cond); font-weight: 700; font-size: 17px; text-transform: uppercase; letter-spacing: 0.3px; color: var(--bone); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .pedal.on .pedal-name { color: var(--brass); }
+  .pedal-key { font-family: var(--mono); font-weight: 400; font-size: 9px; color: var(--bone-faint); border: 1px solid var(--edge); border-radius: 4px; padding: 1px 5px; text-transform: uppercase; }
+  .pedal-do { font-family: var(--mono); font-size: 10px; color: var(--bone-faint); margin: 4px 0 9px; letter-spacing: 0.2px; }
+  .pedal-moves { display: flex; flex-wrap: wrap; gap: 3px 10px; font-family: var(--mono); font-size: 11px; }
+  .pedal-moves .mv { white-space: nowrap; }
+  .pedal-moves .to { color: var(--amber); font-weight: 700; }
+  .pedal-moves .to.dn { color: var(--steel-blue); }
+  .pedal-moves .st { color: var(--bone-faint); }
+  .pedal-moves .mv.off { color: var(--bone-faint); font-style: italic; }
+
   .fam { margin-bottom: 26px; }
   .fam-name { font-family: var(--mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--brass-deep); margin: 0 2px 12px; display: flex; align-items: center; gap: 10px; }
   .fam-name::after { content: ""; flex: 1; height: 1px; background: var(--edge-soft); }
@@ -296,6 +315,13 @@
   </div>
   <div id="testBtns" class="tgrid"></div>
 
+  <div class="sec" style="margin-top:8px">
+    <h2>Steel Pedals</h2>
+    <div class="rule"></div>
+    <span style="font-family:var(--mono);font-size:10px;color:var(--bone-faint);white-space:nowrap">HOLD TO BEND</span>
+  </div>
+  <div id="pedalWrap"></div>
+
   <div class="bench">
     <div class="bench-head">
       <span class="name std" id="nowName">Standard</span>
@@ -376,6 +402,17 @@ const FAMILIES = [
     {name:'B11 TK Smith', notes:'B D# F# A C# E', offsets:[0,2,2,4,-6,-5]},
     {name:'Cyrus Hybrid', notes:'G B D F# A D', offsets:[-2,-2,-1,0,2,3]},
   ]},
+  { family:'Artists', tunings:[
+    {name:'NST', notes:'C G D A E G', offsets:[3,5,2,0,-2,-4]},           // Fripp — New Standard, all 5ths
+    {name:'Gambale', notes:'A D G C E A', offsets:[-7,-7,5,5,5,5]},       // Frank Gambale
+    {name:'Rain Song', notes:'D G C G C D', offsets:[-2,1,0,-2,-2,-2]},   // Jimmy Page
+    {name:'Ostrich', notes:'G A B D E G', offsets:[-9,-7,-5,-3,0,3]},     // Sonic Youth
+    {name:'Nick Drake', notes:'C G C F C E', offsets:[0,1,-2,-2,-2,-4]},  // Open C — "Pink Moon"
+    {name:'Keith Richards', notes:'G G D G B D', offsets:[-2,0,0,0,-2,3]},// 5-string Open G — "Start Me Up"
+    {name:'Am. Football', notes:'F A C G C E', offsets:[0,1,0,-2,0,1]},   // Fmaj9 — "Never Meant"
+    {name:'Soundgarden', notes:'E E B B B B', offsets:[-5,0,4,-3,-5,0]},  // Unison drone — "The Day I Tried to Live"
+    {name:'Joni Mitchell', notes:'E B E G# B E', offsets:[0,0,1,2,2,0]},  // Open E — "Big Yellow Taxi"
+  ]},
 ];
 const BUILTIN = FAMILIES.flatMap(f=>f.tunings);
 
@@ -385,6 +422,7 @@ let edOff = [0,0,0,0,0,0];
 let active = 'Standard';
 let midiAccess=null, midiOut=null;
 let curOffsets=[0,0,0,0,0,0], glideTimer=null;
+let baseOffsets=[0,0,0,0,0,0], held=new Set(), curInfo=null, pedalStateCache={}, ctrlStateCache={};
 
 function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; if(typeof s.glide!=='number') s.glide=0; return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0}; }
 function saveSettingsLS(){ localStorage.setItem('vg800_settings', JSON.stringify(settings)); }
@@ -459,6 +497,132 @@ function renderStrings(offsets){
   }
 }
 
+/* ===== Pedal steel simulation ===== */
+const PEDALS = [
+  {id:'A',   name:'Pedal A', key:'a', deg:'5', semis: 2, act:'5th  +1 step'},
+  {id:'B',   name:'Pedal B', key:'b', deg:'3', semis: 1, act:'3rd  +½ step'},
+  {id:'LKL', name:'LKL',     key:'z', deg:'1', semis: 1, act:'root +½ (tension)'},
+  {id:'LKR', name:'LKR',     key:'x', deg:'1', semis:-1, act:'root −½ (maj 7th)'},
+];
+const COMBOS = [
+  {id:'AB',  name:'A + B',       key:'v', parts:['A','B'],       act:'the I → IV cry'},
+  {id:'ABR', name:'A + B + LKR', key:'c', parts:['A','B','LKR'], act:'IV, maj-7th color'},
+];
+const DEG_INT={'1':0,'3':4,'5':7}, DEG_NM={'1':'root','3':'3rd','5':'5th'};
+const PEDAL_BY_ID=Object.fromEntries(PEDALS.map(p=>[p.id,p]));
+const COMBO_BY_ID=Object.fromEntries(COMBOS.map(c=>[c.id,c]));
+const KEYMAP={}; PEDALS.forEach(p=>KEYMAP[p.key]=p.id); COMBOS.forEach(c=>KEYMAP[c.key]=c.id);
+
+function pcOf(base){ return base.map((o,i)=> (((STD_MIDI[i]+o)%12)+12)%12 ); }
+function rootFromName(name){
+  const m=/^\s*([A-G])([#b])?/.exec(name||''); if(!m) return null;
+  let pc=NOTE.indexOf(m[1]); if(pc<0) return null;
+  if(m[2]==='#') pc=(pc+1)%12; else if(m[2]==='b') pc=(pc+11)%12;
+  return pc;
+}
+// Find root as the major triad present; disambiguate by tuning name, then bass string, then density.
+function chordInfo(base, name){
+  const pc=pcOf(base), present=new Set(pc), cands=[];
+  for(let r=0;r<12;r++){ if(present.has(r)&&present.has((r+4)%12)&&present.has((r+7)%12)) cands.push(r); }
+  let root=null;
+  if(cands.length){
+    const hint=rootFromName(name);
+    if(hint!=null && cands.includes(hint)) root=hint;
+    else if(cands.includes(pc[5])) root=pc[5];
+    else root=cands.slice().sort((a,b)=> (pc.filter(x=>x===b).length-pc.filter(x=>x===a).length)||a-b)[0];
+  }
+  return {pc, root};
+}
+function pedalState(p, info, base){
+  if(info.root==null) return {avail:false, why:'no chord', strings:[], moves:[]};
+  const tPc=(info.root+DEG_INT[p.deg])%12, strings=[];
+  info.pc.forEach((x,i)=>{ if(x===tPc) strings.push(i); });
+  if(!strings.length) return {avail:false, why:'no '+DEG_NM[p.deg], strings:[], moves:[]};
+  const moves=strings.map(i=>{ const from=STD_MIDI[i]+base[i], off=base[i]+p.semis; return {i, from, to:from+p.semis, off, bend:p.semis, ok: off>=-12&&off<=12}; });
+  const avail=moves.every(m=>m.ok);
+  return {avail, why: avail?'':'out of range', strings, moves};
+}
+function comboState(c, info, base){
+  if(info.root==null) return {avail:false, why:'no chord', moves:[]};
+  const bends=[0,0,0,0,0,0]; let missing=false;
+  c.parts.forEach(id=>{ const p=PEDAL_BY_ID[id], tPc=(info.root+DEG_INT[p.deg])%12; let hit=false; info.pc.forEach((x,i)=>{ if(x===tPc){ bends[i]+=p.semis; hit=true; } }); if(!hit) missing=true; });
+  if(missing) return {avail:false, why:'degree missing', moves:[]};
+  const moves=[]; let ok=true;
+  bends.forEach((b,i)=>{ if(b!==0){ const off=base[i]+b; if(off<-12||off>12) ok=false; moves.push({i, from:STD_MIDI[i]+base[i], to:STD_MIDI[i]+base[i]+b, off, bend:b, ok: off>=-12&&off<=12}); } });
+  return {avail: ok, why: ok?'':'out of range', moves};
+}
+function ctrlPedals(ctrl){ return COMBO_BY_ID[ctrl]? COMBO_BY_ID[ctrl].parts : (PEDAL_BY_ID[ctrl]?[ctrl]:[]); }
+function bendsFromEngaged(){
+  const bends=[0,0,0,0,0,0], ids=new Set();
+  held.forEach(ctrl=> ctrlPedals(ctrl).forEach(id=>ids.add(id)));
+  ids.forEach(id=>{ const st=pedalStateCache[id], p=PEDAL_BY_ID[id]; if(st&&st.avail&&p) st.strings.forEach(i=> bends[i]+=p.semis); });
+  return bends;
+}
+function movesHTML(moves){
+  if(!moves||!moves.length) return '';
+  const g={};
+  moves.forEach(m=>{ const dir=(m.bend>=0)?'up':'dn'; const k=nameOf(m.from).name+'→'+nameOf(m.to).name+'|'+dir; (g[k]=g[k]||[]).push(SLBL[m.i]); });
+  return Object.keys(g).map(k=>{ const parts=k.split('|'); return `<span class="mv"><span class="to ${parts[1]==='dn'?'dn':''}">${parts[0]}</span> <span class="st">${g[k].join('·')}</span></span>`; }).join('');
+}
+function pedalBtnHTML(ctrl, label, sub, key, st){
+  const dis=!st.avail;
+  const body = dis ? `<span class="mv off">${st.why||'n/a here'}</span>` : movesHTML(st.moves);
+  return `<button class="pedal${dis?' disabled':''}" data-ctrl="${ctrl}"${dis?' aria-disabled="true"':''}>
+    <span class="pedal-name">${label}<span class="pedal-key">${key}</span></span>
+    <span class="pedal-do">${sub}</span>
+    <span class="pedal-moves">${body}</span>
+  </button>`;
+}
+function renderPedals(){
+  const wrap=document.getElementById('pedalWrap');
+  curInfo=chordInfo(baseOffsets, active);
+  pedalStateCache={}; ctrlStateCache={};
+  PEDALS.forEach(p=>{ const s=pedalState(p,curInfo,baseOffsets); pedalStateCache[p.id]=s; ctrlStateCache[p.id]=s; });
+  COMBOS.forEach(c=>{ ctrlStateCache[c.id]=comboState(c,curInfo,baseOffsets); });
+  const info = curInfo.root==null
+    ? 'No major triad in this tuning — pedals disabled.'
+    : `Chord: root <b>${NOTE[curInfo.root]}</b> · 3rd <b>${NOTE[(curInfo.root+4)%12]}</b> · 5th <b>${NOTE[(curInfo.root+7)%12]}</b>`;
+  const foot=['A','B'].map(id=>pedalBtnHTML(id,PEDAL_BY_ID[id].name,PEDAL_BY_ID[id].act,PEDAL_BY_ID[id].key,pedalStateCache[id])).join('');
+  const knee=['LKL','LKR'].map(id=>pedalBtnHTML(id,PEDAL_BY_ID[id].name,PEDAL_BY_ID[id].act,PEDAL_BY_ID[id].key,pedalStateCache[id])).join('');
+  const combo=COMBOS.map(c=>pedalBtnHTML(c.id,c.name,c.act,c.key,ctrlStateCache[c.id])).join('');
+  wrap.innerHTML=`
+    <div class="pedal-info">${info}</div>
+    <div class="fam-name">Foot Pedals</div>
+    <div class="pedals">${foot}</div>
+    <p class="note-hint" style="margin:2px 2px 16px">Hold <b>A</b> and <b>B</b> together for the classic I → IV “cry”.</p>
+    <div class="fam-name">Knee Levers</div>
+    <div class="pedals">${knee}</div>
+    <p class="note-hint" style="margin:2px 2px 16px">LKR lowers the root a half step for a major-7th color; LKL raises it for tension.</p>
+    <div class="fam-name">Combos</div>
+    <div class="pedals">${combo}</div>
+    <p class="note-hint" style="margin:2px 2px 4px">One button, held, engages the whole grip. Greyed out when a component would exceed ±12.</p>`;
+  wrap.querySelectorAll('.pedal').forEach(b=>{
+    if(b.classList.contains('disabled')) return;
+    const ctrl=b.dataset.ctrl;
+    b.addEventListener('pointerdown', e=>{ e.preventDefault(); try{ b.setPointerCapture(e.pointerId); }catch(_){}; setCtrl(ctrl,true); });
+    b.addEventListener('pointerup', ()=> setCtrl(ctrl,false));
+    b.addEventListener('pointercancel', ()=> setCtrl(ctrl,false));
+    b.addEventListener('lostpointercapture', ()=> setCtrl(ctrl,false));
+  });
+}
+function setCtrl(ctrl,on){
+  const st=ctrlStateCache[ctrl];
+  if(on){ if(!st||!st.avail) return; held.add(ctrl); } else held.delete(ctrl);
+  document.querySelectorAll('#pedalWrap .pedal').forEach(b=> b.classList.toggle('on', held.has(b.dataset.ctrl)));
+  const bends=bendsFromEngaged();
+  const eff=baseOffsets.map((o,i)=> o+bends[i]);
+  if(midiOut) send(eff);
+  renderStrings(eff);
+}
+document.addEventListener('keydown', e=>{
+  if(e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
+  if(document.querySelector('.scrim.open')) return;
+  const tag=e.target.tagName||''; if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT') return;
+  const ctrl=KEYMAP[(e.key||'').toLowerCase()]; if(!ctrl) return;
+  const st=ctrlStateCache[ctrl]; if(st&&st.avail){ e.preventDefault(); setCtrl(ctrl,true); }
+});
+document.addEventListener('keyup', e=>{ const ctrl=KEYMAP[(e.key||'').toLowerCase()]; if(ctrl) setCtrl(ctrl,false); });
+
 function makeCard(t,isC){
   const c=document.createElement('div');
   c.className='card'+(isC?' custom':'')+(active===t.name?' active':'');
@@ -498,8 +662,9 @@ function notesOf(offsets){ return offsets.map((s,i)=>nameOf(STD_MIDI[i]+s).name)
 function apply(t){
   if(send(t.offsets)){
     active=t.name;
+    baseOffsets=[...t.offsets]; held.clear();
     const n=document.getElementById('nowName'); n.textContent=t.name; n.classList.toggle('std',t.name==='Standard');
-    renderStrings(t.offsets); renderGrid(); toast(t.name);
+    renderStrings(t.offsets); renderGrid(); renderPedals(); toast(t.name);
   }
 }
 
@@ -567,9 +732,9 @@ document.getElementById('saveSettings').addEventListener('click',()=>{
 
 function applyTest(v){
   if(!send([v,v,v,v,v,v])) return;
-  active='';
+  active=''; baseOffsets=[v,v,v,v,v,v]; held.clear();
   const n=document.getElementById('nowName'); n.textContent='TEST '+(v>0?'+'+v:''+v); n.classList.remove('std');
-  renderStrings([v,v,v,v,v,v]); renderGrid();
+  renderStrings([v,v,v,v,v,v]); renderGrid(); renderPedals();
   toast('All strings '+(v>0?'+'+v:v));
 }
 function renderTestBtns(){
@@ -595,6 +760,7 @@ function toast(m,err){ const t=document.getElementById('toast'); t.textContent=m
 renderStrings([0,0,0,0,0,0]);
 renderGrid();
 renderTestBtns();
+renderPedals();
 initMIDI();
 </script>
 </body>
