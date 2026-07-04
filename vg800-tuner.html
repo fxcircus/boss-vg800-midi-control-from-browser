@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>String Table</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #14100c;
+    --ink-2: #1c1712;
+    --wood: #241d16;
+    --felt: #2b2219;
+    --edge: #3a2f22;
+    --edge-soft: rgba(58,47,34,0.6);
+    --bone: #ece3d2;
+    --bone-dim: #b7ab95;
+    --bone-faint: #7d7361;
+    --brass: #e0a53f;
+    --brass-deep: #b47e28;
+    --brass-glow: rgba(224,165,63,0.35);
+    --chrome: #d8dade;
+    --chrome-dim: #8b8d92;
+    --steel-blue: #7fa8c9;
+    --amber: #e8913c;
+    --ok: #8fbf6a;
+    --err: #d9694e;
+    --cond: 'Barlow Semi Condensed', sans-serif;
+    --sans: 'Barlow', system-ui, sans-serif;
+    --mono: 'Space Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--ink);
+    color: var(--bone);
+    font-family: var(--sans);
+    min-height: 100vh;
+    padding: 30px 20px 70px;
+    background-image:
+      radial-gradient(1000px 400px at 50% -5%, rgba(224,165,63,0.07), transparent 60%),
+      linear-gradient(180deg, var(--ink-2), var(--ink) 70%);
+    background-attachment: fixed;
+  }
+  .wrap { max-width: 820px; margin: 0 auto; }
+
+  header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 26px; gap: 16px; }
+  .mast { line-height: 0.92; }
+  .mast .kick { font-family: var(--mono); font-size: 10px; letter-spacing: 4px; color: var(--brass-deep); text-transform: uppercase; margin-bottom: 8px; }
+  .mast h1 { font-family: var(--cond); font-weight: 700; font-size: 46px; letter-spacing: -0.5px; color: var(--bone); text-transform: uppercase; }
+  .mast h1 em { font-style: normal; color: var(--brass); }
+  .gear {
+    width: 42px; height: 42px; flex-shrink: 0;
+    background: none; border: 1px solid var(--edge); border-radius: 50%;
+    color: var(--bone-dim); cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+  }
+  .gear:hover { border-color: var(--brass-deep); color: var(--brass); transform: rotate(30deg); }
+
+  .conn { display: flex; align-items: center; gap: 10px; margin-bottom: 30px; padding: 0 2px; }
+  .lamp { width: 8px; height: 8px; border-radius: 50%; background: var(--err); box-shadow: 0 0 10px currentColor; transition: all 0.3s; flex-shrink: 0; }
+  .lamp.on { background: var(--ok); }
+  .conn-txt { font-family: var(--mono); font-size: 11px; color: var(--bone-faint); letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .conn select {
+    background: var(--wood); color: var(--bone-dim); border: 1px solid var(--edge);
+    font-family: var(--mono); font-size: 11px; padding: 6px 8px; border-radius: 7px;
+    margin-left: auto; max-width: 48%; cursor: pointer;
+  }
+  .conn select:focus { outline: none; border-color: var(--brass-deep); }
+
+  .bench {
+    background: linear-gradient(180deg, var(--felt), var(--wood));
+    border: 1px solid var(--edge);
+    border-radius: 14px;
+    padding: 22px 6px 20px;
+    margin-top: 30px;
+    position: relative;
+    box-shadow: inset 0 1px 0 rgba(236,227,210,0.05), 0 16px 40px rgba(0,0,0,0.35);
+  }
+  .bench-head { display: flex; align-items: baseline; justify-content: space-between; padding: 0 18px 16px; }
+  .bench-head .lbl { font-family: var(--mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--bone-faint); }
+  .bench-head .name { font-family: var(--cond); font-weight: 700; font-size: 22px; letter-spacing: 0.3px; color: var(--brass); text-transform: uppercase; }
+  .bench-head .name.std { color: var(--bone); }
+
+  .str { position: relative; display: grid; grid-template-columns: 58px 1fr 52px; align-items: center; height: 40px; padding: 0 18px; }
+  .str .wire { position: relative; height: 100%; display: flex; align-items: center; }
+  .str .wire::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 50%;
+    background: linear-gradient(180deg, var(--chrome-dim), var(--chrome), var(--chrome-dim));
+    transform: translateY(-50%); transition: filter 0.25s, background 0.25s;
+  }
+  .str[data-g="6"] .wire::before { height: 5px; }
+  .str[data-g="5"] .wire::before { height: 4px; }
+  .str[data-g="4"] .wire::before { height: 3.2px; }
+  .str[data-g="3"] .wire::before { height: 2.4px; }
+  .str[data-g="2"] .wire::before { height: 1.8px; }
+  .str[data-g="1"] .wire::before { height: 1.3px; }
+  .str.shifted .wire::before { background: linear-gradient(180deg, var(--brass-deep), var(--brass), var(--brass-deep)); filter: drop-shadow(0 0 5px var(--brass-glow)); }
+  .str .slide {
+    position: absolute; top: 50%; transform: translate(-50%, -50%);
+    min-width: 34px; height: 24px; padding: 0 7px;
+    background: linear-gradient(180deg, #f2ede3, #cfc9bd);
+    border-radius: 5px; display: flex; align-items: center; justify-content: center;
+    font-family: var(--cond); font-weight: 700; font-size: 15px; color: var(--ink);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.7);
+    transition: left 0.35s cubic-bezier(.34,1.35,.5,1), background 0.25s; z-index: 2;
+  }
+  .str .slide .oct { font-family: var(--mono); font-weight: 400; font-size: 8px; color: var(--chrome-dim); margin-left: 1px; }
+  .str.shifted.sharp .slide { background: linear-gradient(180deg, #ffdca6, #e8913c); }
+  .str.shifted.flat .slide { background: linear-gradient(180deg, #cfe3f2, #7fa8c9); }
+  .str-lbl { font-family: var(--mono); font-size: 10px; color: var(--bone-faint); letter-spacing: 1px; }
+  .str-lbl b { color: var(--bone-dim); font-weight: 700; }
+  .str-off { font-family: var(--mono); font-size: 12px; font-weight: 700; text-align: right; color: var(--bone-faint); }
+  .str-off.sharp { color: var(--amber); }
+  .str-off.flat { color: var(--steel-blue); }
+
+  .sec { display: flex; align-items: baseline; gap: 14px; margin: 0 2px 18px; }
+  .sec h2 { font-family: var(--cond); font-weight: 700; font-size: 20px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--bone); }
+  .sec .rule { flex: 1; height: 1px; background: var(--edge); }
+  .add {
+    font-family: var(--mono); font-size: 11px; color: var(--brass); background: none;
+    border: 1px solid var(--brass-deep); border-radius: 20px; padding: 5px 14px; cursor: pointer;
+    letter-spacing: 0.5px; transition: all 0.14s;
+  }
+  .add:hover { background: var(--brass); color: var(--ink); }
+
+  .tgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); gap: 6px; margin-bottom: 30px; }
+  .tbtn { font-family: var(--mono); font-size: 13px; font-weight: 700; padding: 11px 0; border-radius: 8px; cursor: pointer; border: 1px solid var(--edge); background: var(--wood); color: var(--bone-dim); transition: all 0.12s; }
+  .tbtn:hover { border-color: var(--brass); color: var(--bone); transform: translateY(-1px); background: var(--felt); }
+  .tbtn:active { transform: translateY(0) scale(0.95); }
+  .tbtn.flat { color: var(--steel-blue); } .tbtn.flat:hover { border-color: var(--steel-blue); }
+  .tbtn.sharp { color: var(--amber); } .tbtn.sharp:hover { border-color: var(--amber); }
+  .tbtn.zero { color: var(--bone-faint); }
+
+  .fam { margin-bottom: 26px; }
+  .fam-name { font-family: var(--mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--brass-deep); margin: 0 2px 12px; display: flex; align-items: center; gap: 10px; }
+  .fam-name::after { content: ""; flex: 1; height: 1px; background: var(--edge-soft); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .card {
+    background: var(--wood); border: 1px solid var(--edge-soft); border-radius: 10px;
+    padding: 14px 15px; cursor: pointer; transition: all 0.15s; position: relative; overflow: hidden;
+  }
+  .card:hover { border-color: var(--brass-deep); background: var(--felt); transform: translateY(-2px); }
+  .card.active { border-color: var(--brass); background: var(--felt); box-shadow: inset 3px 0 0 var(--brass); }
+  .card-name { font-family: var(--cond); font-weight: 700; font-size: 19px; letter-spacing: 0.3px; color: var(--bone); text-transform: uppercase; line-height: 1; margin-bottom: 9px; }
+  .card.active .card-name { color: var(--brass); }
+  .card-notes { font-family: var(--mono); font-size: 11px; color: var(--bone-dim); display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; text-align: center; }
+  .card-notes span { white-space: nowrap; }
+  .card-off { font-family: var(--mono); font-size: 10px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; text-align: center; margin-top: 7px; opacity: 0; max-height: 0; transition: opacity 0.15s, max-height 0.15s; }
+  .card-off span { color: var(--bone-faint); }
+  .card-off span.flat { color: var(--steel-blue); }
+  .card-off span.sharp { color: var(--amber); }
+  .card:hover .card-off, .card.active .card-off { opacity: 1; max-height: 20px; }
+  .del { position: absolute; bottom: 11px; right: 12px; font-family: var(--mono); font-size: 9px; color: var(--bone-faint); background: none; border: none; cursor: pointer; letter-spacing: 1px; opacity: 0; transition: all 0.14s; }
+  .card:hover .del { opacity: 1; }
+  .del:hover { color: var(--err); }
+
+  .scrim { position: fixed; inset: 0; background: rgba(10,7,4,0.78); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px; animation: fade 0.16s; }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  .scrim.open { display: flex; }
+  .sheet {
+    background: linear-gradient(170deg, var(--felt), var(--wood));
+    border: 1px solid var(--brass-deep); border-radius: 14px; padding: 26px;
+    max-width: 450px; width: 100%; box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+    animation: rise 0.2s cubic-bezier(.34,1.3,.5,1);
+  }
+  @keyframes rise { from { transform: translateY(12px) scale(0.97); opacity: 0; } to { transform: none; opacity: 1; } }
+  .sheet h2 { font-family: var(--cond); font-weight: 700; font-size: 26px; text-transform: uppercase; letter-spacing: 0.3px; color: var(--bone); margin-bottom: 4px; }
+  .sheet h2 em { font-style: normal; color: var(--brass); }
+  .sheet p { font-family: var(--sans); font-size: 12px; color: var(--bone-dim); margin-bottom: 22px; line-height: 1.55; }
+
+  .ed { display: grid; grid-template-columns: 30px 58px 1fr 48px; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .ed-l { font-family: var(--mono); font-size: 10px; color: var(--bone-faint); }
+  .ed-n { font-family: var(--cond); font-weight: 700; font-size: 17px; color: var(--bone); }
+  .knob-row { display: flex; align-items: center; gap: 10px; }
+  .knob { width: 32px; height: 32px; flex-shrink: 0; background: var(--ink); border: 1px solid var(--edge); color: var(--bone); border-radius: 50%; cursor: pointer; font-size: 16px; font-family: var(--sans); display: flex; align-items: center; justify-content: center; transition: all 0.12s; }
+  .knob:hover { border-color: var(--brass); color: var(--brass); }
+  .knob:active { transform: scale(0.9); }
+  .track { flex: 1; height: 3px; background: var(--ink); border-radius: 2px; position: relative; }
+  .track .mid { position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: var(--edge); }
+  .track .fill { position: absolute; top: 0; bottom: 0; background: var(--brass); border-radius: 2px; transition: all 0.14s; }
+  .ed-v { font-family: var(--mono); font-size: 12px; font-weight: 700; text-align: right; color: var(--bone-dim); }
+  .ed-v.sharp { color: var(--amber); } .ed-v.flat { color: var(--steel-blue); }
+
+  .fld { margin-top: 20px; }
+  .fld input, .num {
+    width: 100%; background: var(--ink); border: 1px solid var(--edge); color: var(--bone);
+    font-family: var(--mono); font-size: 13px; padding: 10px 12px; border-radius: 8px;
+  }
+  .fld input:focus, .num:focus { outline: none; border-color: var(--brass); }
+  .acts { display: flex; gap: 9px; margin-top: 11px; }
+  .acts button { flex: 1; }
+  .foot { display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; }
+  .btn { font-family: var(--mono); font-size: 11px; letter-spacing: 0.5px; padding: 9px 15px; border-radius: 8px; cursor: pointer; border: 1px solid var(--edge); background: var(--wood); color: var(--bone-dim); transition: all 0.14s; }
+  .btn:hover { border-color: var(--brass-deep); color: var(--bone); }
+  .btn.go { background: var(--brass); color: var(--ink); border-color: var(--brass); font-weight: 700; }
+  .btn.go:hover { filter: brightness(1.08); }
+
+  .cc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .cc-c label, .ch label { display: block; font-family: var(--mono); font-size: 10px; color: var(--bone-faint); margin-bottom: 5px; letter-spacing: 1px; }
+  .ch { margin: 16px 0; }
+  .subhd { font-family: var(--mono); font-size: 10px; color: var(--brass-deep); letter-spacing: 2px; text-transform: uppercase; margin: 20px 0 10px; }
+  .note-hint { font-size: 11px; color: var(--bone-faint); margin: 14px 0 0; line-height: 1.5; }
+
+  .toast {
+    position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(120px);
+    background: var(--felt); border: 1px solid var(--brass-deep); color: var(--bone);
+    padding: 12px 22px; border-radius: 10px; font-family: var(--mono); font-size: 12px;
+    opacity: 0; transition: all 0.3s cubic-bezier(.34,1.3,.5,1); z-index: 200; pointer-events: none;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 9px;
+  }
+  .toast::before { content: "♪"; color: var(--brass); }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast.err { border-color: var(--err); } .toast.err::before { content: "!"; color: var(--err); font-weight: 700; }
+
+  @media (max-width: 480px) {
+    body { padding: 22px 14px 50px; }
+    .mast h1 { font-size: 38px; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 9px; }
+    .card-off { opacity: 1; max-height: 20px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+  :focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="mast">
+      <div class="kick">Boss VG-800 · MIDI Tuning</div>
+      <h1>String<em>Table</em></h1>
+    </div>
+    <button class="gear" id="settingsBtn" title="MIDI settings" aria-label="MIDI settings">⚙</button>
+  </header>
+
+  <div class="conn">
+    <span class="lamp" id="lamp"></span>
+    <span class="conn-txt" id="connTxt">MIDI disconnected</span>
+    <select id="portSelect" aria-label="MIDI output port"><option>No ports</option></select>
+  </div>
+
+  <div class="sec">
+    <h2>Tunings</h2>
+    <div class="rule"></div>
+    <button class="add" id="openEditor">+ Custom</button>
+  </div>
+  <div id="grid"></div>
+
+  <div class="sec" style="margin-top:8px">
+    <h2>All strings</h2>
+    <div class="rule"></div>
+    <label style="font-family:var(--mono);font-size:10px;color:var(--bone-faint);display:flex;align-items:center;gap:7px;white-space:nowrap">DELAY MS <input type="number" id="gapInput" class="num" style="width:60px;padding:5px 7px" min="0" max="500" value="20"></label>
+  </div>
+  <div id="testBtns" class="tgrid"></div>
+
+  <div class="bench">
+    <div class="bench-head">
+      <span class="name std" id="nowName">Standard</span>
+      <span class="lbl">Current Tuning</span>
+    </div>
+    <div id="strings"></div>
+  </div>
+</div>
+
+<div class="scrim" id="editorModal">
+  <div class="sheet">
+    <h2>Custom <em>Tuning</em></h2>
+    <p>Dial each string up or down from standard, name it, and save. It joins your set below.</p>
+    <div id="edStrings"></div>
+    <div class="fld"><input type="text" id="customName" placeholder="Name this tuning…" maxlength="24"></div>
+    <div class="acts">
+      <button class="btn" id="loadCurrentBtn">Load current</button>
+      <button class="btn" id="resetEditBtn">Reset to standard</button>
+    </div>
+    <div class="foot">
+      <button class="btn" id="closeEditor">Cancel</button>
+      <button class="btn go" id="saveCustomBtn">Save tuning</button>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="settingsModal">
+  <div class="sheet">
+    <h2>MIDI <em>Settings</em></h2>
+    <p>Each string sends its pitch on its own CC. On the VG-800: INST → <em>STR BEND SW = ON</em>, <em>BEND CONTROL = 100</em>. In ASSIGN 1–6 target <em>INST:STR BEND (A) BEND DEPTH 1…6</em>, MIN −12 / MAX +12, MODE = MOMENT, SOURCE = the CC below (DEPTH 1 = high E … DEPTH 6 = low E). Prefer CC# in the <em>1–31</em> range — CC# 64–95 are MIDI switch controllers and the VG-800 may not track them continuously.</p>
+    <div class="ch"><label>Channel</label><input type="number" class="num" id="chanInput" min="1" max="16" value="1"></div>
+    <div class="subhd">CC number per string</div>
+    <div class="cc-grid" id="ccRows"></div>
+    <p class="note-hint">Each must match the CC # set as the SOURCE in that string's VG-800 assign slot. Heads-up: the VG-800 only exposes CC# 0–31 and 64+ as assign sources — CC# 32–63 are not selectable.</p>
+    <div class="foot">
+      <button class="btn" id="closeSettings">Cancel</button>
+      <button class="btn go" id="saveSettings">Save settings</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const NOTE = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const STD_MIDI = [64,59,55,50,45,40];
+const SLBL = ['1','2','3','4','5','6'];
+function nameOf(m){ const pc=((m%12)+12)%12; return {name:NOTE[pc], oct:Math.floor(m/12)-1}; }
+function toCC(s){ const c=Math.max(-12,Math.min(12,s)); return Math.round((c+12)/24*127); }
+
+const FAMILIES = [
+  { family:'Reference', tunings:[ {name:'Standard', notes:'E A D G B E', offsets:[0,0,0,0,0,0]} ]},
+  { family:'6th Family', tunings:[
+    {name:'C6', notes:'C E G A C E', offsets:[0,1,2,5,-5,-4]},
+    {name:'A6', notes:'C# E F# A C# E', offsets:[0,2,2,4,-5,-3]},
+    {name:'C6/A7', notes:'C# E G A C E', offsets:[0,1,2,5,-5,-3]},
+  ]},
+  { family:'Open Majors', tunings:[
+    {name:'Open E', notes:'E B E G# B E', offsets:[0,0,1,2,2,0]},
+    {name:'Open D', notes:'D A D F# A D', offsets:[-2,-2,-1,0,0,-2]},
+    {name:'Open G Dobro', notes:'G B D G B D', offsets:[-2,0,0,0,2,3]},
+    {name:'Open G low', notes:'D G D G B D', offsets:[-2,0,0,0,-2,-2]},
+    {name:'Open A high', notes:'A C# E A C# E', offsets:[0,2,2,2,4,5]},
+  ]},
+  { family:'Dominant / 7th', tunings:[
+    {name:'E7', notes:'B D E G# B E', offsets:[0,0,1,2,5,-5]},
+    {name:'E13', notes:'D E G# B C# E', offsets:[0,2,4,-6,-5,-2]},
+    {name:'E9 lap', notes:'D E F# G# B E', offsets:[0,0,1,4,-5,-2]},
+  ]},
+  { family:'Specialties', tunings:[
+    {name:'B11', notes:'B D# F# A C# E', offsets:[0,2,2,4,-6,-5]},
+    {name:'B11 TK Smith', notes:'B D# F# A C# E', offsets:[0,2,2,4,-6,-5]},
+    {name:'Cyrus Hybrid', notes:'G B D F# A D', offsets:[-2,-2,-1,0,2,3]},
+  ]},
+];
+const BUILTIN = FAMILIES.flatMap(f=>f.tunings);
+
+let settings = loadSettings();
+let customs = loadCustom();
+let edOff = [0,0,0,0,0,0];
+let active = 'Standard';
+let midiAccess=null, midiOut=null;
+
+function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20}; }
+function saveSettingsLS(){ localStorage.setItem('vg800_settings', JSON.stringify(settings)); }
+function loadCustom(){ try{ return JSON.parse(localStorage.getItem('vg800_custom'))||[]; }catch(e){ return []; } }
+function saveCustomLS(){ localStorage.setItem('vg800_custom', JSON.stringify(customs)); }
+
+async function initMIDI(){
+  if(!navigator.requestMIDIAccess){ setLamp(false,'WebMIDI needs Chrome'); return; }
+  try{ midiAccess=await navigator.requestMIDIAccess({sysex:false}); midiAccess.onstatechange=ports; ports(); }
+  catch(e){ setLamp(false,'MIDI access denied'); }
+}
+function ports(){
+  const sel=document.getElementById('portSelect');
+  const outs=midiAccess?[...midiAccess.outputs.values()]:[];
+  sel.innerHTML='';
+  if(!outs.length){ sel.innerHTML='<option>No outputs</option>'; setLamp(false,'No MIDI outputs'); midiOut=null; return; }
+  outs.forEach(o=>{ const op=document.createElement('option'); op.value=o.id; op.textContent=o.name; sel.appendChild(op); });
+  const saved=localStorage.getItem('vg800_port');
+  const pick=outs.find(o=>o.id===saved)||outs.find(o=>/scarlett|focusrite/i.test(o.name))||outs[0];
+  sel.value=pick.id; midiOut=pick; localStorage.setItem('vg800_port',pick.id); setLamp(true,pick.name);
+}
+function setLamp(ok,msg){ document.getElementById('lamp').classList.toggle('on',ok); document.getElementById('connTxt').textContent=msg; }
+document.getElementById('portSelect').addEventListener('change',e=>{
+  const outs=[...midiAccess.outputs.values()]; midiOut=outs.find(o=>o.id===e.target.value);
+  if(midiOut){ localStorage.setItem('vg800_port',midiOut.id); setLamp(true,midiOut.name); }
+});
+function send(offsets){
+  if(!midiOut){ toast('No MIDI output connected', true); return false; }
+  const st=0xB0|((settings.channel-1)&0x0F);
+  // settings.ccs[i] is the SOURCE CC for BEND DEPTH (i+1). DEPTH 1 = high E (string 1)
+  // … DEPTH 6 = low E (string 6), same order as our offsets array (index 0 = high E).
+  const gap=settings.gap||0;
+  offsets.forEach((s,i)=>{
+    const msg=[st, settings.ccs[i]&0x7F, toCC(s)&0x7F];
+    if(gap>0) setTimeout(()=>{ if(midiOut) midiOut.send(msg); }, i*gap);
+    else midiOut.send(msg);
+  });
+  return true;
+}
+
+function renderStrings(offsets){
+  const wrap=document.getElementById('strings'); wrap.innerHTML='';
+  for(let i=0;i<6;i++){
+    const s=offsets[i]; const {name,oct}=nameOf(STD_MIDI[i]+s);
+    const dir=s<0?'flat':s>0?'sharp':''; const sign=s>0?'+':'';
+    const pct=50+(s/12)*44;
+    const row=document.createElement('div');
+    row.className='str'+(s!==0?' shifted '+dir:''); row.dataset.g=(6-i);
+    row.innerHTML=`
+      <span class="str-lbl">STR <b>${SLBL[i]}</b></span>
+      <span class="wire"><span class="slide" style="left:${pct}%">${name}<span class="oct">${oct}</span></span></span>
+      <span class="str-off ${dir}">${s===0?'·':sign+s}</span>`;
+    wrap.appendChild(row);
+  }
+}
+
+function makeCard(t,isC){
+  const c=document.createElement('div');
+  c.className='card'+(isC?' custom':'')+(active===t.name?' active':'');
+  const dispNotes=(t.notes||notesOf(t.offsets)).split(' ');
+  const revOff=t.offsets.slice().reverse();
+  const noteCells=dispNotes.map(n=>`<span>${n}</span>`).join('');
+  const offCells=revOff.map(o=>{ const cls=o<0?'flat':o>0?'sharp':''; const txt=o===0?'0':(o>0?'+'+o:''+o); return `<span class="${cls}">${txt}</span>`; }).join('');
+  c.innerHTML=`
+    <div class="card-name">${t.name}</div>
+    <div class="card-notes">${noteCells}</div>
+    <div class="card-off">${offCells}</div>
+    ${isC?'<button class="del" data-name="'+t.name+'">DEL</button>':''}`;
+  c.addEventListener('click',e=>{ if(e.target.classList.contains('del'))return; apply(t); });
+  return c;
+}
+function renderGrid(){
+  const wrap=document.getElementById('grid'); wrap.innerHTML='';
+  FAMILIES.forEach(f=>{
+    const b=document.createElement('div'); b.className='fam';
+    const h=document.createElement('div'); h.className='fam-name'; h.textContent=f.family; b.appendChild(h);
+    const g=document.createElement('div'); g.className='grid';
+    f.tunings.forEach(t=>g.appendChild(makeCard(t,false)));
+    b.appendChild(g); wrap.appendChild(b);
+  });
+  if(customs.length){
+    const b=document.createElement('div'); b.className='fam';
+    const h=document.createElement('div'); h.className='fam-name'; h.textContent='Your Own'; b.appendChild(h);
+    const g=document.createElement('div'); g.className='grid';
+    customs.forEach(t=>g.appendChild(makeCard(t,true)));
+    b.appendChild(g); wrap.appendChild(b);
+  }
+  document.querySelectorAll('.del').forEach(x=>x.addEventListener('click',()=>{
+    customs=customs.filter(t=>t.name!==x.dataset.name); saveCustomLS(); renderGrid(); toast('Deleted "'+x.dataset.name+'"');
+  }));
+}
+function notesOf(offsets){ return offsets.map((s,i)=>nameOf(STD_MIDI[i]+s).name).reverse().join(' '); }
+function apply(t){
+  if(send(t.offsets)){
+    active=t.name;
+    const n=document.getElementById('nowName'); n.textContent=t.name; n.classList.toggle('std',t.name==='Standard');
+    renderStrings(t.offsets); renderGrid(); toast(t.name);
+  }
+}
+
+function renderEd(){
+  const wrap=document.getElementById('edStrings'); wrap.innerHTML='';
+  for(let i=0;i<6;i++){
+    const s=edOff[i]; const {name,oct}=nameOf(STD_MIDI[i]+s);
+    const vc=s<0?'flat':s>0?'sharp':''; const sign=s>0?'+':'';
+    const pct=Math.abs(s)/12*50; const left=s<0?(50-pct):50;
+    const row=document.createElement('div'); row.className='ed';
+    row.innerHTML=`
+      <span class="ed-l">STR ${SLBL[i]}</span>
+      <span class="ed-n">${name}<span style="font-family:var(--mono);font-size:9px;color:var(--bone-faint)">${oct}</span></span>
+      <div class="knob-row">
+        <button class="knob" data-s="${i}" data-d="-1" aria-label="lower string ${SLBL[i]}">−</button>
+        <div class="track"><div class="mid"></div><div class="fill" style="left:${left}%;width:${pct}%"></div></div>
+        <button class="knob" data-s="${i}" data-d="1" aria-label="raise string ${SLBL[i]}">+</button>
+      </div>
+      <span class="ed-v ${vc}">${s===0?'0':sign+s}</span>`;
+    wrap.appendChild(row);
+  }
+  document.querySelectorAll('.knob').forEach(b=>b.addEventListener('click',()=>{
+    const i=+b.dataset.s,d=+b.dataset.d; edOff[i]=Math.max(-12,Math.min(12,edOff[i]+d)); renderEd();
+  }));
+}
+document.getElementById('openEditor').addEventListener('click',()=>{ renderEd(); open('editorModal'); });
+document.getElementById('closeEditor').addEventListener('click',()=>close('editorModal'));
+document.getElementById('resetEditBtn').addEventListener('click',()=>{ edOff=[0,0,0,0,0,0]; renderEd(); });
+document.getElementById('loadCurrentBtn').addEventListener('click',()=>{
+  const t=[...BUILTIN,...customs].find(x=>x.name===active);
+  if(t){ edOff=[...t.offsets]; renderEd(); } else toast('No active tuning', true);
+});
+document.getElementById('saveCustomBtn').addEventListener('click',()=>{
+  const nm=document.getElementById('customName').value.trim();
+  if(!nm){ toast('Enter a name first', true); return; }
+  if(BUILTIN.some(t=>t.name===nm)){ toast('Name already used', true); return; }
+  const i=customs.findIndex(t=>t.name===nm);
+  const e={name:nm, offsets:[...edOff], notes:notesOf(edOff)};
+  if(i>=0) customs[i]=e; else customs.push(e);
+  saveCustomLS(); renderGrid(); document.getElementById('customName').value=''; close('editorModal'); toast('Saved "'+nm+'"');
+});
+
+const DEPTH_LBL=['DEPTH 1 · high E (1st)','DEPTH 2 · B (2nd)','DEPTH 3 · G (3rd)','DEPTH 4 · D (4th)','DEPTH 5 · A (5th)','DEPTH 6 · low E (6th)'];
+function renderSettings(){
+  document.getElementById('chanInput').value=settings.channel;
+  const r=document.getElementById('ccRows'); r.innerHTML='';
+  for(let i=0;i<6;i++){ const c=document.createElement('div'); c.className='cc-c';
+    c.innerHTML=`<label>${DEPTH_LBL[i]} — CC #</label><input type="number" class="num" min="0" max="127" data-cc="${i}" value="${settings.ccs[i]}">`; r.appendChild(c);
+  }
+}
+document.getElementById('settingsBtn').addEventListener('click',()=>{ renderSettings(); open('settingsModal'); });
+document.getElementById('closeSettings').addEventListener('click',()=>close('settingsModal'));
+document.getElementById('saveSettings').addEventListener('click',()=>{
+  const ch=Math.max(1,Math.min(16,+document.getElementById('chanInput').value||1));
+  const ccs=[]; document.querySelectorAll('#ccRows input').forEach(x=>ccs[+x.dataset.cc]=Math.max(0,Math.min(127,+x.value||0)));
+  settings={channel:ch,ccs,gap:settings.gap??20}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
+});
+
+function applyTest(v){
+  if(!send([v,v,v,v,v,v])) return;
+  active='';
+  const n=document.getElementById('nowName'); n.textContent='TEST '+(v>0?'+'+v:''+v); n.classList.remove('std');
+  renderStrings([v,v,v,v,v,v]); renderGrid();
+  toast('All strings '+(v>0?'+'+v:v));
+}
+function renderTestBtns(){
+  const wrap=document.getElementById('testBtns'); wrap.innerHTML='';
+  for(let v=-12; v<=12; v++){
+    const b=document.createElement('button'); b.className='tbtn '+(v<0?'flat':v>0?'sharp':'zero');
+    b.textContent=v===0?'0':(v>0?'+'+v:''+v);
+    b.addEventListener('click',()=>applyTest(v));
+    wrap.appendChild(b);
+  }
+  const g=document.getElementById('gapInput'); g.value=settings.gap??20;
+  g.addEventListener('change',e=>{ settings.gap=Math.max(0,Math.min(500,+e.target.value||0)); saveSettingsLS(); });
+}
+
+function open(id){ document.getElementById(id).classList.add('open'); }
+function close(id){ document.getElementById(id).classList.remove('open'); }
+['editorModal','settingsModal'].forEach(id=>document.getElementById(id).addEventListener('click',e=>{ if(e.target.id===id) close(id); }));
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ close('editorModal'); close('settingsModal'); } });
+
+let tt;
+function toast(m,err){ const t=document.getElementById('toast'); t.textContent=m; t.classList.toggle('err',!!err); t.classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('show'),2000); }
+
+renderStrings([0,0,0,0,0,0]);
+renderGrid();
+renderTestBtns();
+initMIDI();
+</script>
+</body>
+</html>
