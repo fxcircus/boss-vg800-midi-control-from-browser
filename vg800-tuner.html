@@ -282,13 +282,27 @@
   .panmode { font-family: var(--mono); font-size: 11px; font-weight: 700; padding: 10px 8px; border-radius: 8px; cursor: pointer; border: 1px solid var(--edge); background: var(--wood); color: var(--bone-dim); transition: all .12s; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 5px rgba(0,0,0,0.28); }
   .panmode:hover { border-color: var(--brass); color: var(--bone); background: var(--felt); transform: translateY(-1px); }
   .panmode.on { border-color: var(--brass); color: var(--brass); background: var(--felt); box-shadow: inset 0 0 0 1px var(--brass-glow); }
-  /* Combined compact view — pan strip linked by fixed per-string color to the pitch neck below */
-  .cv-pan { margin: 4px 6px 11px; }
+  /* Combined compact view — pitch neck (renderStrings) sits above a pan strip, linked by fixed per-string color */
+  .cv-pan { margin: 12px 6px 2px; }
   .cv-scale { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 8px; color: var(--bone-faint); letter-spacing: 1px; padding: 0 3px; margin-bottom: 4px; }
   .cv-panfield { position: relative; height: 48px; background: var(--ink); border: 1px solid var(--edge-soft); border-radius: 9px; }
   .cv-panmid { position: absolute; left: 50%; top: 5px; bottom: 5px; width: 1px; background: var(--edge); }
   .cv-dot { position: absolute; width: 17px; height: 17px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--cond); font-weight: 700; font-size: 10px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.6); transform: translateX(-50%); box-shadow: 0 1px 4px rgba(0,0,0,0.55); border: 1.5px solid rgba(0,0,0,0.3); transition: left 0.35s cubic-bezier(.34,1.35,.5,1); }
   .str-sw { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; vertical-align: middle; box-shadow: 0 0 4px rgba(0,0,0,0.4); }
+  /* Smaller-screen (inline) mode: the readout is parked in the main column, so scale it ~20% bigger for readability */
+  @media (max-width: 1279px) {
+    #sec-current .bench-head .name { font-size: 26px; }
+    #sec-current .bench-head .lbl { font-size: 12px; }
+    #sec-current .str { height: 48px; }
+    #sec-current .str-lbl { font-size: 12px; }
+    #sec-current .str-sw { width: 9px; height: 9px; margin-right: 6px; }
+    #sec-current .str .slide { min-width: 41px; height: 29px; padding: 0 9px; font-size: 18px; border-radius: 6px; }
+    #sec-current .str .slide .oct { font-size: 10px; }
+    #sec-current .str-off { font-size: 14px; }
+    #sec-current .cv-scale { font-size: 10px; }
+    #sec-current .cv-panfield { height: 58px; }
+    #sec-current .cv-dot { width: 20px; height: 20px; font-size: 12px; }
+  }
   .cllbl { font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--bone-dim); letter-spacing: 0.5px; }
   .clbtn.on .cllbl { color: var(--brass); }
 
@@ -468,11 +482,11 @@
       <span class="name std" id="nowName">Standard</span>
       <span class="lbl">Current Tuning</span>
     </div>
+    <div id="strings"></div>
     <div class="cv-pan">
       <div class="cv-scale"><span>L</span><span>C</span><span>R</span></div>
       <div class="cv-panfield"><span class="cv-panmid"></span><div id="cvDots"></div></div>
     </div>
-    <div id="strings"></div>
   </div>
 </div>
 
@@ -1067,9 +1081,7 @@ function renderPan(){
   const btns=PANMODES.map(m=>`<button class="panmode${activePan===m.id?' on':''}" data-pan="${m.id}">${m.name}</button>`).join('');
   wrap.innerHTML=`<div class="panmodes">${btns}</div>`;
   wrap.querySelectorAll('.panmode').forEach(b=>{
-    b.addEventListener('click',()=>applyPan(b.dataset.pan));
-    b.addEventListener('mouseenter',()=>{ const m=PANMODES.find(x=>x.id===b.dataset.pan); if(m) updateOverview(m.pos); });   // preview in the sidebar
-    b.addEventListener('mouseleave',()=> updateOverview());
+    b.addEventListener('click',()=>applyPan(b.dataset.pan));   // pan animates only on click (no hover preview)
   });
 }
 /* ===== Combined view — pan dots (top strip) linked by fixed per-string color to the pitch neck (renderStrings, below).
