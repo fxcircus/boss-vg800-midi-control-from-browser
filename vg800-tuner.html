@@ -220,7 +220,7 @@
   .menu-tog { padding: 2px 4px 4px; }
   .menu-tog-lbl { display: block; font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--bone-faint); text-align: center; margin-bottom: 6px; }
   /* Compact mode — hide the note names + semitone offsets on tuning cards to save vertical space */
-  html.compact .card-notes, html.compact .card-off { display: none; }
+  html.compact .card .card-notes, html.compact .card .card-off, html.compact .card .card-capo { display: none; }   /* extra specificity beats .card.inst/.card.steel .card-notes */
   html.compact .card-name { margin-bottom: 0; }
   html.compact .card { padding-top: 12px; padding-bottom: 12px; }
   html.compact .grid { gap: 8px; }
@@ -533,8 +533,17 @@
   .settgrp-body > *:first-child { margin-top: 0; }
   /* Drawer animation — each group glides open/closed (Chromium ::details-content + interpolate-size) */
   html { interpolate-size: allow-keywords; }
-  .settgrp::details-content { height: 0; overflow: clip; opacity: 0; transition: height .3s cubic-bezier(.4,0,.2,1), opacity .24s ease, content-visibility .3s allow-discrete; }
-  .settgrp[open]::details-content { height: auto; opacity: 1; }
+  .settgrp::details-content, .kdraw::details-content { height: 0; overflow: clip; opacity: 0; transition: height .3s cubic-bezier(.4,0,.2,1), opacity .24s ease, content-visibility .3s allow-discrete; }
+  .settgrp[open]::details-content, .kdraw[open]::details-content { height: auto; opacity: 1; }
+  /* Collapsible "Key mapping" drawer inside the Pedals panel — keeps the centered cut-line header + a chevron */
+  .kdraw { margin: 2px 0 30px; }
+  .kdraw-sum { list-style: none; cursor: pointer; margin: 0; padding: 4px 0; user-select: none; transition: color .12s; }
+  .kdraw-sum::-webkit-details-marker { display: none; }
+  .kdraw-sum span { display: inline-flex; align-items: center; }
+  .kdraw-sum:hover { color: var(--brass); }
+  .kchev { display: inline-block; width: 6px; height: 6px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); margin: -2px 0 0 9px; transition: transform .2s; opacity: 0.85; }
+  .kdraw[open] .kchev { transform: rotate(-135deg); margin-top: 2px; }
+  .kdraw-body { padding-top: 12px; }
 
   .toast {
     position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(120px);
@@ -604,7 +613,7 @@
   </div>
 
   <fieldset class="panel" id="sec-ethnic">
-    <legend class="panel-hd">Ethnic Instruments</legend>
+    <legend class="panel-hd">Ethnic</legend>
     <div class="panel-sub">Others stay standard</div>
     <div id="ethnicWrap"></div>
   </fieldset>
@@ -1046,12 +1055,16 @@ function pedalBtnHTML(ctrl, label, sub, st){
     ${ico?`<span class="pedal-badge">${ico}</span>`:''}
   </button>`;
 }
+let keysOpen = !document.documentElement.classList.contains('compact');   // Key-mapping drawer: open by default, closed in compact mode
 function keymapHTML(){
   const chips=copedent.controls.map(c=>{ const k=(keyFor(c.id)||'').toUpperCase(), L=bindingCtrl===c.id;
     return `<button class="kb-chip${L?' listening':''}" data-bind="${c.id}"><span class="kb-cname">${c.name}</span><span class="kb-key">${L?'press…':(k||'—')}</span></button>`; }).join('');
-  return `<div class="fam-name">Keys</div>
+  return `<details class="kdraw"${keysOpen?' open':''}>
+    <summary class="fam-name kdraw-sum"><span>Key Mapping<i class="kchev"></i></span></summary>
+    <div class="kdraw-body">
     <label class="latch-tog"><input type="checkbox" id="latchChk"${settings.latch?' checked':''}><span>Latch — tap on/off instead of holding</span></label>
-    <div class="kb-chips">${chips}<button class="kb-chip kb-reset" data-reset="1"><span class="kb-cname">Reset</span><span class="kb-key">↺</span></button></div>`;
+    <div class="kb-chips">${chips}<button class="kb-chip kb-reset" data-reset="1"><span class="kb-cname">Reset</span><span class="kb-key">↺</span></button></div>
+    </div></details>`;
 }
 function renderPedals(){
   const wrap=document.getElementById('pedalWrap'); if(!wrap) return;
@@ -1070,6 +1083,7 @@ function renderPedals(){
   if(combo) html+=`<div class="fam-name">Combos</div><div class="pedals">${combo}</div>`;
   html+=keymapHTML();
   wrap.innerHTML=html;
+  const kd=wrap.querySelector('.kdraw'); if(kd) kd.addEventListener('toggle',()=>{ keysOpen=kd.open; });
   wrap.querySelectorAll('.pedal').forEach(b=>{
     if(b.classList.contains('disabled')) return;
     const ctrl=b.dataset.ctrl;
@@ -1575,7 +1589,7 @@ document.addEventListener('click',e=>{ if(themeMenu.classList.contains('open') &
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') setThemeMenu(false); });
 // Compact mode — density toggle in the theme menu; just flips an <html> class (CSS hides card notes/offsets), no re-render
 function markCompact(){ const on=document.documentElement.classList.contains('compact'); document.querySelectorAll('#compactSeg button').forEach(b=> b.classList.toggle('on',(b.dataset.compact==='1')===on)); }
-document.querySelectorAll('#compactSeg button').forEach(b=> b.addEventListener('click',()=>{ const on=b.dataset.compact==='1'; document.documentElement.classList.toggle('compact',on); try{localStorage.setItem('vg800_compact',on?'1':'0');}catch(e){} markCompact(); }));
+document.querySelectorAll('#compactSeg button').forEach(b=> b.addEventListener('click',()=>{ const on=b.dataset.compact==='1'; document.documentElement.classList.toggle('compact',on); try{localStorage.setItem('vg800_compact',on?'1':'0');}catch(e){} keysOpen=!on; document.querySelectorAll('.kdraw').forEach(d=>{ if(d.open!==keysOpen) d.open=keysOpen; }); markCompact(); }));
 markCompact();
 // Frozen-header treatment kicks in once the top scrolls away
 (function(){ const hdr=document.querySelector('header'), sen=document.getElementById('hdrSentinel');
