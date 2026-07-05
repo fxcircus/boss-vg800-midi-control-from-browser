@@ -287,8 +287,8 @@
   /* All-strings: three rows (−12…−1 / 0 / +1…+12) */
   #testBtns { margin-bottom: 30px; }
   .trow { display: grid; grid-template-columns: repeat(12, 1fr); gap: 6px; margin-bottom: 6px; }
-  .trow.zero { grid-template-columns: 1fr; justify-items: center; margin: 8px 0; }
-  .trow.zero .tbtn { min-width: 120px; padding-left: 18px; padding-right: 18px; }
+  .trow.zero { grid-template-columns: 1fr; margin: 8px 0; }
+  .trow.zero .tbtn { padding-left: 18px; padding-right: 18px; }
 
   /* Artist song tooltip */
   .card[data-ref]:hover::after {
@@ -336,7 +336,7 @@
   .sec, .bench, .fam { scroll-margin-top: 24px; }
 
   /* Ethnic instruments + string-cluster picker */
-  .card.inst .card-notes { display: flex; justify-content: center; gap: 10px; }
+  .card.inst .card-notes { display: flex; justify-content: flex-start; gap: 8px; padding-left: 2px; }
   .cl-head { font-family: var(--mono); font-size: 10px; letter-spacing: 0.4px; color: var(--bone-faint); margin: 14px 2px 11px; line-height: 1.5; }
   .cl-head b { color: var(--brass); }
   .clrow { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 30px; }
@@ -670,7 +670,7 @@
         <div class="cc-grid" id="ccRows"></div>
         <div class="subhd">Panning · one CC per string</div>
         <div class="cc-grid" id="panCcRows"></div>
-        <p class="note-hint">Each value is the CC number a string listens on — it must match the <em>SOURCE</em> you assign on the VG-800 (order runs high&nbsp;E → low&nbsp;E). Point <em>STR&nbsp;BEND · BEND&nbsp;DEPTH 1–6</em> at the pitch CCs (MIN −12 / MAX +12, MODE = MOMENT) and <em>STRING(A) · PAN 1–6</em> at the panning CCs (MIN L50 / MAX R50). Prefer CC# <em>1–31</em>: the VG-800 exposes only 0–31 and 64+, and may not track 64–95 continuously.</p>
+        <p class="note-hint">Each value is the CC number a string listens on — it must match the <em>SOURCE</em> you assign on the VG-800 (order runs high&nbsp;E → low&nbsp;E).<br><br>Mapping: point <em>STR&nbsp;BEND · BEND&nbsp;DEPTH 1–6</em> at the pitch CCs (MIN −12 / MAX +12, MODE = MOMENT), and <em>STRING(A) · PAN 1–6</em> at the panning CCs (MIN L50 / MAX R50).<br><br>Prefer CC# <em>1–31</em>: the VG-800 exposes only 0–31 and 64+, and may not track 64–95 continuously.</p>
       </div>
     </details>
 
