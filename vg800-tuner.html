@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="boss-blue" data-scroll="fat">
+<html lang="en" data-theme="cs1" data-scroll="fat">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script>try{var t=localStorage.getItem('vg800_theme');if(t==='workbench'){t='dark';localStorage.setItem('vg800_theme',t);}if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<script>try{var t=localStorage.getItem('vg800_theme');if(t==='workbench')t='dark';if(t==='boss-blue')t='cs1';document.documentElement.dataset.theme=t||'cs1';}catch(e){}</script>
 <title>VG800 MIDI Control</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNyIgZmlsbD0iIzBmMjEzOCIvPjxyZWN0IHg9IjEiIHk9IjEiIHdpZHRoPSIzMCIgaGVpZ2h0PSIzMCIgcng9IjYuNSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYzk4ZjJiIiBzdHJva2Utb3BhY2l0eT0iLjU1Ii8+PGcgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+PGxpbmUgeDE9IjgiIHkxPSI3IiB4Mj0iMjQiIHkyPSI3IiBzdHJva2U9IiNlZjUzNTAiLz48bGluZSB4MT0iOCIgeTE9IjEwLjgiIHgyPSIyNCIgeTI9IjEwLjgiIHN0cm9rZT0iI2YyYTMzZCIvPjxsaW5lIHgxPSI4IiB5MT0iMTQuNiIgeDI9IjI0IiB5Mj0iMTQuNiIgc3Ryb2tlPSIjYzZkNDNmIi8+PGxpbmUgeDE9IjgiIHkxPSIxOC40IiB4Mj0iMjQiIHkyPSIxOC40IiBzdHJva2U9IiM0Y2MxNzgiLz48bGluZSB4MT0iOCIgeTE9IjIyLjIiIHgyPSIyNCIgeTI9IjIyLjIiIHN0cm9rZT0iIzRmOWRlYSIvPjxsaW5lIHgxPSI4IiB5MT0iMjYiIHgyPSIyNCIgeTI9IjI2IiBzdHJva2U9IiNhNTYzZDQiLz48L2c+PC9zdmc+">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,31 +16,27 @@
     --sans: 'Barlow', system-ui, sans-serif;
     --mono: 'Space Mono', monospace;
 
-    /* ===== BOSS Blue (default theme) ===== */
-    --ink: #0a1017;
-    --ink-2: #14243c;
-    --wood: #172740;
-    --felt: #203759;
-    --edge: #2f4a70;
-    --edge-soft: rgba(60,92,138,0.5);
-    --bone: #eaf1f9;
-    --bone-dim: #a6bad2;
-    --bone-faint: #6d84a1;
-    --brass: #f2b34d;
-    --brass-deep: #cf9433;
-    --brass-glow: rgba(242,179,77,0.42);
-    --chrome: #dde6f1;
-    --chrome-dim: #7f93ab;
-    --steel-blue: #5fb0f2;
-    --amber: #f5a63f;
-    --ok: #4fc98a;
-    --err: #e8674f;
-    --pedal: #3f78bd;   /* stompbox-icon body colour for this theme */
-    --bg:
-      radial-gradient(1200px 520px at 50% -10%, rgba(122,178,236,0.20), transparent 60%),
-      radial-gradient(900px 500px at 88% 0%, rgba(96,140,196,0.10), transparent 55%),
-      repeating-linear-gradient(90deg, rgba(158,196,236,0.018) 0 1px, transparent 1px 4px),
-      linear-gradient(180deg, #1a2e4b 0%, #0f1e33 46%, #0a1017 100%);
+    /* ===== CS1 (default theme) — bold compressor-blue body, white text ===== */
+    --ink: #0c3564;
+    --ink-2: #0f3d72;
+    --wood: #155493;
+    --felt: #1f66ad;
+    --edge: #0e3f78;
+    --edge-soft: rgba(24,74,134,0.6);
+    --bone: #f0f6fd;
+    --bone-dim: #c6dcf3;
+    --bone-faint: #a3c1e2;
+    --brass: #f3c169;
+    --brass-deep: #d8a648;
+    --brass-glow: rgba(243,193,105,0.32);
+    --chrome: #e8eefb;
+    --chrome-dim: #9fb4d2;
+    --steel-blue: #9fd8ff;
+    --amber: #ffd27a;
+    --ok: #7ce0a4;
+    --err: #ff9e8a;
+    --pedal: #1c6cc0;   /* stompbox-icon body colour for this theme */
+    --bg: linear-gradient(180deg, #1c6cc0 0%, #14528f 100%);
   }
 
   /* ===== Dark (low-glare, for dark rooms) ===== */
@@ -85,10 +81,11 @@
     --bg: radial-gradient(1000px 400px at 50% -5%, rgba(47,111,176,0.06), transparent 60%),
       linear-gradient(180deg, #f2ead7 0%, #e9e0cb 60%, #e2d8c1 100%);
   }
-  /* Flat matte finish for the pedal-panel themes (RC500 / DS1) — no drop shadows */
+  /* Flat matte finish for the bold pedal-panel themes (CS1 / RC500 / DS1) — no drop shadows */
+  html[data-theme="cs1"]   :is(.card,.pedal,.panmode,.clbtn,.kb-chip,.bench,.pan-auto,.tbtn,.add,.gear):not(.active):not(.on),
   html[data-theme="rc500"] :is(.card,.pedal,.panmode,.clbtn,.kb-chip,.bench,.pan-auto,.tbtn,.add,.gear):not(.active):not(.on),
   html[data-theme="ds1"]   :is(.card,.pedal,.panmode,.clbtn,.kb-chip,.bench,.pan-auto,.tbtn,.add,.gear):not(.active):not(.on) { box-shadow: none; }
-  html[data-theme="rc500"] .bench, html[data-theme="ds1"] .bench { background: var(--wood); }
+  html[data-theme="cs1"] .bench, html[data-theme="rc500"] .bench, html[data-theme="ds1"] .bench { background: var(--wood); }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
   body {
@@ -527,7 +524,7 @@
 <body>
 <nav id="sideNav" aria-label="Jump to section"><div id="navLinks"></div></nav>
 <div class="wrap">
-  <svg class="svg-defs" aria-hidden="true"><symbol id="pedalIco" viewBox="0 0 24 24"><rect x="4.5" y="2.5" width="15" height="19" rx="2.6" fill="currentColor"/><circle cx="9" cy="6.3" r="1.4" fill="#161616"/><circle cx="15" cy="6.3" r="1.4" fill="#161616"/><rect x="7" y="11" width="10" height="9" rx="1.8" fill="#161616"/></symbol></svg>
+  <svg class="svg-defs" aria-hidden="true"><symbol id="pedalIco" viewBox="0 0 24 24"><rect x="4.5" y="2.5" width="15" height="19" rx="2.6" fill="currentColor" stroke="#141414" stroke-width="1.4"/><circle cx="9" cy="6.3" r="1.4" fill="#141414"/><circle cx="15" cy="6.3" r="1.4" fill="#141414"/><rect x="7" y="11" width="10" height="9" rx="1.8" fill="#141414"/></symbol></svg>
   <header>
     <div class="mast">
       <h1>VG800 <em>MIDI Control</em></h1>
@@ -536,7 +533,7 @@
       <div class="theme-wrap">
         <button class="themebtn" id="themeBtn" title="Theme" aria-label="Theme" aria-haspopup="true" aria-expanded="false"><svg class="pedal-ico"><use href="#pedalIco"/></svg></button>
         <div class="theme-menu" id="themeMenu" role="menu">
-          <button class="theme-item" data-theme-set="boss-blue" role="menuitem"><svg class="pedal-ico" style="color:#3f78bd"><use href="#pedalIco"/></svg><span>VG800</span></button>
+          <button class="theme-item" data-theme-set="cs1" role="menuitem"><svg class="pedal-ico" style="color:#1c6cc0"><use href="#pedalIco"/></svg><span>CS1</span></button>
           <button class="theme-item" data-theme-set="rc500" role="menuitem"><svg class="pedal-ico" style="color:#d0232c"><use href="#pedalIco"/></svg><span>RC500</span></button>
           <button class="theme-item" data-theme-set="dd500" role="menuitem"><svg class="pedal-ico" style="color:#e7dec8"><use href="#pedalIco"/></svg><span>DD500</span></button>
           <button class="theme-item" data-theme-set="ds1" role="menuitem"><svg class="pedal-ico" style="color:#f28620"><use href="#pedalIco"/></svg><span>DS1</span></button>
@@ -1506,7 +1503,7 @@ function refreshAb(id){ const el=document.getElementById(id); if(!el) return; co
 function updateAbLock(){ const on=document.getElementById('autoBendChk').checked, box=document.getElementById('abControls');
   if(box){ box.classList.toggle('locked', !on); box.querySelectorAll('input,select').forEach(el=> el.disabled=!on); } }
 document.getElementById('autoBendChk').addEventListener('change', updateAbLock);
-function markThemeBtns(){ const t=document.documentElement.dataset.theme||'boss-blue'; document.querySelectorAll('[data-theme-set]').forEach(b=>b.classList.toggle('on', b.dataset.themeSet===t)); }
+function markThemeBtns(){ const t=document.documentElement.dataset.theme||'cs1'; document.querySelectorAll('[data-theme-set]').forEach(b=>b.classList.toggle('on', b.dataset.themeSet===t)); }
 function applyTheme(t){ document.documentElement.dataset.theme=t; try{ localStorage.setItem('vg800_theme',t); }catch(e){} markThemeBtns(); }
 const themeBtn=document.getElementById('themeBtn'), themeMenu=document.getElementById('themeMenu');
 function setThemeMenu(open){ themeMenu.classList.toggle('open',open); themeBtn.classList.toggle('open',open); themeBtn.setAttribute('aria-expanded',open?'true':'false'); }
