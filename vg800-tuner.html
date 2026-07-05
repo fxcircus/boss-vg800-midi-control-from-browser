@@ -310,6 +310,7 @@
   .apseg { display: flex; gap: 6px; margin-bottom: 4px; }
   .apseg .panmode { flex: 1; }
   .apdivs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 4px; }
+  .apduo { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   #apFree, #apSync { margin-top: 10px; }
   /* Combined compact view — pitch neck (renderStrings) sits above a pan strip, linked by fixed per-string color */
   .cv-pan { margin: 12px 6px 2px; }
@@ -635,7 +636,7 @@ function nameOf(m){ const pc=((m%12)+12)%12; return {name:NOTE[pc], oct:Math.flo
 function toCC(s){ const c=Math.max(-12,Math.min(12,s)); return Math.round((c+12)/24*127); }
 const DEFAULT_KEYS={A:'a',B:'s',LKL:'d',LKR:'f',AB:'g',ABR:'h'};  // ergonomic left-hand cluster
 const AB_DEFAULTS={autoBend:false, bendCC:69, levelCC:70, bendDepth:25, levelDip:15, bendMs:120};  // auto-bend scoop
-const AP_DEFAULTS={mode:'free', rate:15, bpm:120, div:'1/4', width:0.5, shape:'sine', spread:1, char:'none'};  // auto-pan engine (gentle defaults)
+const AP_DEFAULTS={mode:'free', rate:15, bpm:120, div:'1/4', width:0.5, shape:'sine', spread:1, char:'none', lTopSpread:1, lTopSpeed:1.12, lBotSpread:0.5, lBotSpeed:0.86};  // auto-pan engine (gentle defaults; l* = Leslie per-rotor spread/speed)
 
 const FAMILIES = [
   { family:'Standard', tunings:[ {name:'Standard', notes:'E A D G B E', offsets:[0,0,0,0,0,0]} ]},
@@ -1231,6 +1232,10 @@ function autoPanCompute(dt){
     const step=Math.floor(apPhase/(2*Math.PI*2)); if(step!==apSwapStep){ apSwapStep=step; apSwap=-apSwap; }            // swap the two groups every 2 cycles
     const v=apShapeVal(apPhase, a.shape==='sh'?'triangle':a.shape);
     for(let i=0;i<6;i++) pos[i]=((i%2===0?1:-1)*apSwap)*v*width;
+  } else if(char==='leslie'){
+    const horn=apPhase*a.lTopSpeed, drum=-apPhase*a.lBotSpeed;                                         // two counter-rotating rotors: treble horn (top 3) fwd, bass drum (bottom 3) reverse
+    for(let i=0;i<6;i++){ const top=i<3, gi=i-(top?0:3), gSpread=(top?a.lTopSpread:a.lBotSpread)*spread;  // each side its own fan width + speed
+      pos[i]=apShapeVal((top?horn:drum) + gSpread*(gi/3)*2*Math.PI, a.shape)*width; }
   } else if(a.shape==='sh'){
     for(let i=0;i<6;i++){ const ph=apPhase+spread*(i/6)*2*Math.PI, step=Math.floor(ph/(2*Math.PI)); if(step!==apSHstep[i]){ apSHstep[i]=step; apSH[i]=Math.random()*2-1; } pos[i]=apSH[i]*width; }
   } else {
@@ -1272,6 +1277,17 @@ function renderPan(){
         <input type="range" class="slider" id="panSlider" min="0" max="5000" step="50" value="${pm}"></div>`;
   const charBtns=AP_CHARLIST.map(([id,nm])=>`<button class="panmode${a.char===id?' on':''}" data-char="${id}">${nm}</button>`).join('');
   const divBtns=AP_DIVS.map(([id])=>`<button class="panmode${a.div===id?' on':''}" data-div="${id}">${id}</button>`).join('');
+  const leslieBlock = a.char==='leslie' ? `
+      <div class="apcap">Leslie horn · top 3</div>
+      <div class="apduo">
+        <div><div class="pg-lbl"><span>Spread</span><b id="apLTSv">${Math.round(a.lTopSpread*100)}%</b></div><input type="range" class="slider" id="apLTS" min="0" max="100" value="${Math.round(a.lTopSpread*100)}"></div>
+        <div><div class="pg-lbl"><span>Speed</span><b id="apLTZv">${a.lTopSpeed.toFixed(2)}×</b></div><input type="range" class="slider" id="apLTZ" min="25" max="200" value="${Math.round(a.lTopSpeed*100)}"></div>
+      </div>
+      <div class="apcap">Leslie bass drum · bottom 3</div>
+      <div class="apduo">
+        <div><div class="pg-lbl"><span>Spread</span><b id="apLBSv">${Math.round(a.lBotSpread*100)}%</b></div><input type="range" class="slider" id="apLBS" min="0" max="100" value="${Math.round(a.lBotSpread*100)}"></div>
+        <div><div class="pg-lbl"><span>Speed</span><b id="apLBZv">${a.lBotSpeed.toFixed(2)}×</b></div><input type="range" class="slider" id="apLBZ" min="25" max="200" value="${Math.round(a.lBotSpeed*100)}"></div>
+      </div>` : '';
   const autoBody=`<div id="apBody"${autoPanOn?'':' hidden'}>
       <div class="apcap">Character</div>
       <div class="panmodes">${charBtns}</div>
@@ -1290,6 +1306,7 @@ function renderPan(){
       <input type="range" class="slider" id="apWidth" min="0" max="100" value="${Math.round(a.width*100)}">
       <div class="apcap">Shape</div>
       <div class="apseg"><button class="panmode${a.shape==='sine'?' on':''}" data-shape="sine">Sine</button><button class="panmode${a.shape==='triangle'?' on':''}" data-shape="triangle">Triangle</button><button class="panmode${a.shape==='sh'?' on':''}" data-shape="sh">S&amp;H</button></div>
+      ${leslieBlock}
     </div>`;
   wrap.innerHTML=`<div class="panmodes">${btns}</div>
     ${sliderBlock}
@@ -1312,6 +1329,10 @@ function renderPan(){
   const w=document.getElementById('apWidth'), wv=document.getElementById('apWidthVal');
   if(w) w.addEventListener('input',()=>{ settings.ap.width=+w.value/100; if(wv) wv.textContent=Math.round(settings.ap.width*100)+'%'; saveSettingsLS(); });
   wrap.querySelectorAll('.panmode[data-shape]').forEach(b=> b.addEventListener('click',()=>{ settings.ap.shape=b.dataset.shape; saveSettingsLS(); renderPan(); }));
+  const lts=document.getElementById('apLTS'); if(lts) lts.addEventListener('input',()=>{ settings.ap.lTopSpread=+lts.value/100; const v=document.getElementById('apLTSv'); if(v) v.textContent=Math.round(settings.ap.lTopSpread*100)+'%'; saveSettingsLS(); });
+  const ltz=document.getElementById('apLTZ'); if(ltz) ltz.addEventListener('input',()=>{ settings.ap.lTopSpeed=+ltz.value/100; const v=document.getElementById('apLTZv'); if(v) v.textContent=settings.ap.lTopSpeed.toFixed(2)+'×'; saveSettingsLS(); });
+  const lbs=document.getElementById('apLBS'); if(lbs) lbs.addEventListener('input',()=>{ settings.ap.lBotSpread=+lbs.value/100; const v=document.getElementById('apLBSv'); if(v) v.textContent=Math.round(settings.ap.lBotSpread*100)+'%'; saveSettingsLS(); });
+  const lbz=document.getElementById('apLBZ'); if(lbz) lbz.addEventListener('input',()=>{ settings.ap.lBotSpeed=+lbz.value/100; const v=document.getElementById('apLBZv'); if(v) v.textContent=settings.ap.lBotSpeed.toFixed(2)+'×'; saveSettingsLS(); });
 }
 /* ===== Combined view — pan dots (top strip) linked by fixed per-string color to the pitch neck (renderStrings, below).
    Lives in #sec-current, which placeBench() parks in the sidebar on wide screens. ===== */
