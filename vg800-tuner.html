@@ -648,7 +648,7 @@ function nameOf(m){ const pc=((m%12)+12)%12; return {name:NOTE[pc], oct:Math.flo
 function toCC(s){ const c=Math.max(-12,Math.min(12,s)); return Math.round((c+12)/24*127); }
 const DEFAULT_KEYS={A:'a',B:'s',LKL:'d',LKR:'f',AB:'g',ABR:'h'};  // ergonomic left-hand cluster
 const AB_DEFAULTS={autoBend:true, bendCC:69, levelCC:70, bendDepth:25, levelDip:15, bendMs:120};  // auto-bend scoop (on by default)
-const AP_DEFAULTS={mode:'free', rate:15, bpm:120, div:'1/2 bar', width:0.5, shape:'sine', spread:1, char:'rotate', lTopSpread:1, lTopSpeed:1.12, lBotSpread:0.5, lBotSpeed:0.86};  // auto-pan engine (gentle defaults; l* = Leslie per-rotor spread/speed)
+const AP_DEFAULTS={mode:'free', rate:15, bpm:120, div:'1/2 bar', width:0.65, shape:'sine', spread:1, char:'rotate', lTopSpread:1, lTopSpeed:1.12, lBotSpread:0.5, lBotSpeed:0.86};  // auto-pan engine (gentle defaults; l* = Leslie per-rotor spread/speed)
 
 const FAMILIES = [
   { family:'Standard', tunings:[ {name:'Standard', notes:'E A D G B E', offsets:[0,0,0,0,0,0]} ]},
@@ -1197,7 +1197,7 @@ let panTimer=null, panCur=[0,0,0,0,0,0];   // live sounded pan per string, so gl
 const AUTOPAN_MS = 40;                                        // MIDI refresh cap (~25 updates/sec) — one place to adjust throughput
 const AP_DIVS=[['1 bar',4],['1/2 bar',2],['1/4',1],['1 bar T',8/3],['1/2 bar T',4/3],['1/4 T',2/3]];  // straights (row 1) + triplets (row 2); beats per LFO cycle (1/4 = fastest)
 const AP_DIVMAP=Object.fromEntries(AP_DIVS);
-const AP_CHARS={ rotate:{shape:'sine',spread:1,width:0.85,mode:'free',rate:45}, leslie:{shape:'sine',spread:1,width:0.7,mode:'free',rate:62}, breathe:{shape:'sine',spread:1,width:1,mode:'free',rate:30}, pingpong:{shape:'triangle',spread:0,width:0.9,mode:'free',rate:38}, drift:{shape:'sine',spread:0.6,width:0.55,mode:'free',rate:12} };
+const AP_CHARS={ rotate:{shape:'sine',spread:1,width:1,mode:'free',rate:45}, leslie:{shape:'sine',spread:1,width:0.65,mode:'free',rate:62}, breathe:{shape:'sine',spread:1,width:1,mode:'free',rate:30}, pingpong:{shape:'triangle',spread:0,width:1,mode:'free',rate:38}, drift:{shape:'sine',spread:0.6,width:0.65,mode:'free',rate:12} };
 let autoPanOn=false, autoPanTimer=null, autoPanT=0, autoPanLast=[-1,-1,-1,-1,-1,-1], autoPanStart=[0,0,0,0,0,0], autoPanRampMs=0;
 let apPhase=0, apBreathe=0, apSwap=1, apSwapStep=0, apSH=[0,0,0,0,0,0], apSHstep=[-1,-1,-1,-1,-1,-1], apDrift=[0,0,0,0,0,0], apDriftTgt=[0,0,0,0,0,0], apDriftT=[0,0,0,0,0,0];
 function apCyclesPerSec(){ const a=settings.ap; if(a.mode==='sync'){ const beats=AP_DIVMAP[a.div]||1; return 1/((60/Math.max(60,Math.min(170,a.bpm)))*beats*2); } const v=Math.max(1,Math.min(100,a.rate)); return 0.05+(v-1)/99*(1-0.05); }  // free: 0.05–1 Hz; sync: 2 beats per division (slowed 2×)
@@ -1319,6 +1319,7 @@ function renderPan(){
   const shapeBtns = AP_SHAPES.map(s=>`<button class="${a.shape===s.id?'on':''}" data-shape="${s.id}" title="${s.name}">${s.ico||s.label}</button>`).join('');
   const hasSpread = a.char==='rotate' || a.char==='leslie';   // others are always full-spread
   const hasShape  = a.char==='rotate' || a.char==='breathe';  // others are always sine
+  const wSnap = [0.25,0.65,1].reduce((b,v)=> Math.abs(v-a.width)<Math.abs(b-a.width)?v:b, 0.25);   // nearest Width toggle option
   const autoBody=`<div id="apBody">
       <p class="apsub">Each string sweeps the stereo field</p>
       <div class="apcap" style="margin-top:10px">Character</div>
@@ -1326,8 +1327,8 @@ function renderPan(){
       <p class="apdesc ap-rv">${AP_CHARDESC[a.char]||''}</p>
       ${hasSpread?`<div class="apcap">Phase spread</div>
       <div class="seg" style="margin-bottom:12px"><button class="${a.spread<0.5?'on':''}" data-spread="0">Block</button><button class="${a.spread>=0.5?'on':''}" data-spread="1">Spread</button></div>`:''}
-      <div class="pg-lbl"><span>Width</span><b id="apWidthVal">${Math.round(a.width*100)}%</b></div>
-      <input type="range" class="slider" id="apWidth" min="0" max="100" value="${Math.round(a.width*100)}">
+      <div class="apcap">Width</div>
+      <div class="seg" style="margin-bottom:2px"><button class="${wSnap===0.25?'on':''}" data-width="0.25">Narrow</button><button class="${wSnap===0.65?'on':''}" data-width="0.65">Wide</button><button class="${wSnap===1?'on':''}" data-width="1">Full</button></div>
       ${hasShape?`<div class="apcap">Shape</div>
       <div class="seg">${shapeBtns}</div>`:''}
       ${leslieBlock?`<div class="ap-rv">${leslieBlock}</div>`:''}
@@ -1365,8 +1366,7 @@ function renderPan(){
   const bpm=document.getElementById('apBpm'), bpmv=document.getElementById('apBpmVal');
   if(bpm) bpm.addEventListener('input',()=>{ settings.ap.bpm=+bpm.value; if(bpmv) bpmv.textContent=settings.ap.bpm+' BPM'; saveSettingsLS(); });
   wrap.querySelectorAll('[data-div]').forEach(b=> b.addEventListener('click',()=>{ settings.ap.div=b.dataset.div; saveSettingsLS(); wrap.querySelectorAll('[data-div]').forEach(x=> x.classList.toggle('on', x===b)); }));
-  const w=document.getElementById('apWidth'), wv=document.getElementById('apWidthVal');
-  if(w) w.addEventListener('input',()=>{ settings.ap.width=+w.value/100; if(wv) wv.textContent=Math.round(settings.ap.width*100)+'%'; saveSettingsLS(); });
+  wrap.querySelectorAll('[data-width]').forEach(b=> b.addEventListener('click',()=>{ settings.ap.width=+b.dataset.width; saveSettingsLS(); wrap.querySelectorAll('[data-width]').forEach(x=> x.classList.toggle('on', x===b)); }));
   wrap.querySelectorAll('[data-shape]').forEach(b=> b.addEventListener('click',()=>{ const id=b.dataset.shape; settings.ap.shape=id; saveSettingsLS(); const s=AP_SHAPES.find(x=>x.id===id); if(s) toast(s.name); wrap.querySelectorAll('[data-shape]').forEach(x=> x.classList.toggle('on', x.dataset.shape===id)); }));
   const lts=document.getElementById('apLTS'); if(lts) lts.addEventListener('input',()=>{ settings.ap.lTopSpread=+lts.value/100; const v=document.getElementById('apLTSv'); if(v) v.textContent=Math.round(settings.ap.lTopSpread*100)+'%'; saveSettingsLS(); });
   const ltz=document.getElementById('apLTZ'); if(ltz) ltz.addEventListener('input',()=>{ settings.ap.lTopSpeed=+ltz.value/100; const v=document.getElementById('apLTZv'); if(v) v.textContent=settings.ap.lTopSpeed.toFixed(2)+'×'; saveSettingsLS(); });
