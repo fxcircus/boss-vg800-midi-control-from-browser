@@ -180,12 +180,19 @@
   .sec { display: flex; align-items: baseline; gap: 14px; margin: 0 2px 18px; }
   .sec h2 { font-family: var(--cond); font-weight: 700; font-size: 20px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--bone); }
   .sec .rule { flex: 1; height: 1px; background: var(--edge); }
+
+  /* Unified section panel — every section/family is a bordered box with a big centered header */
+  .panel { border: 1px solid var(--edge); border-radius: 14px; padding: 15px 15px 16px; margin: 0 0 14px; background: color-mix(in srgb, var(--wood) 24%, transparent); }
+  .panel-hd { display: flex; align-items: center; gap: 13px; font-family: var(--cond); font-weight: 700; font-size: 21px; line-height: 1.05; text-transform: uppercase; letter-spacing: 0.5px; color: var(--bone); margin: 0 2px 13px; }
+  .panel-hd::before, .panel-hd::after { content: ""; flex: 1; height: 1px; background: var(--edge); }   /* rules both sides → centered title */
+  .panel-sub { text-align: center; font-family: var(--mono); font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--bone-faint); margin: -7px 0 14px; }
+
   .add {
-    font-family: var(--mono); font-size: 11px; color: var(--brass); background: none;
-    border: 1px solid var(--brass-deep); border-radius: 20px; padding: 5px 14px; cursor: pointer;
-    letter-spacing: 0.5px; transition: all 0.14s;
+    display: block; width: 100%; font-family: var(--mono); font-size: 12px; color: var(--brass); background: none;
+    border: 1px dashed var(--edge); border-radius: 12px; padding: 13px; cursor: pointer; text-align: center;
+    letter-spacing: 1px; text-transform: uppercase; transition: all 0.14s; margin: 2px 0 14px;
   }
-  .add:hover { background: var(--brass); color: var(--ink); }
+  .add:hover { background: color-mix(in srgb, var(--brass) 14%, transparent); border-color: var(--brass-deep); color: var(--bone); }
 
   .tgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); gap: 6px; margin-bottom: 30px; }
   .tbtn { font-family: var(--mono); font-size: 13px; font-weight: 700; padding: 11px 0; border-radius: 8px; cursor: pointer; border: 1px solid var(--edge); background: var(--wood); color: var(--bone-dim); transition: all 0.12s; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 5px rgba(0,0,0,0.28); }
@@ -225,7 +232,7 @@
   .jump-menu a.group .nav-ico { width: 15px; height: 15px; flex-shrink: 0; }
   .jump-menu a.sub { padding-left: 22px; font-size: 12px; }
   .jump-menu a.sub2 { padding-left: 32px; }
-  .sec, #sec-current, [id^="fam-"] { scroll-margin-top: calc(var(--hdr-h, 92px) + 16px); }
+  [id^="sec-"], [id^="fam-"] { scroll-margin-top: calc(var(--hdr-h, 92px) + 16px); }
   @media (min-width: 1280px) { .jump-wrap { display: none; } }
 
   /* Steel pedals */
@@ -408,7 +415,7 @@
   .fam-name::after { content: ""; flex: 1; height: 1px; background: var(--edge-soft); }
 
   /* Grouped section (e.g. Lap Steel) with visually separated sub-areas */
-  .lapsec { margin-bottom: 26px; border: 1px solid var(--edge-soft); border-radius: 12px; padding: 15px 16px 3px; background: linear-gradient(180deg, rgba(127,168,236,0.04), transparent 70%); scroll-margin-top: 24px; }
+  .lapsec { margin: 0 0 14px; border: 1px solid var(--edge); border-radius: 14px; padding: 15px 15px 3px; background: color-mix(in srgb, var(--wood) 24%, transparent); scroll-margin-top: 24px; }
   .lapsec-hd { font-family: var(--cond); font-weight: 700; font-size: 15px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--brass); margin: 0 0 16px; display: flex; align-items: center; gap: 12px; }
   .lapsec-hd::after { content: ""; flex: 1; height: 1px; background: var(--brass-deep); opacity: 0.45; }
   .lapsec-body .fam { margin-bottom: 18px; }
@@ -575,48 +582,41 @@
     </div>
   </header>
 
-  <div class="sec" id="sec-tunings">
-    <h2>Tunings</h2>
-    <div class="rule"></div>
-    <button class="add" id="openEditor">+ Custom</button>
+  <div id="sec-tunings">
+    <div id="grid"></div>
+    <button class="add" id="openEditor">+ Custom tuning</button>
   </div>
-  <div id="grid"></div>
 
-  <div class="sec" id="sec-ethnic" style="margin-top:8px">
-    <h2>Ethnic Instruments</h2>
-    <div class="rule"></div>
-    <span style="font-family:var(--mono);font-size:10px;color:var(--bone-faint);white-space:nowrap">OTHERS STAY STANDARD</span>
-  </div>
-  <div id="ethnicWrap"></div>
+  <section class="panel" id="sec-ethnic">
+    <div class="panel-hd">Ethnic Instruments</div>
+    <div class="panel-sub">Others stay standard</div>
+    <div id="ethnicWrap"></div>
+  </section>
 
-  <div class="sec" id="sec-strings" style="margin-top:8px">
-    <h2>Transpose</h2>
-    <div class="rule"></div>
-  </div>
-  <div id="testBtns"></div>
+  <section class="panel" id="sec-strings">
+    <div class="panel-hd">Transpose</div>
+    <div id="testBtns"></div>
+  </section>
 
-  <div id="lapWrap" style="margin-top:8px"></div>
+  <div id="lapWrap"></div>
 
-  <div class="sec" id="sec-steel" style="margin-top:8px">
-    <h2>Pedal Steel</h2>
-    <div class="rule"></div>
-    <span style="font-family:var(--mono);font-size:10px;color:var(--bone-faint);white-space:nowrap">6 OF 10 STRINGS</span>
-  </div>
-  <div id="steelWrap"></div>
+  <section class="panel" id="sec-steel">
+    <div class="panel-hd">Pedal Steel</div>
+    <div class="panel-sub">6 of 10 strings</div>
+    <div id="steelWrap"></div>
+  </section>
 
-  <div class="sec" id="sec-pedals" style="margin-top:8px">
-    <h2>Pedals</h2>
-    <div class="rule"></div>
-    <span id="pedalHint" style="font-family:var(--mono);font-size:10px;color:var(--bone-faint);white-space:nowrap">HOLD TO BEND</span>
-  </div>
-  <div id="pedalWrap"></div>
+  <section class="panel" id="sec-pedals">
+    <div class="panel-hd">Pedals</div>
+    <div class="panel-sub" id="pedalHint">Hold to bend</div>
+    <div id="pedalWrap"></div>
+  </section>
 
-  <div class="sec" id="sec-pan" style="margin-top:8px">
-    <h2>Panning</h2>
-    <div class="rule"></div>
-    <span style="font-family:var(--mono);font-size:10px;color:var(--bone-faint);white-space:nowrap">PER-STRING STEREO</span>
-  </div>
-  <div id="panWrap"></div>
+  <section class="panel" id="sec-pan">
+    <div class="panel-hd">Panning</div>
+    <div class="panel-sub">Per-string stereo</div>
+    <div id="panWrap"></div>
+  </section>
 
   <div class="bench" id="sec-current">
     <div class="cv-pan">
@@ -1114,9 +1114,9 @@ function makeCard(t,isC){
   c.addEventListener('click',e=>{ if(e.target.classList.contains('del'))return; apply(t); });
   return c;
 }
-function famBlock(f, isC){
-  const b=document.createElement('div'); b.className='fam'; b.id='fam-'+slug(f.family);
-  const h=document.createElement('div'); h.className='fam-name'; h.textContent=f.family; b.appendChild(h);
+function famBlock(f, isC, panel){
+  const b=document.createElement('div'); b.className=panel?'panel':'fam'; b.id='fam-'+slug(f.family);
+  const h=document.createElement('div'); h.className=panel?'panel-hd':'fam-name'; h.textContent=f.family; b.appendChild(h);
   const g=document.createElement('div'); g.className='grid';
   f.tunings.forEach(t=>g.appendChild(makeCard(t, isC))); b.appendChild(g); return b;
 }
@@ -1129,11 +1129,11 @@ function renderGrid(){
     const f=all[i];
     if(f.section){
       const sec=f.section, block=document.createElement('div'); block.className='lapsec'; block.id='sec-'+slug(sec);
-      const hd=document.createElement('div'); hd.className='lapsec-hd'; hd.textContent=sec; block.appendChild(hd);
+      const hd=document.createElement('div'); hd.className='panel-hd'; hd.textContent=sec; block.appendChild(hd);
       const body=document.createElement('div'); body.className='lapsec-body';
       while(i<all.length && all[i].section===sec){ body.appendChild(famBlock(all[i], !!all[i].custom)); i++; }
       block.appendChild(body); (lap||wrap).appendChild(block);   // Lap Steel renders in its own section (between Ethnic and Pedal Steel)
-    } else { wrap.appendChild(famBlock(f, !!f.custom)); i++; }
+    } else { wrap.appendChild(famBlock(f, !!f.custom, true)); i++; }
   }
   document.querySelectorAll('.del').forEach(x=>x.addEventListener('click',()=>{
     customs=customs.filter(t=>t.name!==x.dataset.name); saveCustomLS(); renderGrid(); toast('Deleted "'+x.dataset.name+'"');
