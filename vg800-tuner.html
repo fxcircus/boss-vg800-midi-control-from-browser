@@ -210,6 +210,24 @@
   .theme-item.on { background: var(--felt); color: var(--brass); border-color: var(--edge-soft); }
   .theme-item .pedal-ico { width: 22px; height: 25px; flex-shrink: 0; }
 
+  /* Mobile "jump to section" menu — only on screens without the desktop sidebar */
+  .jump-wrap { position: relative; }
+  .jumpbtn { width: 42px; height: 42px; padding: 0; background: none; border: 1px solid var(--edge); border-radius: 50%; color: var(--bone-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color .15s, color .15s, transform .15s, box-shadow .15s; }
+  .jumpbtn:hover { border-color: var(--brass-deep); color: var(--bone); transform: translateY(-1px); }
+  .jumpbtn.open { border-color: var(--brass); color: var(--brass); box-shadow: inset 0 0 0 1px var(--brass-glow); }
+  .jumpbtn svg { width: 20px; height: 20px; }
+  .jump-menu { position: absolute; top: calc(100% + 8px); right: 0; z-index: 60; min-width: 194px; max-height: 70vh; overflow-y: auto; padding: 8px; background: var(--wood); border: 1px solid var(--edge); border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05); display: none; }
+  .jump-menu.open { display: block; animation: apReveal .18s cubic-bezier(.4,0,.2,1); }
+  .jump-menu a { display: block; font-family: var(--mono); font-size: 12.5px; color: var(--bone-dim); text-decoration: none; padding: 8px 12px; border-radius: 8px; letter-spacing: 0.2px; transition: color .12s, background .12s; }
+  .jump-menu a:hover, .jump-menu a.active { color: var(--brass); background: var(--felt); }
+  .jump-menu a.group { display: flex; align-items: center; gap: 9px; color: var(--bone); font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; margin-top: 8px; }
+  .jump-menu a.group:first-child { margin-top: 0; }
+  .jump-menu a.group .nav-ico { width: 15px; height: 15px; flex-shrink: 0; }
+  .jump-menu a.sub { padding-left: 22px; font-size: 12px; }
+  .jump-menu a.sub2 { padding-left: 32px; }
+  .sec, #sec-current, [id^="fam-"] { scroll-margin-top: 108px; }
+  @media (min-width: 1280px) { .jump-wrap { display: none; } .sec, #sec-current, [id^="fam-"] { scroll-margin-top: 80px; } }
+
   /* Steel pedals */
   .pedal-info { font-family: var(--mono); font-size: 11px; color: var(--bone-dim); margin: 0 2px 15px; letter-spacing: 0.3px; }
   .pedal-info b { color: var(--brass); font-weight: 700; }
@@ -533,6 +551,10 @@
       <h1>VG800 <em>MIDI Control</em></h1>
     </div>
     <div class="hdr-btns">
+      <div class="jump-wrap">
+        <button class="jumpbtn" id="jumpBtn" title="Jump to section" aria-label="Jump to section" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg></button>
+        <div class="jump-menu" id="jumpMenu" role="menu"></div>
+      </div>
       <div class="theme-wrap">
         <button class="themebtn" id="themeBtn" title="Theme" aria-label="Theme" aria-haspopup="true" aria-expanded="false"><svg class="pedal-ico"><use href="#pedalIco"/></svg></button>
         <div class="theme-menu" id="themeMenu" role="menu">
@@ -1120,6 +1142,7 @@ function renderNav(){
     +'<a class="sub" href="#sec-steel">Pedal Steel</a>'
     +'<a class="group" href="#sec-pedals">'+I.pedals+'Pedals</a>'
     +'<a class="group" href="#sec-pan">'+I.pan+'Panning</a>';
+  const jm=document.getElementById('jumpMenu'); if(jm) jm.innerHTML=box.innerHTML;   // mobile menu mirrors the sidebar
   updateSpy();
 }
 function placeBench(){
@@ -1130,7 +1153,7 @@ function placeBench(){
 }
 window.addEventListener('resize', placeBench);
 function updateSpy(){
-  const links=[...document.querySelectorAll('#sideNav a')]; if(!links.length) return;
+  const links=[...document.querySelectorAll('#sideNav a, #jumpMenu a')]; if(!links.length) return;
   let cur=null, best=-1e9; const line=120;
   links.forEach(a=>{ const el=document.getElementById(a.getAttribute('href').slice(1)); if(!el) return; const top=el.getBoundingClientRect().top; if(top<=line && top>best){ best=top; cur=a.getAttribute('href'); } });
   if(window.innerHeight+window.scrollY >= document.documentElement.scrollHeight-2) cur=links[links.length-1].getAttribute('href');  // at page bottom → last section (a short final section like Panning never reaches the line)
@@ -1517,6 +1540,13 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') setThemeMenu(false
 // Frozen-header treatment kicks in once the top scrolls away
 (function(){ const hdr=document.querySelector('header'), sen=document.getElementById('hdrSentinel');
   if(hdr&&sen&&'IntersectionObserver'in window){ new IntersectionObserver(([e])=>{ hdr.classList.toggle('stuck', !e.isIntersecting); },{threshold:0}).observe(sen); } })();
+// Mobile "jump to section" dropdown
+const jumpBtn=document.getElementById('jumpBtn'), jumpMenu=document.getElementById('jumpMenu');
+function setJumpMenu(open){ jumpMenu.classList.toggle('open',open); jumpBtn.classList.toggle('open',open); jumpBtn.setAttribute('aria-expanded',open?'true':'false'); }
+jumpBtn.addEventListener('click',e=>{ e.stopPropagation(); setJumpMenu(!jumpMenu.classList.contains('open')); });
+jumpMenu.addEventListener('click',e=>{ if(e.target.closest('a')) setJumpMenu(false); });   // tapping a link scrolls (native) then closes
+document.addEventListener('click',e=>{ if(jumpMenu.classList.contains('open') && !jumpMenu.contains(e.target) && !jumpBtn.contains(e.target)) setJumpMenu(false); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') setJumpMenu(false); });
 markThemeBtns();
 document.getElementById('closeSettings').addEventListener('click',()=>close('settingsModal'));
 document.getElementById('saveSettings').addEventListener('click',()=>{
