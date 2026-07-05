@@ -524,6 +524,12 @@
   </div>
   <div id="ethnicWrap"></div>
 
+  <div class="sec" id="sec-strings" style="margin-top:8px">
+    <h2>Transpose</h2>
+    <div class="rule"></div>
+  </div>
+  <div id="testBtns"></div>
+
   <div id="lapWrap" style="margin-top:8px"></div>
 
   <div class="sec" id="sec-steel" style="margin-top:8px">
@@ -532,12 +538,6 @@
     <span style="font-family:var(--mono);font-size:10px;color:var(--bone-faint);white-space:nowrap">6 OF 10 STRINGS</span>
   </div>
   <div id="steelWrap"></div>
-
-  <div class="sec" id="sec-strings" style="margin-top:8px">
-    <h2>Transpose</h2>
-    <div class="rule"></div>
-  </div>
-  <div id="testBtns"></div>
 
   <div class="sec" id="sec-pedals" style="margin-top:8px">
     <h2>Pedals</h2>
@@ -1090,9 +1090,9 @@ function renderNav(){
     pan:'<svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8.5a6.5 6.5 0 1 1 13 0c0 6-6 6-6 10a3.5 3.5 0 1 1-7 0"/><path d="M15 8.5a2.5 2.5 0 0 0-5 0v1a2 2 0 1 1 0 4"/></svg>' };
   box.innerHTML='<a class="group" href="#sec-tunings">'+I.tunings+'Tunings</a>'+links
     +'<a class="sub" href="#sec-ethnic">Ethnic</a>'
-    + sections                                       // Lap Steel — moved to sit right above Pedal Steel
-    +'<a class="sub" href="#sec-steel">Pedal Steel</a>'
     +'<a class="sub" href="#sec-strings">Transpose</a>'
+    + sections                                       // Lap Steel
+    +'<a class="sub" href="#sec-steel">Pedal Steel</a>'
     +'<a class="group" href="#sec-pedals">'+I.pedals+'Pedals</a>'
     +'<a class="group" href="#sec-pan">'+I.pan+'Panning</a>';
   updateSpy();
