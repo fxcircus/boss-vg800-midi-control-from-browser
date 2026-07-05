@@ -145,7 +145,7 @@
   .bench-head .name.xlong + .lbl { display: none; }   /* very long name → drop the label to free space */
   .bench-head .name.std { color: var(--bone); }
 
-  .str { position: relative; display: grid; grid-template-columns: 24px 1fr 52px; align-items: center; height: 40px; padding: 0 18px; }
+  .str { position: relative; display: grid; grid-template-columns: 52px 1fr 52px; align-items: center; height: 40px; padding: 0 18px; }   /* symmetric side columns → the wire (and centered slide) line up with the centered pan dots */
   .str .wire { position: relative; height: 100%; display: flex; align-items: center; }
   .str .wire::before {
     content: ""; position: absolute; left: 0; right: 0; top: 50%;
@@ -171,6 +171,8 @@
   .str .slide .oct { font-family: var(--mono); font-weight: 400; font-size: 8px; color: var(--chrome-dim); margin-left: 1px; }
   .str.shifted.sharp .slide { background: linear-gradient(180deg, #ffdca6, #e8913c); }
   .str.shifted.flat .slide { background: linear-gradient(180deg, #cfe3f2, #7fa8c9); }
+  html[data-theme="dd500"] .str .slide { color: #2e2820; }   /* dark note text so it's readable on the light pill in the cream theme */
+  html[data-theme="dd500"] .str .slide .oct { color: #6b6250; }
   .str-lbl { font-family: var(--mono); font-size: 10px; color: var(--bone-faint); letter-spacing: 1px; }
   .str-lbl b { color: var(--bone-dim); font-weight: 700; }
   .str-off { font-family: var(--mono); font-size: 12px; font-weight: 700; text-align: right; color: var(--bone-faint); }
@@ -329,7 +331,7 @@
   #sideNav .bench-head .name.long { font-size: 13px; }
   #sideNav .bench-head .name.xlong { font-size: 11px; }
   #sideNav .bench-head .lbl { display: none; }   /* sidebar is tight — drop the label, give the name the full width */
-  #sideNav .str { grid-template-columns: 20px 1fr 24px; height: 25px; padding: 0 8px; }
+  #sideNav .str { grid-template-columns: 24px 1fr 24px; height: 25px; padding: 0 8px; }
   #sideNav .str-lbl { font-size: 9px; letter-spacing: 0; }
   #sideNav .slide { min-width: 21px; height: 17px; font-size: 11px; padding: 0 4px; border-radius: 4px; }
   #sideNav .slide .oct { font-size: 7px; }
@@ -595,7 +597,6 @@
           <button class="theme-item" data-theme-set="dark" role="menuitem"><svg class="pedal-ico" style="color:#434952"><use href="#pedalIco"/></svg><span>GT1000</span></button>
           <div class="menu-sep"></div>
           <div class="menu-tog">
-            <span class="menu-tog-lbl">Density</span>
             <div class="seg" id="compactSeg">
               <button data-compact="1">Compact</button>
               <button class="on" data-compact="0">Full</button>
@@ -650,7 +651,6 @@
     </div>
     <div class="bench-head">
       <span class="name std" id="nowName">Standard</span>
-      <span class="lbl">Current Tuning</span>
     </div>
     <div id="strings"></div>
   </div>
@@ -1564,7 +1564,7 @@ function renderSettings(){
   }
 }
 function openSettings(){ renderSettings(); applyGrpState(); open('settingsModal'); }
-document.getElementById('settingsBtn').addEventListener('click', openSettings);
+document.getElementById('settingsBtn').addEventListener('click', ()=>{ setThemeMenu(false); setJumpMenu(false); openSettings(); });
 // Collapsible settings groups — remember each section's open/closed state
 function loadGrps(){ try{ return JSON.parse(localStorage.getItem('vg800_settgrps'))||{}; }catch(e){ return {}; } }
 function applyGrpState(){ const st=loadGrps(); document.querySelectorAll('.settgrp').forEach(d=>{ const id=d.dataset.grp; d.open=(id in st)?!!st[id]:(id==='midi'); }); }  // default: only MIDI Output open
@@ -1583,7 +1583,7 @@ function markThemeBtns(){ const t=document.documentElement.dataset.theme||'cs3';
 function applyTheme(t){ document.documentElement.dataset.theme=t; try{ localStorage.setItem('vg800_theme',t); }catch(e){} markThemeBtns(); }
 const themeBtn=document.getElementById('themeBtn'), themeMenu=document.getElementById('themeMenu');
 function setThemeMenu(open){ themeMenu.classList.toggle('open',open); themeBtn.classList.toggle('open',open); themeBtn.setAttribute('aria-expanded',open?'true':'false'); }
-themeBtn.addEventListener('click',e=>{ e.stopPropagation(); setThemeMenu(!themeMenu.classList.contains('open')); });
+themeBtn.addEventListener('click',e=>{ e.stopPropagation(); const willOpen=!themeMenu.classList.contains('open'); if(willOpen) setJumpMenu(false); setThemeMenu(willOpen); });
 themeMenu.querySelectorAll('[data-theme-set]').forEach(b=>b.addEventListener('click',()=>{ applyTheme(b.dataset.themeSet); setThemeMenu(false); }));
 document.addEventListener('click',e=>{ if(themeMenu.classList.contains('open') && !themeMenu.contains(e.target) && !themeBtn.contains(e.target)) setThemeMenu(false); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') setThemeMenu(false); });
@@ -1604,7 +1604,7 @@ document.addEventListener('click', e=>{ const a=e.target.closest && e.target.clo
 // Mobile "jump to section" dropdown
 const jumpBtn=document.getElementById('jumpBtn'), jumpMenu=document.getElementById('jumpMenu');
 function setJumpMenu(open){ jumpMenu.classList.toggle('open',open); jumpBtn.classList.toggle('open',open); jumpBtn.setAttribute('aria-expanded',open?'true':'false'); }
-jumpBtn.addEventListener('click',e=>{ e.stopPropagation(); setJumpMenu(!jumpMenu.classList.contains('open')); });
+jumpBtn.addEventListener('click',e=>{ e.stopPropagation(); const willOpen=!jumpMenu.classList.contains('open'); if(willOpen) setThemeMenu(false); setJumpMenu(willOpen); });
 jumpMenu.addEventListener('click',e=>{ if(e.target.closest('a')) setJumpMenu(false); });   // tapping a link scrolls (native) then closes
 document.addEventListener('click',e=>{ if(jumpMenu.classList.contains('open') && !jumpMenu.contains(e.target) && !jumpBtn.contains(e.target)) setJumpMenu(false); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') setJumpMenu(false); });
