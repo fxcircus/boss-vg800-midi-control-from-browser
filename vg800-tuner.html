@@ -206,7 +206,8 @@
   input[type="checkbox"] { -webkit-appearance: none; appearance: none; margin: 0; width: 18px; height: 18px; flex-shrink: 0; border: 1.5px solid var(--edge); border-radius: 5px; background: var(--wood); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 1px 3px rgba(0,0,0,0.3); cursor: pointer; position: relative; transition: border-color .12s, background .12s, box-shadow .12s; }
   input[type="checkbox"]:hover { border-color: var(--brass-deep); }
   input[type="checkbox"]:checked { border-color: var(--brass); background: linear-gradient(180deg, var(--brass), var(--brass-deep)); box-shadow: 0 0 0 1px var(--brass-glow), inset 0 1px 0 rgba(255,255,255,0.35); }
-  input[type="checkbox"]:checked::after { content: ""; position: absolute; left: 5.5px; top: 2px; width: 4px; height: 8.5px; border: solid var(--ink); border-width: 0 2.5px 2.5px 0; transform: rotate(45deg); }
+  input[type="checkbox"]::after { content: ""; position: absolute; left: 5.5px; top: 1.5px; width: 4px; height: 8.5px; border: solid var(--ink); border-width: 0 2.5px 2.5px 0; transform: rotate(45deg) scale(0.3); opacity: 0; transition: opacity .16s ease, transform .2s cubic-bezier(.34,1.7,.5,1); }
+  input[type="checkbox"]:checked::after { opacity: 1; transform: rotate(45deg) scale(1); }
   input[type="checkbox"]:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--brass-glow); }
   .kb-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 30px; }
   .kb-chip { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 66px; background: var(--wood); border: 1px solid var(--edge); border-radius: 8px; padding: 7px 10px; cursor: pointer; transition: transform .1s, border-color .12s, background .12s; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
@@ -366,7 +367,7 @@
   .scrim.open { display: flex; }
   .sheet {
     background: linear-gradient(170deg, var(--felt), var(--wood));
-    border: 1px solid var(--brass-deep); border-radius: 14px; padding: 26px;
+    border: 1px solid var(--brass-deep); border-radius: 14px; padding: 26px 26px 0;
     max-width: 450px; width: 100%; box-shadow: 0 24px 60px rgba(0,0,0,0.6);
     animation: rise 0.2s cubic-bezier(.34,1.3,.5,1);
     max-height: calc(100vh - 36px); overflow-y: auto;
@@ -397,7 +398,7 @@
   .fld input:focus, .num:focus { outline: none; border-color: var(--brass); }
   .acts { display: flex; gap: 9px; margin-top: 11px; }
   .acts button { flex: 1; }
-  .foot { display: flex; gap: 10px; justify-content: flex-end; position: sticky; bottom: 0; margin-top: 22px; padding-top: 14px; background: var(--wood); border-top: 1px solid var(--edge); }
+  .foot { display: flex; gap: 10px; justify-content: flex-end; position: sticky; bottom: 0; margin: 22px -26px 0; padding: 14px 26px 20px; background: var(--wood); border-top: 1px solid var(--edge); }
   .btn { font-family: var(--mono); font-size: 11px; letter-spacing: 0.5px; padding: 9px 15px; border-radius: 8px; cursor: pointer; border: 1px solid var(--edge); background: var(--wood); color: var(--bone-dim); transition: all 0.14s; }
   .btn:hover { border-color: var(--brass-deep); color: var(--bone); }
   .btn.go { background: var(--brass); color: var(--ink); border-color: var(--brass); font-weight: 700; }
@@ -577,14 +578,6 @@
       </div>
     </details>
 
-    <details class="settgrp" data-grp="glide">
-      <summary>String glide</summary>
-      <div class="settgrp-body">
-        <div class="ch"><label>Glide time (ms) — 0 = instant</label><input type="number" class="num" id="glideInput" min="0" max="5000" step="50" value="0"></div>
-        <p class="note-hint">Makes the strings <em>slide</em> between tunings instead of snapping. At <em>0</em> every string jumps to its new pitch at once; higher values ramp each string to its target over that many milliseconds — a portamento sweep as the whole neck bends into the new tuning.</p>
-      </div>
-    </details>
-
     <details class="settgrp" data-grp="autobend">
       <summary>Bend effect</summary>
       <div class="settgrp-body">
@@ -703,7 +696,7 @@ const PANMODES=[
 const STR_COLORS=['#ef5350','#f2a33d','#c6d43f','#4cc178','#4f9dea','#a563d4'];
 let dispOffsets=[0,0,0,0,0,0];   // the pitch offsets currently shown (base tuning + engaged pedal bends)
 
-function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; if(typeof s.glide!=='number') s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, ...AB_DEFAULTS}; }
+function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, ...AB_DEFAULTS}; }
 function saveSettingsLS(){ localStorage.setItem('vg800_settings', JSON.stringify(settings)); }
 function loadCustom(){ try{ return JSON.parse(localStorage.getItem('vg800_custom'))||[]; }catch(e){ return []; } }
 function saveCustomLS(){ localStorage.setItem('vg800_custom', JSON.stringify(customs)); }
@@ -1264,7 +1257,6 @@ const DEPTH_LBL=['DEPTH 1 · high E (1st)','DEPTH 2 · B (2nd)','DEPTH 3 · G (3
 function renderSettings(){
   markThemeBtns();
   document.getElementById('chanInput').value=settings.channel;
-  document.getElementById('glideInput').value=settings.glide||0;
   document.getElementById('autoBendChk').checked=!!settings.autoBend;
   document.getElementById('bendDepthInput').value=settings.bendDepth;
   document.getElementById('bendMsInput').value=settings.bendMs;
@@ -1301,11 +1293,10 @@ document.getElementById('closeSettings').addEventListener('click',()=>close('set
 document.getElementById('saveSettings').addEventListener('click',()=>{
   const ch=Math.max(1,Math.min(16,+document.getElementById('chanInput').value||1));
   const ccs=[]; document.querySelectorAll('#ccRows input').forEach(x=>ccs[+x.dataset.cc]=Math.max(0,Math.min(127,+x.value||0)));
-  const glide=Math.max(0,Math.min(5000,+document.getElementById('glideInput').value||0));
   const num=(id,lo,hi,d)=>{ const v=+document.getElementById(id).value; return isNaN(v)?d:Math.max(lo,Math.min(hi,v)); };
   const ab={ autoBend:document.getElementById('autoBendChk').checked, bendCC:num('bendCCInput',0,127,69), levelCC:num('levelCCInput',0,127,70), bendDepth:num('bendDepthInput',0,50,25), levelDip:num('levelDipInput',0,50,15), bendMs:num('bendMsInput',40,400,120) };
   const panCCs=[]; document.querySelectorAll('#panCcRows input').forEach(x=>panCCs[+x.dataset.pcc]=Math.max(0,Math.min(127,+x.value||0)));
-  settings={channel:ch,ccs,gap:settings.gap??20,glide,keys:settings.keys,latch:settings.latch,panCCs, ...ab}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
+  settings={channel:ch,ccs,gap:settings.gap??20,glide:0,keys:settings.keys,latch:settings.latch,panCCs, ...ab}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
 });
 
 function applyTest(v){

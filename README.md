@@ -107,7 +107,7 @@ Then open **http://localhost:8765/vg800-tuner.html** in **Chrome or Edge** (Safa
 - **Jump-to sidebar** (wide screens) — a left nav to hop between tuning families and sections; the combined Current Tuning readout lives here to save vertical space.
 - **+ Custom** — dial each string up/down from standard, name it, and save your own tuning.
 - **All strings** — buttons from −12 to +12 shift every string by a fixed amount at once; handy for verifying each string's CC tracks across its whole range. `DELAY MS` spaces out the six messages (also applied to normal tuning changes).
-- **⚙ Settings** — MIDI channel, the per-string CC numbers, and **String glide** (ms to slide between tunings; 0 = instant, higher values give portamento/slide effects as the strings ramp to their new pitches).
+- **⚙ Settings** — collapsible sections (each remembers its open/closed state): **MIDI Output** (output port + channel, with a live connection LED on the gear), **CC numbers for MIDI mapping** (per-string pitch + panning CCs), **Theme**, and **Bend effect** (the scoop articulation).
 - **Themes** (⚙ Settings → Theme) — **BOSS Blue** (default, brushed-metal blue) or **Workbench** (warm wood/brass). Your choice is remembered.
 
 ---
