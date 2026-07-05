@@ -99,7 +99,9 @@
   }
   .wrap { max-width: 820px; margin: 0 auto; }
 
-  header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 26px; gap: 16px; }
+  #hdrSentinel { height: 1px; margin-bottom: -1px; }
+  header { position: sticky; top: 0; z-index: 90; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin: 0 -20px 22px; padding: 12px 20px; transition: background .2s ease, box-shadow .2s ease; }
+  header.stuck { background: var(--ink); background: color-mix(in srgb, var(--ink) 82%, transparent); backdrop-filter: blur(14px) saturate(1.15); -webkit-backdrop-filter: blur(14px) saturate(1.15); box-shadow: 0 6px 20px rgba(0,0,0,0.28), inset 0 -1px 0 var(--edge-soft); }
   .mast { line-height: 0.92; }
   .mast .kick { font-family: var(--mono); font-size: 10px; letter-spacing: 4px; color: var(--brass-deep); text-transform: uppercase; margin-bottom: 8px; }
   .mast h1 { font-family: var(--cond); font-weight: 700; font-size: 46px; letter-spacing: -0.5px; color: var(--bone); text-transform: uppercase; }
@@ -525,6 +527,7 @@
 <nav id="sideNav" aria-label="Jump to section"><div id="navLinks"></div></nav>
 <div class="wrap">
   <svg class="svg-defs" aria-hidden="true"><symbol id="pedalIco" viewBox="0 0 24 24"><rect x="4.5" y="2.5" width="15" height="19" rx="2.6" fill="currentColor" stroke="#141414" stroke-width="1.4"/><circle cx="9" cy="6.3" r="1.4" fill="#141414"/><circle cx="15" cy="6.3" r="1.4" fill="#141414"/><rect x="7" y="11" width="10" height="9" rx="1.8" fill="#141414"/></symbol></svg>
+  <div id="hdrSentinel"></div>
   <header>
     <div class="mast">
       <h1>VG800 <em>MIDI Control</em></h1>
@@ -1511,6 +1514,9 @@ themeBtn.addEventListener('click',e=>{ e.stopPropagation(); setThemeMenu(!themeM
 themeMenu.querySelectorAll('[data-theme-set]').forEach(b=>b.addEventListener('click',()=>{ applyTheme(b.dataset.themeSet); setThemeMenu(false); }));
 document.addEventListener('click',e=>{ if(themeMenu.classList.contains('open') && !themeMenu.contains(e.target) && !themeBtn.contains(e.target)) setThemeMenu(false); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') setThemeMenu(false); });
+// Frozen-header treatment kicks in once the top scrolls away
+(function(){ const hdr=document.querySelector('header'), sen=document.getElementById('hdrSentinel');
+  if(hdr&&sen&&'IntersectionObserver'in window){ new IntersectionObserver(([e])=>{ hdr.classList.toggle('stuck', !e.isIntersecting); },{threshold:0}).observe(sen); } })();
 markThemeBtns();
 document.getElementById('closeSettings').addEventListener('click',()=>close('settingsModal'));
 document.getElementById('saveSettings').addEventListener('click',()=>{
