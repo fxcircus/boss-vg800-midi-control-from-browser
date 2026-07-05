@@ -532,20 +532,44 @@
   .slider:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px var(--brass-glow); }
 
   /* Collapsible settings groups (native <details>) */
-  .settgrp { border: 1px solid var(--edge-soft); border-radius: 10px; margin-bottom: 10px; background: rgba(255,255,255,0.015); overflow: hidden; }
-  .settgrp > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 13px 15px; font-family: var(--cond); font-weight: 700; font-size: 15px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--bone-dim); user-select: none; transition: color .12s; }
-  .settgrp > summary::-webkit-details-marker { display: none; }
-  .settgrp > summary::after { content: ""; margin-left: auto; width: 7px; height: 7px; border-right: 2px solid var(--brass-deep); border-bottom: 2px solid var(--brass-deep); transform: rotate(-45deg); transition: transform .18s, border-color .12s; }
-  .settgrp > summary:hover { color: var(--brass); }
-  .settgrp > summary:hover::after { border-color: var(--brass); }
-  .settgrp[open] > summary { color: var(--brass); border-bottom: 1px solid var(--edge-soft); }
-  .settgrp[open] > summary::after { transform: rotate(45deg); }
-  .settgrp-body { padding: 15px 15px 5px; }
-  .settgrp-body > *:first-child { margin-top: 0; }
+  .settgrp, .docgrp { border: 1px solid var(--edge-soft); border-radius: 10px; margin-bottom: 10px; background: rgba(255,255,255,0.015); overflow: hidden; }
+  .settgrp > summary, .docgrp > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 13px 15px; font-family: var(--cond); font-weight: 700; font-size: 15px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--bone-dim); user-select: none; transition: color .12s; }
+  .settgrp > summary::-webkit-details-marker, .docgrp > summary::-webkit-details-marker { display: none; }
+  .settgrp > summary::after, .docgrp > summary::after { content: ""; margin-left: auto; width: 7px; height: 7px; border-right: 2px solid var(--brass-deep); border-bottom: 2px solid var(--brass-deep); transform: rotate(-45deg); transition: transform .18s, border-color .12s; }
+  .settgrp > summary:hover, .docgrp > summary:hover { color: var(--brass); }
+  .settgrp > summary:hover::after, .docgrp > summary:hover::after { border-color: var(--brass); }
+  .settgrp[open] > summary, .docgrp[open] > summary { color: var(--brass); border-bottom: 1px solid var(--edge-soft); }
+  .settgrp[open] > summary::after, .docgrp[open] > summary::after { transform: rotate(45deg); }
+  .settgrp-body, .docgrp-body { padding: 15px 15px 5px; }
+  .settgrp-body > *:first-child, .docgrp-body > *:first-child { margin-top: 0; }
   /* Drawer animation — each group glides open/closed (Chromium ::details-content + interpolate-size) */
   html { interpolate-size: allow-keywords; }
-  .settgrp::details-content, .kdraw::details-content { height: 0; overflow: clip; opacity: 0; transition: height .3s cubic-bezier(.4,0,.2,1), opacity .24s ease, content-visibility .3s allow-discrete; }
-  .settgrp[open]::details-content, .kdraw[open]::details-content { height: auto; opacity: 1; }
+  .settgrp::details-content, .kdraw::details-content, .docgrp::details-content { height: 0; overflow: clip; opacity: 0; transition: height .3s cubic-bezier(.4,0,.2,1), opacity .24s ease, content-visibility .3s allow-discrete; }
+  .settgrp[open]::details-content, .kdraw[open]::details-content, .docgrp[open]::details-content { height: auto; opacity: 1; }
+
+  /* About modal */
+  .about-btn { width: 42px; height: 42px; flex-shrink: 0; background: none; border: 1px solid var(--edge); border-radius: 50%; color: var(--bone-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color .15s, color .15s, transform .15s; }
+  .about-btn:hover { border-color: var(--brass-deep); color: var(--brass); transform: translateY(-1px); }
+  .about-btn svg { width: 20px; height: 20px; }
+  .about-intro { font-family: var(--sans); font-size: 13px; color: var(--bone-dim); line-height: 1.6; margin: 0 0 18px; }
+  .about-intro b { color: var(--bone); font-weight: 700; }
+  .about-links { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 22px; }
+  .about-link { flex: 1 1 150px; display: inline-flex; align-items: center; justify-content: center; gap: 9px; padding: 11px 14px; border-radius: 10px; font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: 0.3px; text-decoration: none; border: 1px solid var(--edge); transition: filter .14s, border-color .14s, color .14s, transform .1s; }
+  .about-link:active { transform: scale(0.98); }
+  .about-link svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .about-link.coffee { background: #FBB034; color: #3a2905; border-color: #e59c1f; }
+  .about-link.coffee:hover { filter: brightness(1.06); }
+  .about-link.gh { background: var(--wood); color: var(--bone); }
+  .about-link.gh:hover { border-color: var(--brass-deep); color: var(--brass); }
+  .doc-sub { font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--brass-deep); margin: 2px 2px 16px; text-align: center; }
+  .docgrp-body { font-family: var(--sans); font-size: 12.5px; color: var(--bone-dim); line-height: 1.55; }
+  .docgrp-body p { margin: 0 0 10px; }
+  .docgrp-body b { color: var(--bone); font-weight: 700; }
+  .docgrp-body em { font-style: normal; color: var(--brass); }
+  .docgrp-body ul { margin: 0 0 8px; padding-left: 17px; }
+  .docgrp-body li { margin-bottom: 8px; }
+  .docgrp-body kbd { font-family: var(--mono); font-size: 10.5px; background: var(--ink); border: 1px solid var(--edge); border-radius: 4px; padding: 1px 5px; color: var(--bone); white-space: nowrap; }
+  .docgrp-body a { color: var(--brass); }
   /* Collapsible "Key mapping" drawer inside the Bends panel — keeps the centered cut-line header + a chevron */
   .kdraw { margin: 2px 0 30px; }
   .kdraw-sum { list-style: none; cursor: pointer; margin: 0; padding: 4px 0; user-select: none; transition: color .12s; }
@@ -614,6 +638,7 @@
           </div>
         </div>
       </div>
+      <button class="about-btn" id="aboutBtn" title="About & help" aria-label="About & help"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></button>
       <button class="gear" id="settingsBtn" title="MIDI settings" aria-label="MIDI settings">⚙</button>
     </div>
   </header>
@@ -730,6 +755,98 @@
     <div class="foot">
       <button class="btn" id="closeSettings">Cancel</button>
       <button class="btn go" id="saveSettings">Save settings</button>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="aboutModal">
+  <div class="sheet">
+    <h2>About <em>VG800</em></h2>
+    <p class="about-intro">Retune your <b>Boss VG-800</b> from the browser. Pick an alternate tuning and all six strings retune instantly over MIDI — no menu-diving. It also does pedal-steel <b>bends</b>, ethnic-instrument voicings and stereo <b>auto-panning</b>, all from one page.</p>
+    <div class="about-links">
+      <a class="about-link coffee" href="https://buymeacoffee.com/fxcircus" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a3 3 0 0 1 0 6h-1"/><path d="M4 8h13v6a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z"/><path d="M7 2v2M11 2v2M15 2v2"/></svg>Buy me a coffee</a>
+      <a class="about-link gh" href="https://github.com/fxcircus/boss-vg800-midi-control-from-browser" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.6.1-3.3 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.7.2 3 .1 3.3.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.3v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .3z"/></svg>View on GitHub</a>
+    </div>
+
+    <div class="doc-sub">How to use</div>
+
+    <details class="docgrp" open>
+      <summary>Quick start</summary>
+      <div class="docgrp-body"><ul>
+        <li>Open in <b>Chrome or Edge</b> (Safari &amp; Firefox lack Web MIDI) and allow MIDI access when asked.</li>
+        <li>Open <em>⚙ Settings → MIDI Output</em>, pick your interface's output port and set <em>Channel</em> to match the VG-800 (factory default&nbsp;1). The dot on the ⚙ button glows <b>green</b> when a port is live.</li>
+        <li>Click any <b>tuning card</b> — all six strings retune at once.</li>
+        <li>First time connecting the hardware? Do the one-time VG-800 setup below so it actually responds.</li>
+      </ul></div>
+    </details>
+
+    <details class="docgrp">
+      <summary>One-time VG-800 setup</summary>
+      <div class="docgrp-body">
+        <p>Configure the pedal once so it listens to the app:</p>
+        <ul>
+          <li><b>INST → STR BEND:</b> set <em>STR BEND SW = ON</em> and <em>BEND CONTROL = 100</em>. Essential — at 0 the depth values are ignored and nothing moves.</li>
+          <li><b>CONTROL/ASSIGN → ASSIGN:</b> one assign per string — TARGET <em>INST:STR&nbsp;BEND(A) · DEPTH&nbsp;1–6</em>, MIN <em>−12</em> / MAX <em>+12</em>, MODE <em>MOMENT</em>, SOURCE = that string's CC (defaults <em>30, 31, 64, 65, 66, 68</em> for high-E → low-E).</li>
+          <li><b>For panning:</b> assign <em>STRING(A) · PAN&nbsp;1–6</em> to the pan CCs (defaults <em>71–76</em>), MIN <em>L50</em> / MAX <em>R50</em>.</li>
+          <li>Set <em>MIDI · RX&nbsp;CHANNEL</em> to match the app. These CC numbers already line up with <em>Settings → CC numbers</em> out of the box.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="docgrp">
+      <summary>Tunings &amp; instruments</summary>
+      <div class="docgrp-body"><ul>
+        <li><b>Tuning cards</b> (Common, Open Majors, Drop, Artists…): click to retune all six strings. Each card shows its note names and per-string ± offset.</li>
+        <li><b>Ethnic</b> (mandolin, oud, bouzouki, banjo…): maps the instrument's pitches onto a cluster of strings — pick the placement with the string-dot buttons. A <b>capo hint</b> says where to physically capo, since the VG-800 only bends ±12 semitones.</li>
+        <li><b>Pedal Steel</b>: load a real steel tuning (E9, C6, B6) and choose which 6 of the 10 strings map onto the guitar; the <b>Bends</b> section reconfigures to that tuning's copedent.</li>
+        <li><b>+ Custom tuning</b>: dial each string ±12 from standard, name it and save it.</li>
+      </ul></div>
+    </details>
+
+    <details class="docgrp">
+      <summary>Bends — pedals &amp; knee levers</summary>
+      <div class="docgrp-body"><ul>
+        <li>Hold the on-screen <b>Pedal&nbsp;A / B</b> and knee levers <b>LKL / LKR</b> (or keys <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> <kbd>F</kbd>) to bend the root / 3rd / 5th of the current tuning, pedal-steel style. They stack, and the icons animate as they move.</li>
+        <li><b>Combos</b> (A+B…) engage a whole grip at once and light up the pedals they include.</li>
+        <li><b>Latch</b> — tick the checkbox to tap on/off instead of holding.</li>
+        <li><b>Key Mapping</b> — expand the drawer to rebind any control: click a chip, then press a key. <em>Reset</em> restores the defaults.</li>
+        <li>Any bend that would exceed ±12 semitones greys out.</li>
+      </ul></div>
+    </details>
+
+    <details class="docgrp">
+      <summary>Panning &amp; auto-pan</summary>
+      <div class="docgrp-body"><ul>
+        <li><b>Manual modes</b> (Center, Equal Spread, Split, Zig-Zag, Pairs…) place each string in the stereo field. Clicking a mode <b>glides</b> the strings so you feel the sweep; the <em>Pan glide</em> toggle sets the time (Instant → Long).</li>
+        <li><b>Auto-pan</b> — flip it on and each string runs its own pan LFO. Pick a <b>character</b> (Rotate, Leslie, Fan Breathe, Ping-Pong, Drift), then fine-tune Width, Shape and Phase spread — at a Free rate (Hz) or Tempo-synced (BPM + division).</li>
+      </ul></div>
+    </details>
+
+    <details class="docgrp">
+      <summary>Current Tuning readout</summary>
+      <div class="docgrp-body"><p>The always-on panel combines pitch and pan for all six strings: a <b>pan strip</b> up top, then a <b>pitch neck</b> where each note slides flat↔sharp from standard with its offset. Everything updates and animates live from the current tuning, bends and panning. On wide screens it parks in the left sidebar.</p></div>
+    </details>
+
+    <details class="docgrp">
+      <summary>Themes &amp; display</summary>
+      <div class="docgrp-body"><ul>
+        <li>The <b>pedal button</b> (top-right) opens the theme picker — CS3, DS1, RC500, DD500 and GT1000, each styled after a Boss pedal.</li>
+        <li><b>Compact mode</b> (Display → Compact) hides the note names and offsets on tuning cards to fit more on screen.</li>
+        <li><b>Bend effect</b> (Settings) adds a scoop articulation that swells into each new tuning.</li>
+      </ul></div>
+    </details>
+
+    <details class="docgrp">
+      <summary>Tips &amp; troubleshooting</summary>
+      <div class="docgrp-body"><ul>
+        <li>Nothing moving? Check the <b>green dot</b> (MIDI connected), that <em>BEND CONTROL = 100</em> on the VG-800, and that the app's CC numbers match your assigns.</li>
+        <li>The VG-800 exposes only CC# <b>0–31 and 64+</b> and may not track 64–95 continuously — prefer CC# 1–31.</li>
+        <li>Web MIDI needs a secure context: use the hosted page or serve locally over <kbd>http://localhost</kbd> (a <kbd>file://</kbd> path won't work).</li>
+      </ul></div>
+    </details>
+
+    <div class="foot">
+      <button class="btn" id="closeAbout">Close</button>
     </div>
   </div>
 </div>
@@ -1573,6 +1690,8 @@ function renderSettings(){
 }
 function openSettings(){ renderSettings(); applyGrpState(); open('settingsModal'); }
 document.getElementById('settingsBtn').addEventListener('click', ()=>{ setThemeMenu(false); setJumpMenu(false); openSettings(); });
+document.getElementById('aboutBtn').addEventListener('click', ()=>{ setThemeMenu(false); setJumpMenu(false); open('aboutModal'); });
+document.getElementById('closeAbout').addEventListener('click', ()=>close('aboutModal'));
 // Collapsible settings groups — remember each section's open/closed state
 function loadGrps(){ try{ return JSON.parse(localStorage.getItem('vg800_settgrps'))||{}; }catch(e){ return {}; } }
 function applyGrpState(){ const st=loadGrps(); document.querySelectorAll('.settgrp').forEach(d=>{ const id=d.dataset.grp; d.open=(id in st)?!!st[id]:(id==='midi'); }); }  // default: only MIDI Output open
@@ -1646,8 +1765,8 @@ function renderTestBtns(){
 
 function open(id){ document.getElementById(id).classList.add('open'); }
 function close(id){ document.getElementById(id).classList.remove('open'); }
-['editorModal','settingsModal'].forEach(id=>document.getElementById(id).addEventListener('click',e=>{ if(e.target.id===id) close(id); }));
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ close('editorModal'); close('settingsModal'); } });
+['editorModal','settingsModal','aboutModal'].forEach(id=>document.getElementById(id).addEventListener('click',e=>{ if(e.target.id===id) close(id); }));
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ close('editorModal'); close('settingsModal'); close('aboutModal'); } });
 
 let tt;
 function toast(m,err,action){
