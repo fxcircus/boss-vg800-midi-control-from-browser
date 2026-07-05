@@ -1270,11 +1270,8 @@ function renderPan(){
   const a=settings.ap, pm=settings.panMs|0;
   const btns=PANMODES.map(m=>`<button class="panmode${activePan===m.id?' on':''}" data-pan="${m.id}">${m.name}</button>`).join('');
   // shared slider: Pan glide when auto-pan is off, Phase spread when it's on
-  const sliderBlock = autoPanOn
-    ? `<div class="pan-glide"><div class="pg-lbl"><span>Phase spread — swirl vs. block</span><b id="panSliderVal">${Math.round(a.spread*360)}°</b></div>
-        <input type="range" class="slider" id="panSlider" min="0" max="100" value="${Math.round(a.spread*100)}"></div>`
-    : `<div class="pan-glide"><div class="pg-lbl"><span>Pan glide — ease between modes</span><b id="panSliderVal">${glideLbl(pm)}</b></div>
-        <input type="range" class="slider" id="panSlider" min="0" max="5000" step="50" value="${pm}"></div>`;
+  const glideBlock = `<div class="pan-glide"><div class="pg-lbl"><span>Pan glide — ease between modes</span><b id="panGlideVal">${glideLbl(pm)}</b></div>
+      <input type="range" class="slider" id="panGlide" min="0" max="5000" step="50" value="${pm}"></div>`;
   const charBtns=AP_CHARLIST.map(([id,nm])=>`<button class="panmode${a.char===id?' on':''}" data-char="${id}">${nm}</button>`).join('');
   const divBtns=AP_DIVS.map(([id])=>`<button class="panmode${a.div===id?' on':''}" data-div="${id}">${id}</button>`).join('');
   const leslieBlock = a.char==='leslie' ? `
@@ -1302,6 +1299,8 @@ function renderPan(){
         <input type="range" class="slider" id="apBpm" min="60" max="200" value="${a.bpm}">
         <div class="apcap">Division</div><div class="apdivs">${divBtns}</div>
       </div>
+      <div class="pg-lbl" style="margin-top:12px"><span>Phase spread — swirl vs. block</span><b id="apSpreadVal">${Math.round(a.spread*360)}°</b></div>
+      <input type="range" class="slider" id="apSpread" min="0" max="100" value="${Math.round(a.spread*100)}">
       <div class="pg-lbl" style="margin-top:12px"><span>Width — swing</span><b id="apWidthVal">${Math.round(a.width*100)}%</b></div>
       <input type="range" class="slider" id="apWidth" min="0" max="100" value="${Math.round(a.width*100)}">
       <div class="apcap">Shape</div>
@@ -1309,7 +1308,7 @@ function renderPan(){
       ${leslieBlock}
     </div>`;
   wrap.innerHTML=`<div class="panmodes">${btns}</div>
-    ${sliderBlock}
+    ${autoPanOn?'':glideBlock}
     <div class="pan-auto">
       <label class="latch-tog" style="margin-bottom:${autoPanOn?'2px':'0'}"><input type="checkbox" id="autoPanChk"${autoPanOn?' checked':''}><span>Auto-pan — each string sweeps the stereo field</span></label>
       ${autoBody}
@@ -1317,8 +1316,10 @@ function renderPan(){
   wrap.querySelectorAll('.panmode[data-pan]').forEach(b=> b.addEventListener('click',()=>applyPan(b.dataset.pan)));
   const ap=document.getElementById('autoPanChk');
   if(ap) ap.addEventListener('change',()=>{ if(ap.checked){ startAutoPan(); renderPan(); } else { stopAutoPan(); renderPan(); applyPan(activePan); } });
-  const psl=document.getElementById('panSlider'), pslv=document.getElementById('panSliderVal');
-  if(psl) psl.addEventListener('input',()=>{ if(autoPanOn){ settings.ap.spread=+psl.value/100; if(pslv) pslv.textContent=Math.round(settings.ap.spread*360)+'°'; } else { settings.panMs=+psl.value; if(pslv) pslv.textContent=glideLbl(settings.panMs); } saveSettingsLS(); });
+  const pg=document.getElementById('panGlide'), pgv=document.getElementById('panGlideVal');
+  if(pg) pg.addEventListener('input',()=>{ settings.panMs=+pg.value; if(pgv) pgv.textContent=glideLbl(settings.panMs); saveSettingsLS(); });
+  const sp=document.getElementById('apSpread'), spv=document.getElementById('apSpreadVal');
+  if(sp) sp.addEventListener('input',()=>{ settings.ap.spread=+sp.value/100; if(spv) spv.textContent=Math.round(settings.ap.spread*360)+'°'; saveSettingsLS(); });
   wrap.querySelectorAll('.panmode[data-char]').forEach(b=> b.addEventListener('click',()=>{ const id=b.dataset.char; Object.assign(settings.ap, AP_CHARS[id]||{}); settings.ap.char=id; saveSettingsLS(); renderPan(); }));
   wrap.querySelectorAll('.panmode[data-mode]').forEach(b=> b.addEventListener('click',()=>{ settings.ap.mode=b.dataset.mode; saveSettingsLS(); renderPan(); }));
   const ar=document.getElementById('apRate'), arv=document.getElementById('apRateVal');
