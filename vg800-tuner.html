@@ -1558,6 +1558,10 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') setThemeMenu(false
 // Keep the jump-anchor offset in sync with the header's real height (varies with title wrapping)
 function setHdrH(){ const h=document.querySelector('header'); if(h) document.documentElement.style.setProperty('--hdr-h', h.offsetHeight+'px'); }
 setHdrH(); window.addEventListener('resize', setHdrH); window.addEventListener('load', setHdrH);
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(setHdrH);
+// Robust in-page jumps: scroll with the header's LIVE height as offset so the jumped-to title always clears the sticky header
+function jumpTo(hash){ const el=hash&&document.getElementById(hash.slice(1)); if(!el) return; const hdr=document.querySelector('header'); const off=(hdr?hdr.offsetHeight:80)+18; window.scrollTo({top: Math.max(0, el.getBoundingClientRect().top+window.scrollY-off), behavior:'smooth'}); }
+document.addEventListener('click', e=>{ const a=e.target.closest && e.target.closest('#sideNav a, #jumpMenu a'); if(a){ const href=a.getAttribute('href')||''; if(href[0]==='#'){ e.preventDefault(); jumpTo(href); } } });
 // Mobile "jump to section" dropdown
 const jumpBtn=document.getElementById('jumpBtn'), jumpMenu=document.getElementById('jumpMenu');
 function setJumpMenu(open){ jumpMenu.classList.toggle('open',open); jumpBtn.classList.toggle('open',open); jumpBtn.setAttribute('aria-expanded',open?'true':'false'); }
