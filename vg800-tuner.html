@@ -649,15 +649,17 @@ const FAMILIES = [
   ]},
   { family:'Drop', tunings:[
     {name:'Drop D', notes:'D A D G B E', offsets:[0,0,0,0,0,-2]},
-    {name:'Drop Db', notes:'C# A D G B E', offsets:[0,0,0,0,0,-3]},
-    {name:'Drop C', notes:'C A D G B E', offsets:[0,0,0,0,0,-4]},
-    {name:'Drop B', notes:'B A D G B E', offsets:[0,0,0,0,0,-5]},
-    {name:'Drop Bb', notes:'A# A D G B E', offsets:[0,0,0,0,0,-6]},
-    {name:'Drop A', notes:'A A D G B E', offsets:[0,0,0,0,0,-7]},
+    {name:'Drop Db', notes:'Db Ab Db Gb Bb Eb', offsets:[-1,-1,-1,-1,-1,-3]},
+    {name:'Drop C', notes:'C G C F A D', offsets:[-2,-2,-2,-2,-2,-4]},
+    {name:'Drop B', notes:'B Gb B E Ab Db', offsets:[-3,-3,-3,-3,-3,-5]},
+    {name:'Drop Bb', notes:'Bb F Bb Eb G C', offsets:[-4,-4,-4,-4,-4,-6]},
+    {name:'Drop A', notes:'A E A D F# B', offsets:[-5,-5,-5,-5,-5,-7]},
   ]},
   { family:'Specialties', tunings:[
     {name:'DADGAD', notes:'D A D G A D', offsets:[-2,-2,0,0,0,-2]},       // D-modal
     {name:'Nashville', notes:'E A D G B E', offsets:[0,0,12,12,12,12]},   // high-strung: low 4 up an octave
+    {name:'Baritone', notes:'B E A D F# B', offsets:[-5,-5,-5,-5,-5,-5]},  // B Standard: whole guitar down a 4th
+    {name:'Banjo', notes:'D G D G B D', offsets:[-2,0,0,0,-2,-2]},         // open-G 5-string banjo voicing
   ]},
   { family:'Artists', tunings:[
     {name:'NST', notes:'C G D A E G', offsets:[3,5,2,0,-2,-4], ref:'Robert Fripp · New Standard Tuning (all fifths)'},
