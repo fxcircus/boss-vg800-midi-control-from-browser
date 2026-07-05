@@ -494,11 +494,7 @@
   </div>
   <div id="ethnicWrap"></div>
 
-  <div class="sec" id="sec-strings" style="margin-top:8px">
-    <h2>Transpose</h2>
-    <div class="rule"></div>
-  </div>
-  <div id="testBtns"></div>
+  <div id="lapWrap" style="margin-top:8px"></div>
 
   <div class="sec" id="sec-steel" style="margin-top:8px">
     <h2>Pedal Steel</h2>
@@ -506,6 +502,12 @@
     <span style="font-family:var(--mono);font-size:10px;color:var(--bone-faint);white-space:nowrap">6 OF 10 STRINGS</span>
   </div>
   <div id="steelWrap"></div>
+
+  <div class="sec" id="sec-strings" style="margin-top:8px">
+    <h2>Transpose</h2>
+    <div class="rule"></div>
+  </div>
+  <div id="testBtns"></div>
 
   <div class="sec" id="sec-pedals" style="margin-top:8px">
     <h2>Pedals</h2>
@@ -1017,6 +1019,7 @@ function famBlock(f, isC){
 }
 function renderGrid(){
   const wrap=document.getElementById('grid'); wrap.innerHTML='';
+  const lap=document.getElementById('lapWrap'); if(lap) lap.innerHTML='';
   const all=FAMILIES.slice(); if(customs.length) all.push({family:'Your Own', tunings:customs, custom:true});
   let i=0;
   while(i<all.length){
@@ -1026,7 +1029,7 @@ function renderGrid(){
       const hd=document.createElement('div'); hd.className='lapsec-hd'; hd.textContent=sec; block.appendChild(hd);
       const body=document.createElement('div'); body.className='lapsec-body';
       while(i<all.length && all[i].section===sec){ body.appendChild(famBlock(all[i], !!all[i].custom)); i++; }
-      block.appendChild(body); wrap.appendChild(block);
+      block.appendChild(body); (lap||wrap).appendChild(block);   // Lap Steel renders in its own section (between Ethnic and Pedal Steel)
     } else { wrap.appendChild(famBlock(f, !!f.custom)); i++; }
   }
   document.querySelectorAll('.del').forEach(x=>x.addEventListener('click',()=>{
