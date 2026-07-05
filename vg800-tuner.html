@@ -1060,7 +1060,7 @@ function renderNav(){
   }
   const I={
     tunings:'<svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v6M16 3v6M8 9a4 4 0 0 0 8 0M12 13v8"/></svg>',
-    pedals:'<svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="14" width="15" height="5" rx="2.5" transform="rotate(-9 11 16.5)"/><path d="M16.4 14.6 18 8.4"/><circle cx="18.3" cy="6.9" r="1.5"/></svg>',
+    pedals:'<svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/><path d="M9 12H4M7.5 8.5 4 12l3.5 3.5"/><path d="M15 12h5M16.5 8.5 20 12l-3.5 3.5"/></svg>',
     pan:'<svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8.5a6.5 6.5 0 1 1 13 0c0 6-6 6-6 10a3.5 3.5 0 1 1-7 0"/><path d="M15 8.5a2.5 2.5 0 0 0-5 0v1a2 2 0 1 1 0 4"/></svg>' };
   box.innerHTML='<a class="group" href="#sec-tunings">'+I.tunings+'Tunings</a>'+links
     +'<a class="sub" href="#sec-ethnic">Ethnic</a>'
@@ -1178,7 +1178,7 @@ let panTimer=null, panCur=[0,0,0,0,0,0];   // live sounded pan per string, so gl
 // ── Auto-pan engine (MVP): each string runs a sine pan LFO, staggered in phase, streamed to the VG-800 ──
 const AUTOPAN_MS = 40;                                        // MIDI refresh cap (~25 updates/sec) — raise to send fewer messages
 const AUTOPAN_PHASE = [0,1,2,3,4,5].map(i=> i*(Math.PI*2/6)); // staggered phase so the six strings swirl, not move as a block
-let autoPanOn=false, autoPanTimer=null, autoPanT=0, autoPanLast=[-1,-1,-1,-1,-1,-1];
+let autoPanOn=false, autoPanTimer=null, autoPanT=0, autoPanLast=[-1,-1,-1,-1,-1,-1], autoPanStart=[0,0,0,0,0,0], autoPanRampMs=0;
 function autoPanHz(){ const v=Math.max(1,Math.min(100, settings.autoPanRate|0)); return 0.03 + (v-1)/99*(0.5-0.03); }  // slider 1–100 → 0.03–0.5 Hz
 function sendPan(pos){ if(!midiOut) return; const st=0xB0|((settings.channel-1)&0x0F); pos.forEach((p,i)=> midiOut.send([st, settings.panCCs[i]&0x7F, panToCC(p)&0x7F])); }
 function applyPan(id){
@@ -1208,7 +1208,8 @@ function panGlide(target){
 function autoPanTick(){
   autoPanT += AUTOPAN_MS/1000;
   const w = 2*Math.PI*autoPanHz()*autoPanT;
-  const pos = AUTOPAN_PHASE.map(ph=> Math.sin(w+ph));                 // −1…+1 per string, staggered
+  const ramp = autoPanRampMs>0 ? Math.min(1, autoPanT*1000/autoPanRampMs) : 1;   // ease in from where the strings were
+  const pos = AUTOPAN_PHASE.map((ph,i)=>{ const v=Math.sin(w+ph); return autoPanStart[i]*(1-ramp)+v*ramp; });  // −1…+1 per string, staggered
   if(midiOut){ const st=0xB0|((settings.channel-1)&0x0F);
     for(let i=0;i<6;i++){ const cc=panToCC(pos[i]); if(cc!==autoPanLast[i]){ autoPanLast[i]=cc; midiOut.send([st, settings.panCCs[i]&0x7F, cc&0x7F]); } }  // send only when the 0–127 value changes
   }
@@ -1217,6 +1218,7 @@ function autoPanTick(){
 function startAutoPan(){
   if(autoPanTimer) return;
   autoPanOn=true; autoPanT=0; autoPanLast=[-1,-1,-1,-1,-1,-1];
+  autoPanStart=panCur.slice(); autoPanRampMs=Math.max(0, settings.panMs|0);   // ease in from the current pan, over the glide time
   if(panTimer){ clearInterval(panTimer); panTimer=null; }            // stop any manual glide
   const dots=document.getElementById('cvDots'); if(dots) for(const d of dots.children) d.style.transitionDuration=(AUTOPAN_MS+50)+'ms';  // smooth dot tracking
   autoPanTimer=setInterval(autoPanTick, AUTOPAN_MS);
