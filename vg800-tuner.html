@@ -1281,6 +1281,9 @@ const glideLbl=ms=> ms===0?'instant' : ms>=1000?(ms/1000).toFixed(2).replace(/\.
 const rateCycLbl=v=>{ const hz=0.05+(Math.max(1,Math.min(100,v))-1)/99*(1-0.05); return '≈ '+(1/hz).toFixed(1).replace(/\.0$/,'')+'s / cycle'; };
 const spreadLbl=v=> v<0.02?'block' : v>=0.98?'full rotation' : v<0.4?'narrow fan' : v<0.75?'wide fan' : 'near rotation';
 let apFineOpen=false;
+// When enabling auto-pan / switching to a taller mode, bring the newly-revealed controls into view
+function ensurePanVisible(){ const wrap=document.getElementById('panWrap'); if(!wrap) return;
+  requestAnimationFrame(()=>{ const r=wrap.getBoundingClientRect(); if(r.bottom > window.innerHeight-6) wrap.scrollIntoView({behavior:'smooth', block:'end'}); }); }
 function renderPan(){
   const wrap=document.getElementById('panWrap'); if(!wrap) return;
   const a=settings.ap, pm=settings.panMs|0;
@@ -1337,14 +1340,14 @@ function renderPan(){
     </div>`;
   wrap.querySelectorAll('[data-pan]').forEach(b=> b.addEventListener('click',()=>applyPan(b.dataset.pan)));
   const ap=document.getElementById('autoPanChk');
-  if(ap) ap.addEventListener('change',()=>{ if(ap.checked){ startAutoPan(); renderPan(); } else { stopAutoPan(); renderPan(); applyPan(activePan); } });
+  if(ap) ap.addEventListener('change',()=>{ if(ap.checked){ startAutoPan(); renderPan(); ensurePanVisible(); } else { stopAutoPan(); renderPan(); applyPan(activePan); } });
   const pg=document.getElementById('panGlide'), pgv=document.getElementById('panGlideVal');
   if(pg) pg.addEventListener('input',()=>{ settings.panMs=+pg.value; if(pgv) pgv.textContent=glideLbl(settings.panMs); saveSettingsLS(); });
   const fineHint=()=>{ const h=document.getElementById('apFineHint'); if(h) h.textContent=spreadLbl(settings.ap.spread)+' · '+Math.round(settings.ap.width*100)+'%'; };
   const sp=document.getElementById('apSpread'), spv=document.getElementById('apSpreadVal');
   if(sp) sp.addEventListener('input',()=>{ settings.ap.spread=+sp.value/100; if(spv) spv.textContent=spreadLbl(settings.ap.spread); fineHint(); saveSettingsLS(); });
-  wrap.querySelectorAll('[data-char]').forEach(b=> b.addEventListener('click',()=>{ const id=b.dataset.char; Object.assign(settings.ap, AP_CHARS[id]||{}); settings.ap.char=id; saveSettingsLS(); renderPan(); }));
-  wrap.querySelectorAll('[data-mode]').forEach(b=> b.addEventListener('click',()=>{ settings.ap.mode=b.dataset.mode; saveSettingsLS(); renderPan(); }));
+  wrap.querySelectorAll('[data-char]').forEach(b=> b.addEventListener('click',()=>{ const id=b.dataset.char; Object.assign(settings.ap, AP_CHARS[id]||{}); settings.ap.char=id; saveSettingsLS(); renderPan(); ensurePanVisible(); }));
+  wrap.querySelectorAll('[data-mode]').forEach(b=> b.addEventListener('click',()=>{ settings.ap.mode=b.dataset.mode; saveSettingsLS(); renderPan(); ensurePanVisible(); }));
   const ar=document.getElementById('apRate'), arv=document.getElementById('apRateVal');
   if(ar) ar.addEventListener('input',()=>{ settings.ap.rate=+ar.value; if(arv) arv.textContent=rateCycLbl(settings.ap.rate); saveSettingsLS(); });
   const bpm=document.getElementById('apBpm'), bpmv=document.getElementById('apBpmVal');
@@ -1353,7 +1356,7 @@ function renderPan(){
   const w=document.getElementById('apWidth'), wv=document.getElementById('apWidthVal');
   if(w) w.addEventListener('input',()=>{ settings.ap.width=+w.value/100; if(wv) wv.textContent=Math.round(settings.ap.width*100)+'%'; fineHint(); saveSettingsLS(); });
   wrap.querySelectorAll('[data-shape]').forEach(b=> b.addEventListener('click',()=>{ settings.ap.shape=b.dataset.shape; saveSettingsLS(); renderPan(); }));
-  const fine=wrap.querySelector('.apfine'); if(fine) fine.addEventListener('toggle',()=>{ apFineOpen=fine.open; });
+  const fine=wrap.querySelector('.apfine'); if(fine) fine.addEventListener('toggle',()=>{ apFineOpen=fine.open; if(fine.open) setTimeout(ensurePanVisible,300); });
   const lts=document.getElementById('apLTS'); if(lts) lts.addEventListener('input',()=>{ settings.ap.lTopSpread=+lts.value/100; const v=document.getElementById('apLTSv'); if(v) v.textContent=Math.round(settings.ap.lTopSpread*100)+'%'; saveSettingsLS(); });
   const ltz=document.getElementById('apLTZ'); if(ltz) ltz.addEventListener('input',()=>{ settings.ap.lTopSpeed=+ltz.value/100; const v=document.getElementById('apLTZv'); if(v) v.textContent=settings.ap.lTopSpeed.toFixed(2)+'×'; saveSettingsLS(); });
   const lbs=document.getElementById('apLBS'); if(lbs) lbs.addEventListener('input',()=>{ settings.ap.lBotSpread=+lbs.value/100; const v=document.getElementById('apLBSv'); if(v) v.textContent=Math.round(settings.ap.lBotSpread*100)+'%'; saveSettingsLS(); });
