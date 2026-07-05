@@ -305,6 +305,12 @@
   .pan-auto { margin-top: 10px; padding: 12px 14px; background: var(--wood); border: 1px solid var(--edge); border-radius: 10px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
   .pan-auto .pg-lbl { display: flex; justify-content: space-between; align-items: baseline; font-family: var(--mono); font-size: 11px; color: var(--bone-dim); letter-spacing: 0.3px; margin-bottom: 9px; }
   .pan-auto .pg-lbl b { color: var(--brass); font-size: 12px; }
+  #apBody .panmodes { margin-bottom: 4px; }
+  .apcap { font-family: var(--mono); font-size: 9.5px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--bone-faint); margin: 14px 2px 8px; }
+  .apseg { display: flex; gap: 6px; margin-bottom: 4px; }
+  .apseg .panmode { flex: 1; }
+  .apdivs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 4px; }
+  #apFree, #apSync { margin-top: 10px; }
   /* Combined compact view — pitch neck (renderStrings) sits above a pan strip, linked by fixed per-string color */
   .cv-pan { margin: 12px 6px 2px; }
   .cv-scale { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 8px; color: var(--bone-faint); letter-spacing: 1px; padding: 0 3px; margin-bottom: 4px; }
@@ -629,6 +635,7 @@ function nameOf(m){ const pc=((m%12)+12)%12; return {name:NOTE[pc], oct:Math.flo
 function toCC(s){ const c=Math.max(-12,Math.min(12,s)); return Math.round((c+12)/24*127); }
 const DEFAULT_KEYS={A:'a',B:'s',LKL:'d',LKR:'f',AB:'g',ABR:'h'};  // ergonomic left-hand cluster
 const AB_DEFAULTS={autoBend:false, bendCC:69, levelCC:70, bendDepth:25, levelDip:15, bendMs:120};  // auto-bend scoop
+const AP_DEFAULTS={mode:'free', rate:15, bpm:120, div:'1/4', width:0.5, shape:'sine', spread:1, char:'none'};  // auto-pan engine (gentle defaults)
 
 const FAMILIES = [
   { family:'Standard', tunings:[ {name:'Standard', notes:'E A D G B E', offsets:[0,0,0,0,0,0]} ]},
@@ -717,7 +724,7 @@ const PANMODES=[
 const STR_COLORS=['#ef5350','#f2a33d','#c6d43f','#4cc178','#4f9dea','#a563d4'];
 let dispOffsets=[0,0,0,0,0,0];   // the pitch offsets currently shown (base tuning + engaged pedal bends)
 
-function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; if(typeof s.autoPanRate!=='number') s.autoPanRate=30; return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, autoPanRate:30, ...AB_DEFAULTS}; }
+function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; if(!s.ap||typeof s.ap!=='object'){ s.ap={...AP_DEFAULTS}; if(typeof s.autoPanRate==='number') s.ap.rate=s.autoPanRate; } else { for(const k in AP_DEFAULTS) if(!(k in s.ap)) s.ap[k]=AP_DEFAULTS[k]; } return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, ap:{...AP_DEFAULTS}, ...AB_DEFAULTS}; }
 function saveSettingsLS(){ localStorage.setItem('vg800_settings', JSON.stringify(settings)); }
 function loadCustom(){ try{ return JSON.parse(localStorage.getItem('vg800_custom'))||[]; }catch(e){ return []; } }
 function saveCustomLS(){ localStorage.setItem('vg800_custom', JSON.stringify(customs)); }
@@ -1175,17 +1182,23 @@ function clearSteel(){ steelInst=null; steelRoot=null; steelWin=0; copedent=COPE
 /* ===== Panning — per-string pan modes, glided so the sweep is felt ===== */
 function panToCC(p){ return Math.round((Math.max(-1,Math.min(1,p))+1)/2*127); }   // −1→L50(0), +1→R50(127)
 let panTimer=null, panCur=[0,0,0,0,0,0];   // live sounded pan per string, so glides start from where we are
-// ── Auto-pan engine (MVP): each string runs a sine pan LFO, staggered in phase, streamed to the VG-800 ──
-const AUTOPAN_MS = 40;                                        // MIDI refresh cap (~25 updates/sec) — raise to send fewer messages
-const AUTOPAN_PHASE = [0,1,2,3,4,5].map(i=> i*(Math.PI*2/6)); // staggered phase so the six strings swirl, not move as a block
+// ── Auto-pan engine: per-string pan LFO with rate modes, width, shape, phase spread + character presets ──
+const AUTOPAN_MS = 40;                                        // MIDI refresh cap (~25 updates/sec) — one place to adjust throughput
+const AP_DIVS=[['1/4',1],['1/4.',1.5],['1/4t',2/3],['1/8',0.5],['1/8.',0.75],['1/8t',1/3],['1/16',0.25],['1/16.',0.375],['1/16t',1/6]];  // beats per LFO cycle, relative to a quarter note
+const AP_DIVMAP=Object.fromEntries(AP_DIVS);
+const AP_CHARS={ rotate:{shape:'sine',spread:1,width:0.85,mode:'free',rate:45}, leslie:{shape:'sine',spread:1,width:0.7,mode:'free',rate:62}, breathe:{shape:'sine',spread:1,width:1,mode:'free',rate:30}, pingpong:{shape:'triangle',spread:0,width:0.9,mode:'free',rate:38}, drift:{shape:'sine',spread:0.6,width:0.55,mode:'free',rate:12} };
 let autoPanOn=false, autoPanTimer=null, autoPanT=0, autoPanLast=[-1,-1,-1,-1,-1,-1], autoPanStart=[0,0,0,0,0,0], autoPanRampMs=0;
-function autoPanHz(){ const v=Math.max(1,Math.min(100, settings.autoPanRate|0)); return 0.03 + (v-1)/99*(1-0.03); }  // slider 1–100 → 0.03–1 Hz (33s → 1s / cycle)
+let apPhase=0, apBreathe=0, apSwap=1, apSwapStep=0, apSH=[0,0,0,0,0,0], apSHstep=[-1,-1,-1,-1,-1,-1], apDrift=[0,0,0,0,0,0], apDriftTgt=[0,0,0,0,0,0], apDriftT=[0,0,0,0,0,0];
+function apCyclesPerSec(){ const a=settings.ap; if(a.mode==='sync'){ const beats=AP_DIVMAP[a.div]||1; return 1/((60/Math.max(60,Math.min(200,a.bpm)))*beats); } const v=Math.max(1,Math.min(100,a.rate)); return 0.05+(v-1)/99*(1-0.05); }  // free: 0.05–1 Hz; sync: one cycle per note division
+function apShapeVal(x,shape){ return shape==='triangle' ? 2/Math.PI*Math.asin(Math.sin(x)) : Math.sin(x); }
 function sendPan(pos){ if(!midiOut) return; const st=0xB0|((settings.channel-1)&0x0F); pos.forEach((p,i)=> midiOut.send([st, settings.panCCs[i]&0x7F, panToCC(p)&0x7F])); }
 function applyPan(id){
   const m=PANMODES.find(x=>x.id===id); if(!m) return;
-  if(autoPanOn){ stopAutoPan(); const c=document.getElementById('autoPanChk'); if(c) c.checked=false; }  // picking a preset exits auto-pan
+  const wasAuto=autoPanOn;
+  if(autoPanOn) stopAutoPan();
   activePan=id;
-  document.querySelectorAll('.panmode').forEach(b=> b.classList.toggle('on', b.dataset.pan===id));
+  if(wasAuto){ const c=document.getElementById('autoPanChk'); if(c) c.checked=false; renderPan(); }   // picking a preset exits auto-pan → revert the UI
+  else document.querySelectorAll('.panmode[data-pan]').forEach(b=> b.classList.toggle('on', b.dataset.pan===id));
   panGlide(m.pos.slice());
 }
 function panGlide(target){
@@ -1205,51 +1218,100 @@ function panGlide(target){
     if(n>=steps){ clearInterval(panTimer); panTimer=null; panCur=target.slice(); }
   }, stepMs);
 }
+function autoPanCompute(dt){
+  const a=settings.ap;
+  apPhase += 2*Math.PI*apCyclesPerSec()*dt;                                                            // phase accumulator → rate changes stay smooth
+  const spread=Math.max(0,Math.min(1,a.spread)); let width=Math.max(0,Math.min(1,a.width)); const char=a.char, pos=new Array(6);
+  if(char==='breathe'){ apBreathe += 2*Math.PI*0.05*dt; width*= 0.5-0.5*Math.cos(apBreathe); }         // width breathes 0↔max (~20s)
+  else if(char==='leslie'){ width*= 0.85+0.15*Math.sin(apPhase*2); }                                    // subtle rotary throb
+  if(char==='drift'){
+    for(let i=0;i<6;i++){ apDriftT[i]-=dt; if(apDriftT[i]<=0){ apDriftTgt[i]=Math.random()*2-1; apDriftT[i]=1.5+Math.random()*2.5; }
+      apDrift[i]+= (apDriftTgt[i]-apDrift[i])*Math.min(1, dt*(0.4+apCyclesPerSec()*1.5)); pos[i]=apDrift[i]*width; }   // smoothed independent wander
+  } else if(char==='pingpong'){
+    const step=Math.floor(apPhase/(2*Math.PI*2)); if(step!==apSwapStep){ apSwapStep=step; apSwap=-apSwap; }            // swap the two groups every 2 cycles
+    const v=apShapeVal(apPhase, a.shape==='sh'?'triangle':a.shape);
+    for(let i=0;i<6;i++) pos[i]=((i%2===0?1:-1)*apSwap)*v*width;
+  } else if(a.shape==='sh'){
+    for(let i=0;i<6;i++){ const ph=apPhase+spread*(i/6)*2*Math.PI, step=Math.floor(ph/(2*Math.PI)); if(step!==apSHstep[i]){ apSHstep[i]=step; apSH[i]=Math.random()*2-1; } pos[i]=apSH[i]*width; }
+  } else {
+    for(let i=0;i<6;i++){ const ph=apPhase+spread*(i/6)*2*Math.PI; pos[i]=apShapeVal(ph,a.shape)*width; }
+  }
+  return pos;
+}
 function autoPanTick(){
   autoPanT += AUTOPAN_MS/1000;
-  const w = 2*Math.PI*autoPanHz()*autoPanT;
-  const ramp = autoPanRampMs>0 ? Math.min(1, autoPanT*1000/autoPanRampMs) : 1;   // ease in from where the strings were
-  const pos = AUTOPAN_PHASE.map((ph,i)=>{ const v=Math.sin(w+ph); return autoPanStart[i]*(1-ramp)+v*ramp; });  // −1…+1 per string, staggered
+  let pos=autoPanCompute(AUTOPAN_MS/1000);
+  const ramp = autoPanRampMs>0 ? Math.min(1, autoPanT*1000/autoPanRampMs) : 1;                          // ease in from where the strings were
+  if(ramp<1) pos=pos.map((v,i)=> autoPanStart[i]*(1-ramp)+v*ramp);
   if(midiOut){ const st=0xB0|((settings.channel-1)&0x0F);
-    for(let i=0;i<6;i++){ const cc=panToCC(pos[i]); if(cc!==autoPanLast[i]){ autoPanLast[i]=cc; midiOut.send([st, settings.panCCs[i]&0x7F, cc&0x7F]); } }  // send only when the 0–127 value changes
+    for(let i=0;i<6;i++){ const cc=panToCC(pos[i]); if(cc!==autoPanLast[i]){ autoPanLast[i]=cc; midiOut.send([st, settings.panCCs[i]&0x7F, cc&0x7F]); } }   // send only when the 0–127 value changes
   }
-  panCur=pos; updateOverview(pos);                                   // keep glide-resume + sidebar dots in sync
+  panCur=pos; updateOverview(pos);
 }
 function startAutoPan(){
   if(autoPanTimer) return;
   autoPanOn=true; autoPanT=0; autoPanLast=[-1,-1,-1,-1,-1,-1];
-  autoPanStart=panCur.slice(); autoPanRampMs=Math.max(0, settings.panMs|0);   // ease in from the current pan, over the glide time
-  if(panTimer){ clearInterval(panTimer); panTimer=null; }            // stop any manual glide
-  const dots=document.getElementById('cvDots'); if(dots) for(const d of dots.children) d.style.transitionDuration=(AUTOPAN_MS+50)+'ms';  // smooth dot tracking
+  autoPanStart=panCur.slice(); autoPanRampMs=Math.max(0, settings.panMs|0);                             // ease in over the glide time
+  if(panTimer){ clearInterval(panTimer); panTimer=null; }
+  const dots=document.getElementById('cvDots'); if(dots) for(const d of dots.children) d.style.transitionDuration=(AUTOPAN_MS+50)+'ms';
   autoPanTimer=setInterval(autoPanTick, AUTOPAN_MS);
 }
 function stopAutoPan(){ if(autoPanTimer){ clearInterval(autoPanTimer); autoPanTimer=null; } autoPanOn=false; }
+const AP_CHARLIST=[['none','Manual'],['rotate','Rotate'],['leslie','Leslie'],['breathe','Fan Breathe'],['pingpong','Ping-Pong'],['drift','Drift']];
+const glideLbl=ms=> ms===0?'instant' : ms>=1000?(ms/1000).toFixed(2).replace(/\.?0+$/,'')+'S' : ms+' ms';
+const rateCycLbl=v=>{ const hz=0.05+(Math.max(1,Math.min(100,v))-1)/99*(1-0.05); return '≈ '+(1/hz).toFixed(1).replace(/\.0$/,'')+'s / cycle'; };
 function renderPan(){
   const wrap=document.getElementById('panWrap'); if(!wrap) return;
+  const a=settings.ap, pm=settings.panMs|0;
   const btns=PANMODES.map(m=>`<button class="panmode${activePan===m.id?' on':''}" data-pan="${m.id}">${m.name}</button>`).join('');
-  const pm=settings.panMs|0;
-  const lbl=ms=> ms===0?'instant' : ms>=1000?(ms/1000).toFixed(2).replace(/\.?0+$/,'')+'S' : ms+' ms';  // ≥1s → "1S"/"1.5S"
-  const apr=settings.autoPanRate|0;
-  const rateLbl=v=>{ const hz=0.03+(Math.max(1,Math.min(100,v))-1)/99*(1-0.03); return '≈ '+(1/hz).toFixed(1).replace(/\.0$/,'')+'s / cycle'; };
-  wrap.innerHTML=`<div class="panmodes">${btns}</div>
-    <div class="pan-glide">
-      <div class="pg-lbl"><span>Pan glide — ease between modes</span><b id="panMsVal">${lbl(pm)}</b></div>
-      <input type="range" class="slider" id="panMsSlider" min="0" max="5000" step="50" value="${pm}">
-    </div>
-    <div class="pan-auto">
-      <label class="latch-tog" style="margin-bottom:12px"><input type="checkbox" id="autoPanChk"${autoPanOn?' checked':''}><span>Auto-pan — each string sweeps the stereo field</span></label>
-      <div class="pg-lbl"><span>Rate</span><b id="autoPanRateVal">${rateLbl(apr)}</b></div>
-      <input type="range" class="slider" id="autoPanRate" min="1" max="100" value="${apr}">
+  // shared slider: Pan glide when auto-pan is off, Phase spread when it's on
+  const sliderBlock = autoPanOn
+    ? `<div class="pan-glide"><div class="pg-lbl"><span>Phase spread — swirl vs. block</span><b id="panSliderVal">${Math.round(a.spread*360)}°</b></div>
+        <input type="range" class="slider" id="panSlider" min="0" max="100" value="${Math.round(a.spread*100)}"></div>`
+    : `<div class="pan-glide"><div class="pg-lbl"><span>Pan glide — ease between modes</span><b id="panSliderVal">${glideLbl(pm)}</b></div>
+        <input type="range" class="slider" id="panSlider" min="0" max="5000" step="50" value="${pm}"></div>`;
+  const charBtns=AP_CHARLIST.map(([id,nm])=>`<button class="panmode${a.char===id?' on':''}" data-char="${id}">${nm}</button>`).join('');
+  const divBtns=AP_DIVS.map(([id])=>`<button class="panmode${a.div===id?' on':''}" data-div="${id}">${id}</button>`).join('');
+  const autoBody=`<div id="apBody"${autoPanOn?'':' hidden'}>
+      <div class="apcap">Character</div>
+      <div class="panmodes">${charBtns}</div>
+      <div class="apcap">Rate mode</div>
+      <div class="apseg"><button class="panmode${a.mode==='free'?' on':''}" data-mode="free">Free</button><button class="panmode${a.mode==='sync'?' on':''}" data-mode="sync">Sync</button></div>
+      <div id="apFree"${a.mode==='sync'?' hidden':''}>
+        <div class="pg-lbl"><span>Rate — LFO speed</span><b id="apRateVal">${rateCycLbl(a.rate)}</b></div>
+        <input type="range" class="slider" id="apRate" min="1" max="100" value="${a.rate}">
+      </div>
+      <div id="apSync"${a.mode==='free'?' hidden':''}>
+        <div class="pg-lbl"><span>Tempo</span><b id="apBpmVal">${a.bpm} BPM</b></div>
+        <input type="range" class="slider" id="apBpm" min="60" max="200" value="${a.bpm}">
+        <div class="apcap">Division</div><div class="apdivs">${divBtns}</div>
+      </div>
+      <div class="pg-lbl" style="margin-top:12px"><span>Width — swing</span><b id="apWidthVal">${Math.round(a.width*100)}%</b></div>
+      <input type="range" class="slider" id="apWidth" min="0" max="100" value="${Math.round(a.width*100)}">
+      <div class="apcap">Shape</div>
+      <div class="apseg"><button class="panmode${a.shape==='sine'?' on':''}" data-shape="sine">Sine</button><button class="panmode${a.shape==='triangle'?' on':''}" data-shape="triangle">Triangle</button><button class="panmode${a.shape==='sh'?' on':''}" data-shape="sh">S&amp;H</button></div>
     </div>`;
-  wrap.querySelectorAll('.panmode').forEach(b=>{
-    b.addEventListener('click',()=>applyPan(b.dataset.pan));   // pan animates only on click (no hover preview)
-  });
-  const sl=document.getElementById('panMsSlider'), val=document.getElementById('panMsVal');
-  if(sl) sl.addEventListener('input',()=>{ settings.panMs=+sl.value; if(val) val.textContent=lbl(settings.panMs); saveSettingsLS(); });
+  wrap.innerHTML=`<div class="panmodes">${btns}</div>
+    ${sliderBlock}
+    <div class="pan-auto">
+      <label class="latch-tog" style="margin-bottom:${autoPanOn?'2px':'0'}"><input type="checkbox" id="autoPanChk"${autoPanOn?' checked':''}><span>Auto-pan — each string sweeps the stereo field</span></label>
+      ${autoBody}
+    </div>`;
+  wrap.querySelectorAll('.panmode[data-pan]').forEach(b=> b.addEventListener('click',()=>applyPan(b.dataset.pan)));
   const ap=document.getElementById('autoPanChk');
-  if(ap) ap.addEventListener('change',()=>{ if(ap.checked) startAutoPan(); else { stopAutoPan(); applyPan(activePan); } });   // off → back to the manual preset
-  const ar=document.getElementById('autoPanRate'), arv=document.getElementById('autoPanRateVal');
-  if(ar) ar.addEventListener('input',()=>{ settings.autoPanRate=+ar.value; if(arv) arv.textContent=rateLbl(settings.autoPanRate); saveSettingsLS(); });
+  if(ap) ap.addEventListener('change',()=>{ if(ap.checked){ startAutoPan(); renderPan(); } else { stopAutoPan(); renderPan(); applyPan(activePan); } });
+  const psl=document.getElementById('panSlider'), pslv=document.getElementById('panSliderVal');
+  if(psl) psl.addEventListener('input',()=>{ if(autoPanOn){ settings.ap.spread=+psl.value/100; if(pslv) pslv.textContent=Math.round(settings.ap.spread*360)+'°'; } else { settings.panMs=+psl.value; if(pslv) pslv.textContent=glideLbl(settings.panMs); } saveSettingsLS(); });
+  wrap.querySelectorAll('.panmode[data-char]').forEach(b=> b.addEventListener('click',()=>{ const id=b.dataset.char; if(id!=='none') Object.assign(settings.ap, AP_CHARS[id]); settings.ap.char=id; saveSettingsLS(); renderPan(); }));
+  wrap.querySelectorAll('.panmode[data-mode]').forEach(b=> b.addEventListener('click',()=>{ settings.ap.mode=b.dataset.mode; saveSettingsLS(); renderPan(); }));
+  const ar=document.getElementById('apRate'), arv=document.getElementById('apRateVal');
+  if(ar) ar.addEventListener('input',()=>{ settings.ap.rate=+ar.value; if(arv) arv.textContent=rateCycLbl(settings.ap.rate); saveSettingsLS(); });
+  const bpm=document.getElementById('apBpm'), bpmv=document.getElementById('apBpmVal');
+  if(bpm) bpm.addEventListener('input',()=>{ settings.ap.bpm=+bpm.value; if(bpmv) bpmv.textContent=settings.ap.bpm+' BPM'; saveSettingsLS(); });
+  wrap.querySelectorAll('.panmode[data-div]').forEach(b=> b.addEventListener('click',()=>{ settings.ap.div=b.dataset.div; saveSettingsLS(); renderPan(); }));
+  const w=document.getElementById('apWidth'), wv=document.getElementById('apWidthVal');
+  if(w) w.addEventListener('input',()=>{ settings.ap.width=+w.value/100; if(wv) wv.textContent=Math.round(settings.ap.width*100)+'%'; saveSettingsLS(); });
+  wrap.querySelectorAll('.panmode[data-shape]').forEach(b=> b.addEventListener('click',()=>{ settings.ap.shape=b.dataset.shape; saveSettingsLS(); renderPan(); }));
 }
 /* ===== Combined view — pan dots (top strip) linked by fixed per-string color to the pitch neck (renderStrings, below).
    Lives in #sec-current, which placeBench() parks in the sidebar on wide screens. ===== */
@@ -1361,7 +1423,7 @@ document.getElementById('saveSettings').addEventListener('click',()=>{
   const num=(id,lo,hi,d)=>{ const v=+document.getElementById(id).value; return isNaN(v)?d:Math.max(lo,Math.min(hi,v)); };
   const ab={ autoBend:document.getElementById('autoBendChk').checked, bendCC:num('bendCCInput',0,127,69), levelCC:num('levelCCInput',0,127,70), bendDepth:num('bendDepthInput',0,50,25), levelDip:num('levelDipInput',0,50,15), bendMs:num('bendMsInput',40,400,120) };
   const panCCs=[]; document.querySelectorAll('#panCcRows select').forEach(x=>panCCs[+x.dataset.pcc]=Math.max(1,Math.min(127,+x.value||1)));
-  settings={channel:ch,ccs,gap:settings.gap??20,glide:0,keys:settings.keys,latch:settings.latch,panCCs,panMs:settings.panMs,autoPanRate:settings.autoPanRate, ...ab}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
+  settings={channel:ch,ccs,gap:settings.gap??20,glide:0,keys:settings.keys,latch:settings.latch,panCCs,panMs:settings.panMs,ap:settings.ap, ...ab}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
 });
 
 function applyTest(v){
