@@ -123,7 +123,7 @@
   .bench-head .name.xlong + .lbl { display: none; }   /* very long name → drop the label to free space */
   .bench-head .name.std { color: var(--bone); }
 
-  .str { position: relative; display: grid; grid-template-columns: 78px 1fr 52px; align-items: center; height: 40px; padding: 0 18px; }
+  .str { position: relative; display: grid; grid-template-columns: 24px 1fr 52px; align-items: center; height: 40px; padding: 0 18px; }
   .str .wire { position: relative; height: 100%; display: flex; align-items: center; }
   .str .wire::before {
     content: ""; position: absolute; left: 0; right: 0; top: 50%;
@@ -261,7 +261,7 @@
   #sideNav .bench-head .name.long { font-size: 13px; }
   #sideNav .bench-head .name.xlong { font-size: 11px; }
   #sideNav .bench-head .lbl { display: none; }   /* sidebar is tight — drop the label, give the name the full width */
-  #sideNav .str { grid-template-columns: 60px 1fr 24px; height: 25px; padding: 0 8px; }
+  #sideNav .str { grid-template-columns: 20px 1fr 24px; height: 25px; padding: 0 8px; }
   #sideNav .str-lbl { font-size: 9px; letter-spacing: 0; }
   #sideNav .slide { min-width: 21px; height: 17px; font-size: 11px; padding: 0 4px; border-radius: 4px; }
   #sideNav .slide .oct { font-size: 7px; }
@@ -847,7 +847,7 @@ function renderStrings(offsets){
     wrap.innerHTML='';
     for(let i=0;i<6;i++){
       const row=document.createElement('div'); row.className='str'; row.dataset.g=(6-i);
-      row.innerHTML=`<span class="str-lbl"><i class="str-sw" style="background:${STR_COLORS[i]}"></i>String <b>${SLBL[i]}</b></span><span class="wire"><span class="slide"><span class="sl-name"></span><span class="oct"></span></span></span><span class="str-off"></span>`;
+      row.innerHTML=`<span class="str-lbl"><i class="str-sw" style="background:${STR_COLORS[i]}"></i></span><span class="wire"><span class="slide"><span class="sl-name"></span><span class="oct"></span></span></span><span class="str-off"></span>`;
       wrap.appendChild(row);
     }
   }
@@ -949,9 +949,7 @@ function bendsFromEngaged(){
 }
 function movesHTML(moves){
   if(!moves||!moves.length) return '';
-  const g={};
-  moves.forEach(m=>{ const dir=(m.bend>=0)?'up':'dn'; const k=nameOf(m.from).name+'→'+nameOf(m.to).name+'|'+dir; (g[k]=g[k]||[]).push(SLBL[m.i]); });
-  return Object.keys(g).map(k=>{ const parts=k.split('|'); return `<span class="mv"><span class="to ${parts[1]==='dn'?'dn':''}">${parts[0]}</span> <span class="st">${g[k].join('·')}</span></span>`; }).join('');
+  return moves.map(m=>{ const dn=m.bend<0?' dn':''; return `<span class="mv"><span class="st">String ${SLBL[m.i]}</span> <span class="to${dn}">${nameOf(m.from).name}→${nameOf(m.to).name}</span></span>`; }).join('');
 }
 function pedalBtnHTML(ctrl, label, sub, st){
   const dis=!st.avail, key=(keyFor(ctrl)||'').toUpperCase();
