@@ -336,6 +336,7 @@
   /* Compact "Current Tuning" bench when it lives in the sidebar (wide screens) */
   #sideNav .bench { margin: 18px 0 0; padding: 13px 4px 9px; border-radius: 10px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
   #sideNav .bench-head { padding: 0 8px 9px; }
+  #sideNav .bench .fam-name { margin: 2px 4px 10px; }   /* tighter cut-line headers in the narrow sidebar */
   #sideNav .bench-head .name { font-size: 15px; }
   #sideNav .bench-head .name.long { font-size: 13px; }
   #sideNav .bench-head .name.xlong { font-size: 11px; }
@@ -405,6 +406,8 @@
   #apFree, #apSync { margin-top: 10px; }
   /* Combined compact view — pan strip sits above the pitch neck (renderStrings), linked by fixed per-string color */
   .cv-pan { margin: 2px 6px 14px; }
+  #sec-current .fam-name { margin: 2px 10px 12px; }              /* "Current Panning" / "Current Tuning" cut-line headers */
+  #sec-current .cv-pan + .fam-name { margin-top: 8px; }          /* extra breathing room above the tuning header */
   .cv-scale { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 8px; color: var(--bone-faint); letter-spacing: 1px; padding: 0 3px; margin-bottom: 4px; }
   .cv-panfield { position: relative; height: 48px; background: var(--ink); border: 1px solid var(--edge-soft); border-radius: 9px; }
   .cv-panmid { position: absolute; left: 50%; top: 5px; bottom: 5px; width: 1px; background: var(--edge); }
@@ -745,10 +748,12 @@
   </fieldset>
 
   <div class="bench" id="sec-current">
+    <div class="fam-name">Current Panning</div>
     <div class="cv-pan">
       <div class="cv-scale"><span>L</span><span>C</span><span>R</span></div>
       <div class="cv-panfield"><span class="cv-panmid"></span><div id="cvDots"></div></div>
     </div>
+    <div class="fam-name">Current Tuning</div>
     <div class="bench-head">
       <span class="name std" id="nowName">Standard</span>
     </div>
@@ -994,7 +999,7 @@ const FAMILIES = [
     {name:'Drop A', notes:'A E A D F# B', offsets:[-5,-5,-5,-5,-5,-7]},
   ]},
   { family:'Artists', tunings:[
-    {name:'NST', notes:'C G D A E G', offsets:[3,5,2,0,-2,-4], ref:'Robert Fripp · New Standard Tuning (all fifths)'},
+    {name:'Fripp NST', notes:'C G D A E G', offsets:[3,5,2,0,-2,-4], ref:'Robert Fripp’s New Standard Tuning (all fifths) · King Crimson “Frame by Frame” (Discipline, 1981)'},
     {name:'Gambale', notes:'A D G C E A', offsets:[-7,-7,5,5,5,5], ref:'Frank Gambale · fourths tuning'},
     {name:'Rain Song', notes:'D G C G C D', offsets:[-2,1,0,-2,-2,-2], ref:'Led Zeppelin · “The Rain Song” (Jimmy Page)'},
     {name:'Ostrich', notes:'G A B D E G', offsets:[-9,-7,-5,-3,0,3], ref:'Sonic Youth · Ostrich tuning'},
@@ -1450,10 +1455,10 @@ function applyInst(inst, start){
   const N=inst.pitches.length; start=Math.max(0, Math.min(6-N, start));
   const res=computeCluster(inst.pitches, start);
   if(!res.ok){ toast(inst.name+' can’t fit those strings', true); return; }
-  if(!tuningSend(res.offsets)) return;
   active=inst.name; baseOffsets=[...res.offsets]; held.clear(); ethnicInst=inst; ethnicStart=start; clearSteel();
   const n=document.getElementById('nowName'); n.textContent=inst.name; n.classList.remove('std');
   renderStrings(res.offsets); renderGrid(); renderPedals(); renderEthnic(); renderSteel();
+  tuningSend(res.offsets);   // display always updates; push MIDI when connected
 }
 function ethnicCardHTML(inst){
   const on = ethnicInst && ethnicInst.name===inst.name;
@@ -1508,11 +1513,11 @@ function applySteel(t, win){
   win=Math.max(0, Math.min(WINDOWS.length-1, win));
   const res=computeCluster(t.midi.slice(WINDOWS[win].i0, WINDOWS[win].i0+6), 0);
   if(!res.ok){ toast(t.name+' — that window won’t fit', true); return; }
-  if(!tuningSend(res.offsets)) return;
   active=t.name; baseOffsets=[...res.offsets]; held.clear();
   ethnicInst=null; steelInst=t; steelWin=win; steelRoot=t.root; copedent=COPEDENTS[t.copedent]||COPEDENTS.generic;
   const n=document.getElementById('nowName'); n.textContent=t.name; n.classList.remove('std');
   renderStrings(res.offsets); renderGrid(); renderEthnic(); renderSteel(); renderPedals();
+  tuningSend(res.offsets);   // display always updates; push MIDI when connected
 }
 function clearSteel(){ steelInst=null; steelRoot=null; steelWin=0; copedent=COPEDENTS.generic; }
 /* ===== Panning — per-string pan modes, glided so the sweep is felt ===== */
@@ -1712,13 +1717,12 @@ function updateOverview(posOverride){
 }
 function notesOf(offsets){ return offsets.map((s,i)=>nameOf(STD_MIDI[i]+s).name).reverse().join(' '); }
 function apply(t){
-  if(tuningSend(t.offsets)){
-    active=t.name;
-    baseOffsets=[...t.offsets]; held.clear(); ethnicInst=null; clearSteel();
-    if(t.bends&&t.bends.keys){ settings.keys={...DEFAULT_KEYS, ...t.bends.keys}; rebuildKeymap(); saveSettingsLS(); }   // user preset carries its own pedal key mapping
-    const n=document.getElementById('nowName'); n.textContent=t.name; n.classList.toggle('std',t.name==='Standard');
-    renderStrings(t.offsets); renderGrid(); renderPedals(); renderEthnic(); renderSteel();
-  }
+  active=t.name;
+  baseOffsets=[...t.offsets]; held.clear(); ethnicInst=null; clearSteel();
+  if(t.bends&&t.bends.keys){ settings.keys={...DEFAULT_KEYS, ...t.bends.keys}; rebuildKeymap(); saveSettingsLS(); }   // user preset carries its own pedal key mapping
+  const n=document.getElementById('nowName'); n.textContent=t.name; n.classList.toggle('std',t.name==='Standard');
+  renderStrings(t.offsets); renderGrid(); renderPedals(); renderEthnic(); renderSteel();
+  tuningSend(t.offsets);   // display always updates; push MIDI when connected (shows the existing error toast if not)
 }
 
 function renderEd(){
@@ -1933,7 +1937,7 @@ document.addEventListener('click',e=>{ if(themeMenu.classList.contains('open') &
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') setThemeMenu(false); });
 // Compact mode — density toggle in the theme menu; just flips an <html> class (CSS hides card notes/offsets), no re-render
 function markCompact(){ const on=document.documentElement.classList.contains('compact'); document.querySelectorAll('#compactSeg button').forEach(b=> b.classList.toggle('on',(b.dataset.compact==='1')===on)); }
-document.querySelectorAll('#compactSeg button').forEach(b=> b.addEventListener('click',()=>{ const on=b.dataset.compact==='1'; document.documentElement.classList.toggle('compact',on); try{localStorage.setItem('vg800_compact',on?'1':'0');}catch(e){} keysOpen=!on; document.querySelectorAll('.kdraw').forEach(d=>{ if(d.open!==keysOpen) d.open=keysOpen; }); markCompact(); }));
+document.querySelectorAll('#compactSeg button').forEach(b=> b.addEventListener('click',()=>{ const on=b.dataset.compact==='1'; document.documentElement.classList.toggle('compact',on); try{localStorage.setItem('vg800_compact',on?'1':'0');}catch(e){} keysOpen=!on; document.querySelectorAll('.kdraw').forEach(d=>{ if(d.open!==keysOpen) d.open=keysOpen; }); markCompact(); setThemeMenu(false); }));
 markCompact();
 // Frozen-header treatment kicks in once the top scrolls away
 (function(){ const hdr=document.querySelector('header'), sen=document.getElementById('hdrSentinel');
@@ -1964,10 +1968,10 @@ document.getElementById('saveSettings').addEventListener('click',()=>{
 });
 
 function applyTest(v){
-  if(!tuningSend([v,v,v,v,v,v])) return;
   active=''; baseOffsets=[v,v,v,v,v,v]; held.clear(); ethnicInst=null; clearSteel();
   const n=document.getElementById('nowName'); n.textContent='TEST '+(v>0?'+'+v:''+v); n.classList.remove('std');
   renderStrings([v,v,v,v,v,v]); renderGrid(); renderPedals(); renderEthnic(); renderSteel();
+  tuningSend([v,v,v,v,v,v]);   // display always updates; push MIDI when connected
 }
 function renderTestBtns(){
   const wrap=document.getElementById('testBtns'); wrap.innerHTML='';
