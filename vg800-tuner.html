@@ -85,21 +85,24 @@
   .mast h1 { font-family: var(--cond); font-weight: 700; font-size: 46px; letter-spacing: -0.5px; color: var(--bone); text-transform: uppercase; }
   .mast h1 em { font-style: normal; color: var(--brass); }
   .gear {
-    width: 42px; height: 42px; flex-shrink: 0;
+    position: relative; width: 42px; height: 42px; flex-shrink: 0;
     background: none; border: 1px solid var(--edge); border-radius: 50%;
     color: var(--bone-dim); cursor: pointer; font-size: 16px;
     display: flex; align-items: center; justify-content: center; transition: all 0.15s;
   }
   .gear:hover { border-color: var(--brass-deep); color: var(--brass); transform: rotate(30deg); }
+  .gear::after { content: ""; position: absolute; top: 0; right: 0; width: 11px; height: 11px; border-radius: 50%; background: var(--err); box-shadow: 0 0 8px var(--err); transition: background .3s, box-shadow .3s; }  /* MIDI connection status */
+  .gear.ok::after { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
 
-  .conn { display: flex; align-items: center; gap: 10px; margin-bottom: 30px; padding: 0 2px; }
-  .lamp { width: 8px; height: 8px; border-radius: 50%; background: var(--err); box-shadow: 0 0 10px currentColor; transition: all 0.3s; flex-shrink: 0; }
+  /* MIDI Output row — now the first section inside the Settings modal */
+  .conn { display: flex; align-items: center; gap: 10px; }
+  .lamp { width: 9px; height: 9px; border-radius: 50%; background: var(--err); box-shadow: 0 0 10px currentColor; transition: all 0.3s; flex-shrink: 0; }
   .lamp.on { background: var(--ok); }
-  .conn-txt { font-family: var(--mono); font-size: 11px; color: var(--bone-faint); letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .conn-txt { display: block; font-family: var(--mono); font-size: 11px; color: var(--bone-faint); letter-spacing: 0.5px; margin: 9px 2px 0; }
   .conn select {
     background: var(--wood); color: var(--bone-dim); border: 1px solid var(--edge);
-    font-family: var(--mono); font-size: 11px; padding: 6px 8px; border-radius: 7px;
-    margin-left: auto; max-width: 48%; cursor: pointer;
+    font-family: var(--mono); font-size: 12px; padding: 8px 10px; border-radius: 8px;
+    flex: 1; min-width: 0; cursor: pointer;
   }
   .conn select:focus { outline: none; border-color: var(--brass-deep); }
 
@@ -199,7 +202,12 @@
 
   /* Pedal key mapping + latch */
   .latch-tog { display: inline-flex; align-items: center; gap: 9px; font-family: var(--mono); font-size: 11px; color: var(--bone-dim); cursor: pointer; margin-bottom: 11px; }
-  .latch-tog input { width: 16px; height: 16px; accent-color: var(--brass); cursor: pointer; flex-shrink: 0; }
+  /* Custom checkbox — themed, used everywhere in the app */
+  input[type="checkbox"] { -webkit-appearance: none; appearance: none; margin: 0; width: 18px; height: 18px; flex-shrink: 0; border: 1.5px solid var(--edge); border-radius: 5px; background: var(--wood); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 1px 3px rgba(0,0,0,0.3); cursor: pointer; position: relative; transition: border-color .12s, background .12s, box-shadow .12s; }
+  input[type="checkbox"]:hover { border-color: var(--brass-deep); }
+  input[type="checkbox"]:checked { border-color: var(--brass); background: linear-gradient(180deg, var(--brass), var(--brass-deep)); box-shadow: 0 0 0 1px var(--brass-glow), inset 0 1px 0 rgba(255,255,255,0.35); }
+  input[type="checkbox"]:checked::after { content: ""; position: absolute; left: 5.5px; top: 2px; width: 4px; height: 8.5px; border: solid var(--ink); border-width: 0 2.5px 2.5px 0; transform: rotate(45deg); }
+  input[type="checkbox"]:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--brass-glow); }
   .kb-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 30px; }
   .kb-chip { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 66px; background: var(--wood); border: 1px solid var(--edge); border-radius: 8px; padding: 7px 10px; cursor: pointer; transition: transform .1s, border-color .12s, background .12s; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
   .kb-chip:hover { border-color: var(--brass-deep); background: var(--felt); }
@@ -257,7 +265,6 @@
   #sideNav .slide { min-width: 21px; height: 17px; font-size: 11px; padding: 0 4px; border-radius: 4px; }
   #sideNav .slide .oct { font-size: 7px; }
   #sideNav .str-off { font-size: 10px; }
-  #sideNav .nav-title { font-family: var(--mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--brass-deep); margin: 0 0 12px 10px; }
   #sideNav a { display: block; font-family: var(--mono); font-size: 11px; color: var(--bone-faint); text-decoration: none; padding: 5px 10px; border-left: 2px solid transparent; letter-spacing: 0.2px; transition: color .12s, background .12s, border-color .12s; }
   #sideNav a:hover { color: var(--bone); background: var(--felt); }
   #sideNav a.group { display: flex; align-items: center; gap: 7px; color: var(--bone-dim); font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 1px; margin-top: 12px; }
@@ -414,6 +421,18 @@
   .slider::-moz-range-thumb { width: 17px; height: 17px; border-radius: 50%; background: var(--brass); border: 2px solid var(--wood); cursor: pointer; }
   .slider:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px var(--brass-glow); }
 
+  /* Collapsible settings groups (native <details>) */
+  .settgrp { border: 1px solid var(--edge-soft); border-radius: 10px; margin-bottom: 10px; background: rgba(255,255,255,0.015); overflow: hidden; }
+  .settgrp > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 13px 15px; font-family: var(--cond); font-weight: 700; font-size: 15px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--bone-dim); user-select: none; transition: color .12s; }
+  .settgrp > summary::-webkit-details-marker { display: none; }
+  .settgrp > summary::after { content: ""; margin-left: auto; width: 7px; height: 7px; border-right: 2px solid var(--brass-deep); border-bottom: 2px solid var(--brass-deep); transform: rotate(-45deg); transition: transform .18s, border-color .12s; }
+  .settgrp > summary:hover { color: var(--brass); }
+  .settgrp > summary:hover::after { border-color: var(--brass); }
+  .settgrp[open] > summary { color: var(--brass); border-bottom: 1px solid var(--edge-soft); }
+  .settgrp[open] > summary::after { transform: rotate(45deg); }
+  .settgrp-body { padding: 15px 15px 5px; }
+  .settgrp-body > *:first-child { margin-top: 0; }
+
   .toast {
     position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(120px);
     background: var(--felt); border: 1px solid var(--brass-deep); color: var(--bone);
@@ -424,6 +443,9 @@
   .toast::before { content: "♪"; color: var(--brass); }
   .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
   .toast.err { border-color: var(--err); } .toast.err::before { content: "!"; color: var(--err); font-weight: 700; }
+  .toast.act { pointer-events: auto; }
+  .toast-btn { font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--ink); background: var(--brass); border: none; border-radius: 6px; padding: 5px 11px; margin-left: 4px; cursor: pointer; }
+  .toast-btn:hover { filter: brightness(1.08); }
 
   @media (max-width: 480px) {
     body { padding: 22px 14px 50px; }
@@ -446,12 +468,6 @@
     </div>
     <button class="gear" id="settingsBtn" title="MIDI settings" aria-label="MIDI settings">⚙</button>
   </header>
-
-  <div class="conn">
-    <span class="lamp" id="lamp"></span>
-    <span class="conn-txt" id="connTxt">MIDI disconnected</span>
-    <select id="portSelect" aria-label="MIDI output port"><option>No ports</option></select>
-  </div>
 
   <div class="sec" id="sec-tunings">
     <h2>Tunings</h2>
@@ -527,30 +543,68 @@
 <div class="scrim" id="settingsModal">
   <div class="sheet">
     <h2>MIDI <em>Settings</em></h2>
-    <div class="subhd" style="margin:2px 0 10px">Theme</div>
-    <div class="theme-row">
-      <button class="theme-opt" data-theme-set="boss-blue"><span class="sw sw-blue"></span>BOSS Blue</button>
-      <button class="theme-opt" data-theme-set="workbench"><span class="sw sw-wood"></span>Workbench</button>
-    </div>
-    <p style="margin-top:20px">Each string sends its pitch on its own CC. On the VG-800: INST → <em>STR BEND SW = ON</em>, <em>BEND CONTROL = 100</em>. In ASSIGN 1–6 target <em>INST:STR BEND (A) BEND DEPTH 1…6</em>, MIN −12 / MAX +12, MODE = MOMENT, SOURCE = the CC below (DEPTH 1 = high E … DEPTH 6 = low E). Prefer CC# in the <em>1–31</em> range — CC# 64–95 are MIDI switch controllers and the VG-800 may not track them continuously.</p>
-    <div class="ch"><label>Channel</label><input type="number" class="num" id="chanInput" min="1" max="16" value="1"></div>
-    <div class="ch"><label>String glide — ms to slide between tunings (0 = instant)</label><input type="number" class="num" id="glideInput" min="0" max="5000" step="50" value="0"></div>
-    <div class="subhd">Auto-bend</div>
-    <label class="latch-tog" style="margin-bottom:16px"><input type="checkbox" id="autoBendChk"><span>Scoop into each tuning (quick bend articulation)</span></label>
-    <div class="ab-slider"><div class="ab-lbl"><span>Scoop depth</span><span id="bendDepthVal"></span></div><input type="range" class="slider" id="bendDepthInput" min="0" max="50"></div>
-    <div class="ab-slider"><div class="ab-lbl"><span>Scoop time</span><span id="bendMsVal"></span></div><input type="range" class="slider" id="bendMsInput" min="40" max="400" step="10"></div>
-    <div class="ab-slider"><div class="ab-lbl"><span>Volume dip</span><span id="levelDipVal"></span></div><input type="range" class="slider" id="levelDipInput" min="0" max="50"></div>
-    <div class="cc-grid" style="margin-top:2px">
-      <div class="cc-c"><label>Bend Ctrl CC#</label><input type="number" class="num" id="bendCCInput" min="0" max="127"></div>
-      <div class="cc-c"><label>Inst Level CC#</label><input type="number" class="num" id="levelCCInput" min="0" max="127"></div>
-    </div>
-    <p class="note-hint">On the VG-800, map <em>STR BEND · BEND CONTROL</em> (MIN 0 / MAX 100) to Bend Ctrl CC#, and <em>INST · INST LEVEL</em> to Inst Level CC#. When a tuning is applied, both briefly dip then rise back to 100% together with the new pitch. Best with glide off.</p>
-    <div class="subhd">CC number per string</div>
-    <div class="cc-grid" id="ccRows"></div>
-    <p class="note-hint">Each must match the CC # set as the SOURCE in that string's VG-800 assign slot. Heads-up: the VG-800 only exposes CC# 0–31 and 64+ as assign sources — CC# 32–63 are not selectable.</p>
-    <div class="subhd">Panning CC per string</div>
-    <div class="cc-grid" id="panCcRows"></div>
-    <p class="note-hint">Map to VG-800 <em>INST:STRING(A) PAN 1–6</em> (MIN L50 / MAX R50). PAN 1 = high E … PAN 6 = low E.</p>
+
+    <details class="settgrp" data-grp="midi" open>
+      <summary>MIDI Output</summary>
+      <div class="settgrp-body">
+        <div class="conn">
+          <span class="lamp" id="lamp"></span>
+          <select id="portSelect" aria-label="MIDI output port"><option>No ports</option></select>
+        </div>
+        <span class="conn-txt" id="connTxt">MIDI disconnected</span>
+      </div>
+    </details>
+
+    <details class="settgrp" data-grp="theme">
+      <summary>Theme</summary>
+      <div class="settgrp-body">
+        <div class="theme-row">
+          <button class="theme-opt" data-theme-set="boss-blue"><span class="sw sw-blue"></span>BOSS Blue</button>
+          <button class="theme-opt" data-theme-set="workbench"><span class="sw sw-wood"></span>Workbench</button>
+        </div>
+      </div>
+    </details>
+
+    <details class="settgrp" data-grp="general">
+      <summary>Channel &amp; glide</summary>
+      <div class="settgrp-body">
+        <div class="ch"><label>Channel</label><input type="number" class="num" id="chanInput" min="1" max="16" value="1"></div>
+        <div class="ch"><label>String glide — ms to slide between tunings (0 = instant)</label><input type="number" class="num" id="glideInput" min="0" max="5000" step="50" value="0"></div>
+      </div>
+    </details>
+
+    <details class="settgrp" data-grp="autobend">
+      <summary>Auto-bend</summary>
+      <div class="settgrp-body">
+        <label class="latch-tog" style="margin-bottom:16px"><input type="checkbox" id="autoBendChk"><span>Scoop into each tuning (quick bend articulation)</span></label>
+        <div class="ab-slider"><div class="ab-lbl"><span>Scoop depth</span><span id="bendDepthVal"></span></div><input type="range" class="slider" id="bendDepthInput" min="0" max="50"></div>
+        <div class="ab-slider"><div class="ab-lbl"><span>Scoop time</span><span id="bendMsVal"></span></div><input type="range" class="slider" id="bendMsInput" min="40" max="400" step="10"></div>
+        <div class="ab-slider"><div class="ab-lbl"><span>Volume dip</span><span id="levelDipVal"></span></div><input type="range" class="slider" id="levelDipInput" min="0" max="50"></div>
+        <div class="cc-grid" style="margin-top:2px">
+          <div class="cc-c"><label>Bend Ctrl CC#</label><input type="number" class="num" id="bendCCInput" min="0" max="127"></div>
+          <div class="cc-c"><label>Inst Level CC#</label><input type="number" class="num" id="levelCCInput" min="0" max="127"></div>
+        </div>
+        <p class="note-hint">On the VG-800, map <em>STR BEND · BEND CONTROL</em> (MIN 0 / MAX 100) to Bend Ctrl CC#, and <em>INST · INST LEVEL</em> to Inst Level CC#. When a tuning is applied, both briefly dip then rise back to 100% together with the new pitch. Best with glide off.</p>
+      </div>
+    </details>
+
+    <details class="settgrp" data-grp="stringcc">
+      <summary>CC number per string</summary>
+      <div class="settgrp-body">
+        <p style="margin-top:0">Each string sends its pitch on its own CC. On the VG-800: INST → <em>STR BEND SW = ON</em>, <em>BEND CONTROL = 100</em>. In ASSIGN 1–6 target <em>INST:STR BEND (A) BEND DEPTH 1…6</em>, MIN −12 / MAX +12, MODE = MOMENT, SOURCE = the CC below (DEPTH 1 = high E … DEPTH 6 = low E). Prefer CC# in the <em>1–31</em> range — CC# 64–95 are MIDI switch controllers and the VG-800 may not track them continuously.</p>
+        <div class="cc-grid" id="ccRows"></div>
+        <p class="note-hint">Each must match the CC # set as the SOURCE in that string's VG-800 assign slot. Heads-up: the VG-800 only exposes CC# 0–31 and 64+ as assign sources — CC# 32–63 are not selectable.</p>
+      </div>
+    </details>
+
+    <details class="settgrp" data-grp="pancc">
+      <summary>Panning CC per string</summary>
+      <div class="settgrp-body">
+        <div class="cc-grid" id="panCcRows"></div>
+        <p class="note-hint">Map to VG-800 <em>INST:STRING(A) PAN 1–6</em> (MIN L50 / MAX R50). PAN 1 = high E … PAN 6 = low E.</p>
+      </div>
+    </details>
+
     <div class="foot">
       <button class="btn" id="closeSettings">Cancel</button>
       <button class="btn go" id="saveSettings">Save settings</button>
@@ -674,7 +728,7 @@ function ports(){
   const pick=outs.find(o=>o.id===saved)||outs.find(o=>/scarlett|focusrite/i.test(o.name))||outs[0];
   sel.value=pick.id; midiOut=pick; localStorage.setItem('vg800_port',pick.id); setLamp(true,pick.name);
 }
-function setLamp(ok,msg){ document.getElementById('lamp').classList.toggle('on',ok); document.getElementById('connTxt').textContent=msg; }
+function setLamp(ok,msg){ const l=document.getElementById('lamp'); if(l) l.classList.toggle('on',ok); const c=document.getElementById('connTxt'); if(c) c.textContent=msg; const g=document.getElementById('settingsBtn'); if(g) g.classList.toggle('ok',ok); }
 document.getElementById('portSelect').addEventListener('change',e=>{
   const outs=[...midiAccess.outputs.values()]; midiOut=outs.find(o=>o.id===e.target.value);
   if(midiOut){ localStorage.setItem('vg800_port',midiOut.id); setLamp(true,midiOut.name); }
@@ -693,7 +747,7 @@ function emitAll(vals, useGap){
   curOffsets=vals.slice();
 }
 function send(offsets){
-  if(!midiOut){ toast('No MIDI output connected', true); return false; }
+  if(!midiOut){ toast('No MIDI output connected', true, {label:'Open Settings', fn:openSettings}); return false; }
   if(glideTimer){ clearInterval(glideTimer); glideTimer=null; }
   const glide=settings.glide||0;
   if(glide<=0){ emitAll(offsets.slice(), true); return true; }
@@ -992,9 +1046,8 @@ function renderNav(){
   const I={
     tunings:'<svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v6M16 3v6M8 9a4 4 0 0 0 8 0M12 13v8"/></svg>',
     pedals:'<svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="14" width="15" height="5" rx="2.5" transform="rotate(-9 11 16.5)"/><path d="M16.4 14.6 18 8.4"/><circle cx="18.3" cy="6.9" r="1.5"/></svg>',
-    pan:'<svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M4 12h16"/></svg>' };
-  box.innerHTML='<div class="nav-title">Jump to</div>'
-    +'<a class="group" href="#sec-tunings">'+I.tunings+'Tunings</a>'+links
+    pan:'<svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8.5a6.5 6.5 0 1 1 13 0c0 6-6 6-6 10a3.5 3.5 0 1 1-7 0"/><path d="M15 8.5a2.5 2.5 0 0 0-5 0v1a2 2 0 1 1 0 4"/></svg>' };
+  box.innerHTML='<a class="group" href="#sec-tunings">'+I.tunings+'Tunings</a>'+links
     +'<a class="sub" href="#sec-ethnic">Ethnic</a>'
     +'<a class="sub" href="#sec-steel">Pedal Steel</a>'
     +'<a class="sub" href="#sec-strings">Transpose</a>'
@@ -1013,6 +1066,7 @@ function updateSpy(){
   const links=[...document.querySelectorAll('#sideNav a')]; if(!links.length) return;
   let cur=null, best=-1e9; const line=120;
   links.forEach(a=>{ const el=document.getElementById(a.getAttribute('href').slice(1)); if(!el) return; const top=el.getBoundingClientRect().top; if(top<=line && top>best){ best=top; cur=a.getAttribute('href'); } });
+  if(window.innerHeight+window.scrollY >= document.documentElement.scrollHeight-2) cur=links[links.length-1].getAttribute('href');  // at page bottom → last section (a short final section like Panning never reaches the line)
   links.forEach(a=> a.classList.toggle('active', a.getAttribute('href')===cur));
 }
 window.addEventListener('scroll', updateSpy, {passive:true});
@@ -1031,9 +1085,7 @@ function computeCluster(pitches, start){
 }
 // The VG-800 only bends ±12 semitones, so instruments in a distant register sound an octave off; tell the player where to capo.
 function capoText(delta){
-  if(delta<0) return `*capo on ${-delta}th fret`;
-  if(delta>0) return delta>=24?`sounds ${delta/12} octaves high`:`sounds an octave high`;
-  return `no capo`;
+  return delta<0 ? `*capo on ${-delta}th fret` : `no capo`;   // delta≥0: already in range, or an octave high (a capo can't lower it)
 }
 function applyInst(inst, start){
   const N=inst.pitches.length; start=Math.max(0, Math.min(6-N, start));
@@ -1048,7 +1100,7 @@ function ethnicCardHTML(inst){
   const on = ethnicInst && ethnicInst.name===inst.name;
   const notes=inst.notes.split(' ').map(x=>`<span>${x}</span>`).join('');
   const d=computeCluster(inst.pitches, 0).delta;   // default placement (what a click applies)
-  const capo=`<div class="card-capo${d===0?' zero':d>0?' high':''}">${capoText(d)}</div>`;
+  const capo=`<div class="card-capo${d<0?'':' zero'}">${capoText(d)}</div>`;
   return `<div class="card inst${on?' active':''}" data-name="${inst.name}" data-ref="${inst.ref}"><div class="card-name">${inst.name}</div><div class="card-notes">${notes}</div>${capo}</div>`;
 }
 function clusterRowHTML(inst, start){
@@ -1229,7 +1281,12 @@ function renderSettings(){
     c.innerHTML=`<label>PAN ${i+1} · ${pn[i]}</label><input type="number" class="num" min="0" max="127" data-pcc="${i}" value="${settings.panCCs[i]}">`; pr.appendChild(c);
   }
 }
-document.getElementById('settingsBtn').addEventListener('click',()=>{ renderSettings(); open('settingsModal'); });
+function openSettings(){ renderSettings(); applyGrpState(); open('settingsModal'); }
+document.getElementById('settingsBtn').addEventListener('click', openSettings);
+// Collapsible settings groups — remember each section's open/closed state
+function loadGrps(){ try{ return JSON.parse(localStorage.getItem('vg800_settgrps'))||{}; }catch(e){ return {}; } }
+function applyGrpState(){ const st=loadGrps(); document.querySelectorAll('.settgrp').forEach(d=>{ const id=d.dataset.grp; d.open=(id in st)?!!st[id]:(id==='midi'); }); }  // default: only MIDI Output open
+document.querySelectorAll('.settgrp').forEach(d=> d.addEventListener('toggle',()=>{ const st=loadGrps(); st[d.dataset.grp]=d.open; localStorage.setItem('vg800_settgrps', JSON.stringify(st)); }));
 function refreshAb(id){ const el=document.getElementById(id); if(!el) return; const v=+el.value;
   const val=document.getElementById(id.replace('Input','Val'));
   if(val) val.textContent = id==='bendMsInput' ? v+' ms' : (id==='levelDipInput' && v===0 ? 'off' : v);
@@ -1274,7 +1331,13 @@ function close(id){ document.getElementById(id).classList.remove('open'); }
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ close('editorModal'); close('settingsModal'); } });
 
 let tt;
-function toast(m,err){ const t=document.getElementById('toast'); t.textContent=m; t.classList.toggle('err',!!err); t.classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('show'),2000); }
+function toast(m,err,action){
+  const t=document.getElementById('toast'); t.innerHTML='';
+  const s=document.createElement('span'); s.textContent=m; t.appendChild(s);
+  if(action){ const b=document.createElement('button'); b.className='toast-btn'; b.textContent=action.label; b.addEventListener('click',()=>{ t.classList.remove('show','act'); action.fn(); }); t.appendChild(b); }
+  t.classList.toggle('err',!!err); t.classList.toggle('act',!!action); t.classList.add('show');
+  clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('show','act'), action?6000:2000);
+}
 
 renderStrings([0,0,0,0,0,0]);
 renderGrid();
