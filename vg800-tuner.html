@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script>try{var t=localStorage.getItem('vg800_theme');if(t==='workbench')t='dark';if(t==='boss-blue'||t==='cs1')t='cs3';document.documentElement.dataset.theme=t||'cs3';}catch(e){}</script>
+<script>try{var t=localStorage.getItem('vg800_theme');if(t==='workbench')t='dark';if(t==='boss-blue'||t==='cs1')t='cs3';document.documentElement.dataset.theme=t||'cs3';if(localStorage.getItem('vg800_compact')==='1')document.documentElement.classList.add('compact');}catch(e){}</script>
 <title>VG800 MIDI Control</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNyIgZmlsbD0iIzBmMjEzOCIvPjxyZWN0IHg9IjEiIHk9IjEiIHdpZHRoPSIzMCIgaGVpZ2h0PSIzMCIgcng9IjYuNSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYzk4ZjJiIiBzdHJva2Utb3BhY2l0eT0iLjU1Ii8+PGcgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+PGxpbmUgeDE9IjgiIHkxPSI3IiB4Mj0iMjQiIHkyPSI3IiBzdHJva2U9IiNlZjUzNTAiLz48bGluZSB4MT0iOCIgeTE9IjEwLjgiIHgyPSIyNCIgeTI9IjEwLjgiIHN0cm9rZT0iI2YyYTMzZCIvPjxsaW5lIHgxPSI4IiB5MT0iMTQuNiIgeDI9IjI0IiB5Mj0iMTQuNiIgc3Ryb2tlPSIjYzZkNDNmIi8+PGxpbmUgeDE9IjgiIHkxPSIxOC40IiB4Mj0iMjQiIHkyPSIxOC40IiBzdHJva2U9IiM0Y2MxNzgiLz48bGluZSB4MT0iOCIgeTE9IjIyLjIiIHgyPSIyNCIgeTI9IjIyLjIiIHN0cm9rZT0iIzRmOWRlYSIvPjxsaW5lIHgxPSI4IiB5MT0iMjYiIHgyPSIyNCIgeTI9IjI2IiBzdHJva2U9IiNhNTYzZDQiLz48L2c+PC9zdmc+">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -215,6 +215,15 @@
   .theme-item:hover { background: var(--felt); color: var(--bone); }
   .theme-item.on { background: var(--felt); color: var(--brass); border-color: var(--edge-soft); }
   .theme-item .pedal-ico { width: 22px; height: 25px; flex-shrink: 0; }
+  /* Density toggle in the theme dropdown */
+  .menu-sep { height: 1px; background: var(--edge-soft); margin: 6px 6px 4px; }
+  .menu-tog { padding: 2px 4px 4px; }
+  .menu-tog-lbl { display: block; font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--bone-faint); text-align: center; margin-bottom: 6px; }
+  /* Compact mode — hide the note names + semitone offsets on tuning cards to save vertical space */
+  html.compact .card-notes, html.compact .card-off { display: none; }
+  html.compact .card-name { margin-bottom: 0; }
+  html.compact .card { padding-top: 12px; padding-bottom: 12px; }
+  html.compact .grid { gap: 8px; }
 
   /* Mobile "jump to section" menu — only on screens without the desktop sidebar */
   .jump-wrap { position: relative; }
@@ -575,6 +584,14 @@
           <button class="theme-item" data-theme-set="rc500" role="menuitem"><svg class="pedal-ico" style="color:#d0232c"><use href="#pedalIco"/></svg><span>RC500</span></button>
           <button class="theme-item" data-theme-set="dd500" role="menuitem"><svg class="pedal-ico" style="color:#e7dec8"><use href="#pedalIco"/></svg><span>DD500</span></button>
           <button class="theme-item" data-theme-set="dark" role="menuitem"><svg class="pedal-ico" style="color:#434952"><use href="#pedalIco"/></svg><span>GT1000</span></button>
+          <div class="menu-sep"></div>
+          <div class="menu-tog">
+            <span class="menu-tog-lbl">Density</span>
+            <div class="seg" id="compactSeg">
+              <button data-compact="1">Compact</button>
+              <button class="on" data-compact="0">Full</button>
+            </div>
+          </div>
         </div>
       </div>
       <button class="gear" id="settingsBtn" title="MIDI settings" aria-label="MIDI settings">⚙</button>
@@ -1556,6 +1573,10 @@ themeBtn.addEventListener('click',e=>{ e.stopPropagation(); setThemeMenu(!themeM
 themeMenu.querySelectorAll('[data-theme-set]').forEach(b=>b.addEventListener('click',()=>{ applyTheme(b.dataset.themeSet); setThemeMenu(false); }));
 document.addEventListener('click',e=>{ if(themeMenu.classList.contains('open') && !themeMenu.contains(e.target) && !themeBtn.contains(e.target)) setThemeMenu(false); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') setThemeMenu(false); });
+// Compact mode — density toggle in the theme menu; just flips an <html> class (CSS hides card notes/offsets), no re-render
+function markCompact(){ const on=document.documentElement.classList.contains('compact'); document.querySelectorAll('#compactSeg button').forEach(b=> b.classList.toggle('on',(b.dataset.compact==='1')===on)); }
+document.querySelectorAll('#compactSeg button').forEach(b=> b.addEventListener('click',()=>{ const on=b.dataset.compact==='1'; document.documentElement.classList.toggle('compact',on); try{localStorage.setItem('vg800_compact',on?'1':'0');}catch(e){} markCompact(); }));
+markCompact();
 // Frozen-header treatment kicks in once the top scrolls away
 (function(){ const hdr=document.querySelector('header'), sen=document.getElementById('hdrSentinel');
   if(hdr&&sen&&'IntersectionObserver'in window){ new IntersectionObserver(([e])=>{ hdr.classList.toggle('stuck', !e.isIntersecting); },{threshold:0}).observe(sen); } })();
