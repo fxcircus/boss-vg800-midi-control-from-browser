@@ -546,7 +546,7 @@
   html { interpolate-size: allow-keywords; }
   .settgrp::details-content, .kdraw::details-content { height: 0; overflow: clip; opacity: 0; transition: height .3s cubic-bezier(.4,0,.2,1), opacity .24s ease, content-visibility .3s allow-discrete; }
   .settgrp[open]::details-content, .kdraw[open]::details-content { height: auto; opacity: 1; }
-  /* Collapsible "Key mapping" drawer inside the Pedals panel — keeps the centered cut-line header + a chevron */
+  /* Collapsible "Key mapping" drawer inside the Bends panel — keeps the centered cut-line header + a chevron */
   .kdraw { margin: 2px 0 30px; }
   .kdraw-sum { list-style: none; cursor: pointer; margin: 0; padding: 4px 0; user-select: none; transition: color .12s; }
   .kdraw-sum::-webkit-details-marker { display: none; }
@@ -643,7 +643,7 @@
   </fieldset>
 
   <fieldset class="panel" id="sec-pedals">
-    <legend class="panel-hd">Pedals</legend>
+    <legend class="panel-hd">Bends</legend>
     <div class="panel-sub" id="pedalHint">Hold to bend</div>
     <div id="pedalWrap"></div>
   </fieldset>
@@ -1199,7 +1199,7 @@ function renderNav(){
     +'<a class="sub" href="#sec-strings">Transpose</a>'
     + sections                                       // Lap Steel
     +'<a class="sub" href="#sec-steel">Pedal Steel</a>'
-    +'<a class="group" href="#sec-pedals">'+I.pedals+'Pedals</a>'
+    +'<a class="group" href="#sec-pedals">'+I.pedals+'Bends</a>'
     +'<a class="group" href="#sec-pan">'+I.pan+'Panning</a>';
   const jm=document.getElementById('jumpMenu'); if(jm) jm.innerHTML=box.innerHTML;   // mobile menu mirrors the sidebar
   updateSpy();
