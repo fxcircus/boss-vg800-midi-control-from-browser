@@ -417,6 +417,8 @@
   .note-hint { font-size: 11px; color: var(--bone-faint); margin: 14px 0 0; line-height: 1.5; }
 
   .ab-slider { margin-bottom: 15px; }
+  .ab-controls { transition: opacity .18s; }
+  .ab-controls.locked { opacity: 0.38; pointer-events: none; filter: saturate(0.35); }
   .ab-lbl { display: flex; justify-content: space-between; align-items: baseline; font-family: var(--mono); font-size: 10px; color: var(--bone-faint); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 9px; }
   .ab-lbl span:last-child { color: var(--brass); font-weight: 700; font-size: 13px; letter-spacing: 0; text-transform: none; }
   .slider { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 4px; background: var(--edge); cursor: pointer; outline: none; }
@@ -594,12 +596,14 @@
       <summary>Bend effect</summary>
       <div class="settgrp-body">
         <label class="latch-tog" style="margin-bottom:16px"><input type="checkbox" id="autoBendChk"><span>Scoop into each tuning (quick bend articulation)</span></label>
-        <div class="ab-slider"><div class="ab-lbl"><span>Scoop depth</span><span id="bendDepthVal"></span></div><input type="range" class="slider" id="bendDepthInput" min="0" max="50"></div>
-        <div class="ab-slider"><div class="ab-lbl"><span>Scoop time</span><span id="bendMsVal"></span></div><input type="range" class="slider" id="bendMsInput" min="40" max="400" step="10"></div>
-        <div class="ab-slider"><div class="ab-lbl"><span>Volume dip</span><span id="levelDipVal"></span></div><input type="range" class="slider" id="levelDipInput" min="0" max="50"></div>
-        <div class="cc-grid" style="margin-top:2px">
-          <div class="cc-c"><label>Bend Ctrl CC#</label><select class="num" id="bendCCInput"></select></div>
-          <div class="cc-c"><label>Inst Level CC#</label><select class="num" id="levelCCInput"></select></div>
+        <div class="ab-controls" id="abControls">
+          <div class="ab-slider"><div class="ab-lbl"><span>Scoop depth</span><span id="bendDepthVal"></span></div><input type="range" class="slider" id="bendDepthInput" min="0" max="50"></div>
+          <div class="ab-slider"><div class="ab-lbl"><span>Scoop time</span><span id="bendMsVal"></span></div><input type="range" class="slider" id="bendMsInput" min="40" max="400" step="10"></div>
+          <div class="ab-slider"><div class="ab-lbl"><span>Volume dip</span><span id="levelDipVal"></span></div><input type="range" class="slider" id="levelDipInput" min="0" max="50"></div>
+          <div class="cc-grid" style="margin-top:2px">
+            <div class="cc-c"><label>Bend Ctrl CC#</label><select class="num" id="bendCCInput"></select></div>
+            <div class="cc-c"><label>Inst Level CC#</label><select class="num" id="levelCCInput"></select></div>
+          </div>
         </div>
         <p class="note-hint">Swells into each new tuning: <em>Bend Ctrl CC#</em> (VG-800 <em>STR BEND · BEND CONTROL</em>, 0–100) and <em>Inst Level CC#</em> (<em>INST · INST LEVEL</em>) dip, then rise back to 100% together with the new pitch — scooping over the jump. Best with <em>String glide</em> off.</p>
       </div>
@@ -1281,6 +1285,7 @@ function renderSettings(){
   document.getElementById('bendCCInput').innerHTML=optList(1,127,settings.bendCC);
   document.getElementById('levelCCInput').innerHTML=optList(1,127,settings.levelCC);
   ['bendDepthInput','bendMsInput','levelDipInput'].forEach(refreshAb);
+  updateAbLock();
   const r=document.getElementById('ccRows'); r.innerHTML='';
   for(let i=0;i<6;i++){ const c=document.createElement('div'); c.className='cc-c';
     c.innerHTML=`<label>${DEPTH_LBL[i]} — CC #</label><select class="num" data-cc="${i}">${optList(1,127,settings.ccs[i])}</select>`; r.appendChild(c);
@@ -1302,6 +1307,10 @@ function refreshAb(id){ const el=document.getElementById(id); if(!el) return; co
   const p=(v-el.min)/(el.max-el.min)*100; el.style.background=`linear-gradient(90deg, var(--brass) ${p}%, var(--edge) ${p}%)`;
 }
 ['bendDepthInput','bendMsInput','levelDipInput'].forEach(id=>{ const el=document.getElementById(id); if(el) el.addEventListener('input',()=>refreshAb(id)); });
+// Grey out + lock the Bend-effect controls while the scoop toggle is off
+function updateAbLock(){ const on=document.getElementById('autoBendChk').checked, box=document.getElementById('abControls');
+  if(box){ box.classList.toggle('locked', !on); box.querySelectorAll('input,select').forEach(el=> el.disabled=!on); } }
+document.getElementById('autoBendChk').addEventListener('change', updateAbLock);
 function markThemeBtns(){ const t=document.documentElement.dataset.theme||'boss-blue'; document.querySelectorAll('[data-theme-set]').forEach(b=>b.classList.toggle('on', b.dataset.themeSet===t)); }
 function applyTheme(t){ document.documentElement.dataset.theme=t; try{ localStorage.setItem('vg800_theme',t); }catch(e){} markThemeBtns(); }
 document.querySelectorAll('[data-theme-set]').forEach(b=>b.addEventListener('click',()=>applyTheme(b.dataset.themeSet)));
