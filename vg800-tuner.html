@@ -1237,7 +1237,10 @@ function panGlide(target){
 function autoPanCompute(dt){
   const a=settings.ap;
   apPhase += 2*Math.PI*apCyclesPerSec()*dt;                                                            // phase accumulator → rate changes stay smooth
-  const spread=Math.max(0,Math.min(1,a.spread)); let width=Math.max(0,Math.min(1,a.width)); const char=a.char, pos=new Array(6);
+  let spread=Math.max(0,Math.min(1,a.spread)); let width=Math.max(0,Math.min(1,a.width)); const char=a.char, pos=new Array(6);
+  let shape=a.shape;
+  if(char==='breathe'||char==='pingpong'||char==='drift') spread=1;      // these modes are always full-spread
+  if(char==='leslie'||char==='pingpong'||char==='drift') shape='sine';   // these modes always use sine modulation
   if(char==='breathe'){ apBreathe += 2*Math.PI*0.05*dt; width*= 0.5-0.5*Math.cos(apBreathe); }         // width breathes 0↔max (~20s)
   else if(char==='leslie'){ width*= 0.85+0.15*Math.sin(apPhase*2); }                                    // subtle rotary throb
   if(char==='drift'){
@@ -1245,16 +1248,16 @@ function autoPanCompute(dt){
       apDrift[i]+= (apDriftTgt[i]-apDrift[i])*Math.min(1, dt*(0.4+apCyclesPerSec()*1.5)); pos[i]=apDrift[i]*width; }   // smoothed independent wander
   } else if(char==='pingpong'){
     const step=Math.floor(apPhase/(2*Math.PI*2)); if(step!==apSwapStep){ apSwapStep=step; apSwap=-apSwap; }            // swap the two groups every 2 cycles
-    const v=apShapeVal(apPhase, a.shape==='sh'?'triangle':a.shape);
+    const v=apShapeVal(apPhase, shape);
     for(let i=0;i<6;i++) pos[i]=((i%2===0?1:-1)*apSwap)*v*width;
   } else if(char==='leslie'){
     const horn=apPhase*a.lTopSpeed, drum=-apPhase*a.lBotSpeed;                                         // two counter-rotating rotors: treble horn (top 3) fwd, bass drum (bottom 3) reverse
     for(let i=0;i<6;i++){ const top=i<3, gi=i-(top?0:3), gSpread=(top?a.lTopSpread:a.lBotSpread)*spread;  // each side its own fan width + speed
-      pos[i]=apShapeVal((top?horn:drum) + gSpread*(gi/3)*2*Math.PI, a.shape)*width; }
-  } else if(a.shape==='sh'){
+      pos[i]=apShapeVal((top?horn:drum) + gSpread*(gi/3)*2*Math.PI, shape)*width; }
+  } else if(shape==='sh'){
     for(let i=0;i<6;i++){ const ph=apPhase+spread*(i/6)*2*Math.PI, step=Math.floor(ph/(2*Math.PI)); if(step!==apSHstep[i]){ apSHstep[i]=step; apSH[i]=Math.random()*2-1; } pos[i]=apSH[i]*width; }
   } else {
-    for(let i=0;i<6;i++){ const ph=apPhase+spread*(i/6)*2*Math.PI; pos[i]=apShapeVal(ph,a.shape)*width; }
+    for(let i=0;i<6;i++){ const ph=apPhase+spread*(i/6)*2*Math.PI; pos[i]=apShapeVal(ph,shape)*width; }
   }
   return pos;
 }
@@ -1314,17 +1317,19 @@ function renderPan(){
         <div><div class="pg-lbl"><span>Speed</span><b id="apLBZv">${a.lBotSpeed.toFixed(2)}×</b></div><input type="range" class="slider" id="apLBZ" min="25" max="200" value="${Math.round(a.lBotSpeed*100)}"></div>
       </div>` : '';
   const shapeBtns = AP_SHAPES.map(s=>`<button class="${a.shape===s.id?'on':''}" data-shape="${s.id}" title="${s.name}">${s.ico||s.label}</button>`).join('');
+  const hasSpread = a.char==='rotate' || a.char==='leslie';   // others are always full-spread
+  const hasShape  = a.char==='rotate' || a.char==='breathe';  // others are always sine
   const autoBody=`<div id="apBody">
       <p class="apsub">Each string sweeps the stereo field</p>
       <div class="apcap" style="margin-top:10px">Character</div>
       <div class="panmodes">${charBtns}</div>
       <p class="apdesc ap-rv">${AP_CHARDESC[a.char]||''}</p>
-      <div class="apcap">Phase spread</div>
-      <div class="seg" style="margin-bottom:12px"><button class="${a.spread<0.5?'on':''}" data-spread="0">Block</button><button class="${a.spread>=0.5?'on':''}" data-spread="1">Spread</button></div>
+      ${hasSpread?`<div class="apcap">Phase spread</div>
+      <div class="seg" style="margin-bottom:12px"><button class="${a.spread<0.5?'on':''}" data-spread="0">Block</button><button class="${a.spread>=0.5?'on':''}" data-spread="1">Spread</button></div>`:''}
       <div class="pg-lbl"><span>Width</span><b id="apWidthVal">${Math.round(a.width*100)}%</b></div>
       <input type="range" class="slider" id="apWidth" min="0" max="100" value="${Math.round(a.width*100)}">
-      <div class="apcap">Shape</div>
-      <div class="seg">${shapeBtns}</div>
+      ${hasShape?`<div class="apcap">Shape</div>
+      <div class="seg">${shapeBtns}</div>`:''}
       ${leslieBlock?`<div class="ap-rv">${leslieBlock}</div>`:''}
       <div class="apcap">Rate</div>
       <div class="seg" style="margin-bottom:10px"><button class="${a.mode==='free'?'on':''}" data-mode="free">Free</button><button class="${a.mode==='sync'?'on':''}" data-mode="sync">Sync</button></div>
