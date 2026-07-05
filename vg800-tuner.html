@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script>try{var t=localStorage.getItem('vg800_theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<script>try{var t=localStorage.getItem('vg800_theme');if(t==='workbench'){t='dark';localStorage.setItem('vg800_theme',t);}if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
 <title>VG800 MIDI Control</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNyIgZmlsbD0iIzBmMjEzOCIvPjxyZWN0IHg9IjEiIHk9IjEiIHdpZHRoPSIzMCIgaGVpZ2h0PSIzMCIgcng9IjYuNSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYzk4ZjJiIiBzdHJva2Utb3BhY2l0eT0iLjU1Ii8+PGcgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+PGxpbmUgeDE9IjgiIHkxPSI3IiB4Mj0iMjQiIHkyPSI3IiBzdHJva2U9IiNlZjUzNTAiLz48bGluZSB4MT0iOCIgeTE9IjEwLjgiIHgyPSIyNCIgeTI9IjEwLjgiIHN0cm9rZT0iI2YyYTMzZCIvPjxsaW5lIHgxPSI4IiB5MT0iMTQuNiIgeDI9IjI0IiB5Mj0iMTQuNiIgc3Ryb2tlPSIjYzZkNDNmIi8+PGxpbmUgeDE9IjgiIHkxPSIxOC40IiB4Mj0iMjQiIHkyPSIxOC40IiBzdHJva2U9IiM0Y2MxNzgiLz48bGluZSB4MT0iOCIgeTE9IjIyLjIiIHgyPSIyNCIgeTI9IjIyLjIiIHN0cm9rZT0iIzRmOWRlYSIvPjxsaW5lIHgxPSI4IiB5MT0iMjYiIHgyPSIyNCIgeTI9IjI2IiBzdHJva2U9IiNhNTYzZDQiLz48L2c+PC9zdmc+">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -42,29 +42,49 @@
       linear-gradient(180deg, #1a2e4b 0%, #0f1e33 46%, #0a1017 100%);
   }
 
-  /* ===== Workbench (warm wood/brass) ===== */
-  html[data-theme="workbench"] {
-    --ink: #14100c;
-    --ink-2: #1c1712;
-    --wood: #241d16;
-    --felt: #2b2219;
-    --edge: #3a2f22;
-    --edge-soft: rgba(58,47,34,0.6);
-    --bone: #ece3d2;
-    --bone-dim: #b7ab95;
-    --bone-faint: #7d7361;
-    --brass: #e0a53f;
-    --brass-deep: #b47e28;
-    --brass-glow: rgba(224,165,63,0.35);
-    --chrome: #d8dade;
-    --chrome-dim: #8b8d92;
-    --steel-blue: #7fa8c9;
-    --amber: #e8913c;
-    --ok: #8fbf6a;
-    --err: #d9694e;
-    --bg:
-      radial-gradient(1000px 400px at 50% -5%, rgba(224,165,63,0.07), transparent 60%),
-      linear-gradient(180deg, var(--ink-2), var(--ink) 70%);
+  /* ===== Dark (low-glare, for dark rooms) ===== */
+  html[data-theme="dark"] {
+    --ink: #050607; --ink-2: #0b0d10; --wood: #121519; --felt: #1a1e23;
+    --edge: #2a2f36; --edge-soft: rgba(74,82,92,0.4);
+    --bone: #d0d5db; --bone-dim: #8a9099; --bone-faint: #585e67;
+    --brass: #cfa24a; --brass-deep: #a17c32; --brass-glow: rgba(207,162,74,0.28);
+    --chrome: #b6bcc4; --chrome-dim: #6a707a; --steel-blue: #6aa8e0; --amber: #d69a48;
+    --ok: #5cbf88; --err: #d96a55;
+    --bg: radial-gradient(1000px 420px at 50% -5%, rgba(130,140,155,0.05), transparent 60%),
+      linear-gradient(180deg, #0d0f12 0%, #070809 60%, #050607 100%);
+  }
+  /* ===== RC500 (loop-station red) ===== */
+  html[data-theme="rc500"] {
+    --ink: #150809; --ink-2: #220d0f; --wood: #2c1215; --felt: #3c1a1e;
+    --edge: #5c272c; --edge-soft: rgba(130,55,62,0.5);
+    --bone: #f7e9ea; --bone-dim: #d6a9ac; --bone-faint: #a5757a;
+    --brass: #ef4452; --brass-deep: #c8232f; --brass-glow: rgba(239,68,82,0.4);
+    --chrome: #ecdfe0; --chrome-dim: #a78d8f; --steel-blue: #5fb0f2; --amber: #f2a33d;
+    --ok: #58c98a; --err: #ff7a63;
+    --bg: radial-gradient(1200px 520px at 50% -10%, rgba(239,68,82,0.18), transparent 60%),
+      linear-gradient(180deg, #2a1013 0%, #1a0a0c 46%, #120709 100%);
+  }
+  /* ===== DS1 (distortion orange) ===== */
+  html[data-theme="ds1"] {
+    --ink: #140b03; --ink-2: #201308; --wood: #2a1a0a; --felt: #382410;
+    --edge: #5c3c1a; --edge-soft: rgba(126,82,38,0.5);
+    --bone: #f9ecdb; --bone-dim: #d5b48f; --bone-faint: #a4805a;
+    --brass: #f5851f; --brass-deep: #cf6910; --brass-glow: rgba(245,133,31,0.42);
+    --chrome: #ecdfd0; --chrome-dim: #a58f76; --steel-blue: #5fb0f2; --amber: #ffc04d;
+    --ok: #7fc96a; --err: #ef6a52;
+    --bg: radial-gradient(1200px 520px at 50% -10%, rgba(245,133,31,0.17), transparent 60%),
+      linear-gradient(180deg, #2c1c0a 0%, #1b1006 46%, #120a03 100%);
+  }
+  /* ===== DD500 (delay cream — light theme) ===== */
+  html[data-theme="dd500"] {
+    --ink: #cbc1a8; --ink-2: #d5cbb3; --wood: #e7dec8; --felt: #efe7d4;
+    --edge: #c2b493; --edge-soft: rgba(150,135,100,0.45);
+    --bone: #2e2820; --bone-dim: #5c5341; --bone-faint: #8a7f66;
+    --brass: #2f6fb0; --brass-deep: #23568a; --brass-glow: rgba(47,111,176,0.28);
+    --chrome: #6b6350; --chrome-dim: #9a9078; --steel-blue: #2f7fb0; --amber: #c47a1e;
+    --ok: #3f9e6a; --err: #cc4a37;
+    --bg: radial-gradient(1000px 400px at 50% -5%, rgba(47,111,176,0.06), transparent 60%),
+      linear-gradient(180deg, #f2ead7 0%, #e9e0cb 60%, #e2d8c1 100%);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
@@ -173,13 +193,17 @@
   .tbtn.sharp { color: var(--amber); } .tbtn.sharp:hover { border-color: var(--amber); }
   .tbtn.zero { color: var(--bone-faint); }
 
-  .theme-row { display: flex; gap: 8px; }
-  .theme-opt { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.5px; padding: 10px 10px; border-radius: 8px; cursor: pointer; border: 1px solid var(--edge); background: var(--wood); color: var(--bone-dim); transition: all 0.14s; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
+  .theme-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .theme-opt { display: flex; align-items: center; justify-content: center; gap: 8px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.5px; padding: 10px 8px; border-radius: 8px; cursor: pointer; border: 1px solid var(--edge); background: var(--wood); color: var(--bone-dim); transition: all 0.14s; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
   .theme-opt:hover { border-color: var(--brass-deep); color: var(--bone); }
   .theme-opt.on { border-color: var(--brass); color: var(--brass); background: var(--felt); box-shadow: inset 0 0 0 1px var(--brass-glow); }
   .theme-opt .sw { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15); }
+  .theme-opt .moon-ico { width: 15px; height: 15px; }
   .sw-blue { background: linear-gradient(135deg, #2e5c8a, #f2b34d 140%); }
-  .sw-wood { background: linear-gradient(135deg, #3a2f22, #e0a53f 140%); }
+  .sw-red { background: linear-gradient(135deg, #5c2226, #ef4452 140%); }
+  .sw-orange { background: linear-gradient(135deg, #5c3a1a, #f5851f 140%); }
+  .sw-cream { background: linear-gradient(135deg, #b8ac8c, #f2ead7 140%); }
+  .sw-dark { background: linear-gradient(135deg, #050607, #4a505a 140%); }
 
   /* Steel pedals */
   .pedal-info { font-family: var(--mono); font-size: 11px; color: var(--bone-dim); margin: 0 2px 15px; letter-spacing: 0.3px; }
@@ -608,8 +632,11 @@
       <summary>Theme</summary>
       <div class="settgrp-body">
         <div class="theme-row">
-          <button class="theme-opt" data-theme-set="boss-blue"><span class="sw sw-blue"></span>BOSS Blue</button>
-          <button class="theme-opt" data-theme-set="workbench"><span class="sw sw-wood"></span>Workbench</button>
+          <button class="theme-opt" data-theme-set="boss-blue"><span class="sw sw-blue"></span>VG800</button>
+          <button class="theme-opt" data-theme-set="rc500"><span class="sw sw-red"></span>RC500</button>
+          <button class="theme-opt" data-theme-set="dd500"><span class="sw sw-cream"></span>DD500</button>
+          <button class="theme-opt" data-theme-set="ds1"><span class="sw sw-orange"></span>DS1</button>
+          <button class="theme-opt" data-theme-set="dark" title="Dark" aria-label="Dark theme"><span class="sw sw-dark"></span><svg class="moon-ico" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.03-.92-.1-1.36a5.4 5.4 0 0 1-7.54-7.54A9 9 0 0 0 12 3z"/></svg></button>
         </div>
       </div>
     </details>
