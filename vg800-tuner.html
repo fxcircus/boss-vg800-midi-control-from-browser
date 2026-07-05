@@ -439,6 +439,10 @@
   .settgrp[open] > summary::after { transform: rotate(45deg); }
   .settgrp-body { padding: 15px 15px 5px; }
   .settgrp-body > *:first-child { margin-top: 0; }
+  /* Drawer animation — each group glides open/closed (Chromium ::details-content + interpolate-size) */
+  html { interpolate-size: allow-keywords; }
+  .settgrp::details-content { height: 0; overflow: clip; opacity: 0; transition: height .3s cubic-bezier(.4,0,.2,1), opacity .24s ease, content-visibility .3s allow-discrete; }
+  .settgrp[open]::details-content { height: auto; opacity: 1; }
 
   .toast {
     position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(120px);
