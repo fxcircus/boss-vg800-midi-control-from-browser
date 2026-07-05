@@ -55,25 +55,23 @@
   }
   /* ===== RC500 (loop-station red) ===== */
   html[data-theme="rc500"] {
-    --ink: #150809; --ink-2: #220d0f; --wood: #2c1215; --felt: #3c1a1e;
-    --edge: #5c272c; --edge-soft: rgba(130,55,62,0.5);
+    --ink: #140708; --ink-2: #200b0d; --wood: #2a1013; --felt: #381619;
+    --edge: #582429; --edge-soft: rgba(122,50,56,0.5);
     --bone: #f7e9ea; --bone-dim: #d6a9ac; --bone-faint: #a5757a;
-    --brass: #ef4452; --brass-deep: #c8232f; --brass-glow: rgba(239,68,82,0.4);
+    --brass: #e02a34; --brass-deep: #b01c25; --brass-glow: rgba(224,42,52,0.38);
     --chrome: #ecdfe0; --chrome-dim: #a78d8f; --steel-blue: #5fb0f2; --amber: #f2a33d;
     --ok: #58c98a; --err: #ff7a63;
-    --bg: radial-gradient(1200px 520px at 50% -10%, rgba(239,68,82,0.18), transparent 60%),
-      linear-gradient(180deg, #2a1013 0%, #1a0a0c 46%, #120709 100%);
+    --bg: linear-gradient(180deg, #190a0d 0%, #130709 100%);
   }
   /* ===== DS1 (distortion orange) ===== */
   html[data-theme="ds1"] {
-    --ink: #140b03; --ink-2: #201308; --wood: #2a1a0a; --felt: #382410;
-    --edge: #5c3c1a; --edge-soft: rgba(126,82,38,0.5);
+    --ink: #130a03; --ink-2: #1e1208; --wood: #28180a; --felt: #34220f;
+    --edge: #593919; --edge-soft: rgba(120,78,34,0.5);
     --bone: #f9ecdb; --bone-dim: #d5b48f; --bone-faint: #a4805a;
-    --brass: #f5851f; --brass-deep: #cf6910; --brass-glow: rgba(245,133,31,0.42);
+    --brass: #f57d17; --brass-deep: #cf6510; --brass-glow: rgba(245,125,23,0.4);
     --chrome: #ecdfd0; --chrome-dim: #a58f76; --steel-blue: #5fb0f2; --amber: #ffc04d;
     --ok: #7fc96a; --err: #ef6a52;
-    --bg: radial-gradient(1200px 520px at 50% -10%, rgba(245,133,31,0.17), transparent 60%),
-      linear-gradient(180deg, #2c1c0a 0%, #1b1006 46%, #120a03 100%);
+    --bg: linear-gradient(180deg, #1d1308 0%, #130a03 100%);
   }
   /* ===== DD500 (delay cream — light theme) ===== */
   html[data-theme="dd500"] {
@@ -86,6 +84,10 @@
     --bg: radial-gradient(1000px 400px at 50% -5%, rgba(47,111,176,0.06), transparent 60%),
       linear-gradient(180deg, #f2ead7 0%, #e9e0cb 60%, #e2d8c1 100%);
   }
+  /* Flat matte finish for the pedal-panel themes (RC500 / DS1) — no drop shadows */
+  html[data-theme="rc500"] :is(.card,.pedal,.panmode,.clbtn,.kb-chip,.bench,.pan-auto,.tbtn,.add,.gear):not(.active):not(.on),
+  html[data-theme="ds1"]   :is(.card,.pedal,.panmode,.clbtn,.kb-chip,.bench,.pan-auto,.tbtn,.add,.gear):not(.active):not(.on) { box-shadow: none; }
+  html[data-theme="rc500"] .bench, html[data-theme="ds1"] .bench { background: var(--wood); }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
   body {
