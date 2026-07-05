@@ -240,12 +240,18 @@
   .pedal.on .pedal-name { color: var(--brass); }
   .pedal-key { font-family: var(--mono); font-weight: 400; font-size: 9px; color: var(--bone-faint); border: 1px solid var(--edge); border-radius: 4px; padding: 1px 5px; text-transform: uppercase; }
   .pedal-do { font-family: var(--mono); font-size: 10px; color: var(--bone-faint); margin: 4px 0 9px; letter-spacing: 0.2px; }
-  .pedal-moves { display: flex; flex-wrap: wrap; gap: 3px 10px; font-family: var(--mono); font-size: 11px; }
+  .pedal-moves { display: flex; flex-wrap: wrap; gap: 3px 10px; font-family: var(--mono); font-size: 11px; padding-right: 22px; }
   .pedal-moves .mv { white-space: nowrap; }
   .pedal-moves .to { color: var(--amber); font-weight: 700; }
   .pedal-moves .to.dn { color: var(--steel-blue); }
   .pedal-moves .st { color: var(--bone-faint); }
   .pedal-moves .mv.off { color: var(--bone-faint); font-style: italic; }
+  /* Corner "logo" marking each control's type: shoe = foot pedal, lever = knee lever, layers = combo grip */
+  .pedal-badge { position: absolute; right: 10px; bottom: 9px; width: 18px; height: 18px; color: var(--bone-faint); opacity: 0.9; pointer-events: none; transition: color .12s, opacity .12s; }
+  .pedal-badge svg { width: 100%; height: 100%; display: block; }
+  .pedal:hover:not(.disabled) .pedal-badge { color: var(--bone-dim); }
+  .pedal.on .pedal-badge { color: var(--brass); opacity: 1; }
+  .pedal.disabled .pedal-badge { opacity: 0.5; }
 
   /* Pedal key mapping + latch */
   .latch-tog { display: inline-flex; align-items: center; gap: 9px; font-family: var(--mono); font-size: 11px; color: var(--bone-dim); cursor: pointer; margin-bottom: 11px; }
@@ -1000,13 +1006,22 @@ function movesHTML(moves){
   if(!moves||!moves.length) return '';
   return moves.map(m=>{ const dn=m.bend<0?' dn':''; return `<span class="mv"><span class="st">String ${SLBL[m.i]}</span> <span class="to${dn}">${nameOf(m.from).name}→${nameOf(m.to).name}</span></span>`; }).join('');
 }
+// Per-type corner logos evoking the real hardware: a shoe (foot pedal), a lever
+// on a fulcrum pushed sideways (knee lever), and stacked layers (a combo grip).
+const PEDAL_ICONS={
+  foot:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.8 11.2Q4.8 10.8 5.2 10.8L6.8 10.8Q7.3 10.8 7.5 11.3L8.6 14.2 16.5 15.1Q19.4 15.4 20 17.2 20.3 18 19.5 18L5.4 18Q4.8 18 4.8 17.4Z"/></svg>',
+  knee:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="15.5" cy="6" r="2.4" fill="currentColor" stroke="none"/><path d="M15 8.4 8.8 18M5.6 18h7"/></svg>',
+  combo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="8" width="9.6" height="9.6" rx="2.2"/><rect x="9.4" y="4" width="9.6" height="9.6" rx="2.2" fill="currentColor" fill-opacity="0.16"/></svg>'
+};
 function pedalBtnHTML(ctrl, label, sub, st){
   const dis=!st.avail, key=(keyFor(ctrl)||'').toUpperCase();
   const body = dis ? `<span class="mv off">${st.why||'n/a here'}</span>` : movesHTML(st.moves);
+  const ico=PEDAL_ICONS[(ctrlById(ctrl)||{}).group]||'';
   return `<button class="pedal${dis?' disabled':''}" data-ctrl="${ctrl}"${dis?' aria-disabled="true"':''}>
     <span class="pedal-name">${label}${key?`<span class="pedal-key">${key}</span>`:''}</span>
     <span class="pedal-do">${sub}</span>
     <span class="pedal-moves">${body}</span>
+    ${ico?`<span class="pedal-badge">${ico}</span>`:''}
   </button>`;
 }
 function keymapHTML(){
