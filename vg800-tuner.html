@@ -570,7 +570,7 @@ const DEFAULT_KEYS={A:'a',B:'s',LKL:'d',LKR:'f',AB:'g',ABR:'h'};  // ergonomic l
 const AB_DEFAULTS={autoBend:false, bendCC:69, levelCC:70, bendDepth:25, levelDip:15, bendMs:120};  // auto-bend scoop
 
 const FAMILIES = [
-  { family:'Reference', tunings:[ {name:'Standard', notes:'E A D G B E', offsets:[0,0,0,0,0,0]} ]},
+  { family:'Standard', tunings:[ {name:'Standard', notes:'E A D G B E', offsets:[0,0,0,0,0,0]} ]},
   { family:'6th Family', section:'Lap Steel', tunings:[
     {name:'C6', notes:'C E G A C E', offsets:[0,1,2,5,-5,-4]},
     {name:'A6', notes:'C# E F# A C# E', offsets:[0,2,2,4,-5,-3]},
@@ -991,7 +991,7 @@ function renderNav(){
   }
   const I={
     tunings:'<svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v6M16 3v6M8 9a4 4 0 0 0 8 0M12 13v8"/></svg>',
-    pedals:'<svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M8 8h8"/><circle cx="12" cy="14.5" r="2.2"/></svg>',
+    pedals:'<svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="14" width="15" height="5" rx="2.5" transform="rotate(-9 11 16.5)"/><path d="M16.4 14.6 18 8.4"/><circle cx="18.3" cy="6.9" r="1.5"/></svg>',
     pan:'<svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M4 12h16"/></svg>' };
   box.innerHTML='<div class="nav-title">Jump to</div>'
     +'<a class="group" href="#sec-tunings">'+I.tunings+'Tunings</a>'+links
@@ -1031,9 +1031,9 @@ function computeCluster(pitches, start){
 }
 // The VG-800 only bends ±12 semitones, so instruments in a distant register sound an octave off; tell the player where to capo.
 function capoText(delta){
-  if(delta<0) return `Capo fret ${-delta} for concert pitch`;
-  if(delta>0) return delta>=24?`Sounds ${delta/12} octaves high`:`Sounds an octave high`;
-  return `Concert pitch · no capo`;
+  if(delta<0) return `*capo on ${-delta}th fret`;
+  if(delta>0) return delta>=24?`sounds ${delta/12} octaves high`:`sounds an octave high`;
+  return `no capo`;
 }
 function applyInst(inst, start){
   const N=inst.pitches.length; start=Math.max(0, Math.min(6-N, start));
@@ -1059,7 +1059,7 @@ function clusterRowHTML(inst, start){
     opts.push(`<button class="clbtn${res.ok?'':' disabled'}${s===start?' on':''}" data-start="${s}"${res.ok?'':' aria-disabled="true"'}><span class="cldots">${dots}</span><span class="cllbl">${s+1}–${s+N}</span></button>`);
   }
   const d=computeCluster(inst.pitches, start).delta;
-  return `<div class="cl-head">String placement for <b>${inst.name}</b> — leftmost = high E (1st string); the rest stay standard.<br><b>${capoText(d)}</b> to match the real instrument's octave.</div><div class="clrow">${opts.join('')}</div>`;
+  return `<div class="cl-head">String placement for <b>${inst.name}</b> — leftmost = high E (1st string); the rest stay standard.<br>For the real instrument's octave: <b>${capoText(d)}</b>.</div><div class="clrow">${opts.join('')}</div>`;
 }
 function renderEthnic(){
   const wrap=document.getElementById('ethnicWrap'); if(!wrap) return;
@@ -1135,16 +1135,17 @@ function renderPan(){
   const wrap=document.getElementById('panWrap'); if(!wrap) return;
   const btns=PANMODES.map(m=>`<button class="panmode${activePan===m.id?' on':''}" data-pan="${m.id}">${m.name}</button>`).join('');
   const pm=settings.panMs|0;
+  const lbl=ms=> ms===0?'instant' : ms>=1000?(ms/1000).toFixed(2).replace(/\.?0+$/,'')+'S' : ms+' ms';  // ≥1s → "1S"/"1.5S"
   wrap.innerHTML=`<div class="panmodes">${btns}</div>
     <div class="pan-glide">
-      <div class="pg-lbl"><span>Pan glide — ease between modes</span><b id="panMsVal">${pm===0?'instant':pm+' ms'}</b></div>
-      <input type="range" class="slider" id="panMsSlider" min="0" max="1500" step="50" value="${pm}">
+      <div class="pg-lbl"><span>Pan glide — ease between modes</span><b id="panMsVal">${lbl(pm)}</b></div>
+      <input type="range" class="slider" id="panMsSlider" min="0" max="5000" step="50" value="${pm}">
     </div>`;
   wrap.querySelectorAll('.panmode').forEach(b=>{
     b.addEventListener('click',()=>applyPan(b.dataset.pan));   // pan animates only on click (no hover preview)
   });
   const sl=document.getElementById('panMsSlider'), val=document.getElementById('panMsVal');
-  if(sl) sl.addEventListener('input',()=>{ settings.panMs=+sl.value; if(val) val.textContent=(settings.panMs===0?'instant':settings.panMs+' ms'); saveSettingsLS(); });
+  if(sl) sl.addEventListener('input',()=>{ settings.panMs=+sl.value; if(val) val.textContent=lbl(settings.panMs); saveSettingsLS(); });
 }
 /* ===== Combined view — pan dots (top strip) linked by fixed per-string color to the pitch neck (renderStrings, below).
    Lives in #sec-current, which placeBench() parks in the sidebar on wide screens. ===== */
