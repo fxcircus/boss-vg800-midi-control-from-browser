@@ -317,18 +317,9 @@
   .seg button { flex: 1; font-family: var(--mono); font-size: 10.5px; font-weight: 700; padding: 7px 6px; border: none; border-radius: 6px; background: transparent; color: var(--bone-dim); cursor: pointer; letter-spacing: 0.3px; transition: color .12s, background .12s; }
   .seg button:hover { color: var(--bone); }
   .seg button.on { background: var(--brass); color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,0.35); }
+  .seg button .wv { display: block; width: 24px; height: 14px; margin: 1px auto; }   /* LFO waveform icons */
   .apdesc { font-family: var(--sans); font-size: 11px; font-style: italic; color: var(--bone-faint); margin: 8px 2px 2px; line-height: 1.45; }
   .aphdr span { font-weight: 700; color: var(--bone); }
-  .apfine { margin-top: 12px; border-top: 1px solid var(--edge-soft); }
-  .apfine > summary { list-style: none; cursor: pointer; display: flex; align-items: center; padding: 11px 2px 2px; font-family: var(--mono); font-size: 9.5px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--bone-faint); user-select: none; transition: color .12s; }
-  .apfine > summary::-webkit-details-marker { display: none; }
-  .apfine-hint { margin-left: auto; font-family: var(--mono); font-size: 9px; color: var(--brass-deep); letter-spacing: 0.4px; text-transform: none; }
-  .apfine > summary::after { content: ""; margin-left: 8px; width: 6px; height: 6px; border-right: 2px solid var(--brass-deep); border-bottom: 2px solid var(--brass-deep); transform: rotate(-45deg); transition: transform .18s; }
-  .apfine[open] > summary::after { transform: rotate(45deg); }
-  .apfine > summary:hover { color: var(--brass); }
-  .apfine-body { padding-top: 6px; }
-  .apfine::details-content { height: 0; overflow: clip; opacity: 0; transition: height .28s cubic-bezier(.4,0,.2,1), opacity .22s ease, content-visibility .28s allow-discrete; }
-  .apfine[open]::details-content { height: auto; opacity: 1; }
   #apFree, #apSync { margin-top: 10px; }
   /* Combined compact view — pitch neck (renderStrings) sits above a pan strip, linked by fixed per-string color */
   .cv-pan { margin: 12px 6px 2px; }
@@ -653,7 +644,7 @@ const SLBL = ['1','2','3','4','5','6'];
 function nameOf(m){ const pc=((m%12)+12)%12; return {name:NOTE[pc], oct:Math.floor(m/12)-1}; }
 function toCC(s){ const c=Math.max(-12,Math.min(12,s)); return Math.round((c+12)/24*127); }
 const DEFAULT_KEYS={A:'a',B:'s',LKL:'d',LKR:'f',AB:'g',ABR:'h'};  // ergonomic left-hand cluster
-const AB_DEFAULTS={autoBend:false, bendCC:69, levelCC:70, bendDepth:25, levelDip:15, bendMs:120};  // auto-bend scoop
+const AB_DEFAULTS={autoBend:true, bendCC:69, levelCC:70, bendDepth:25, levelDip:15, bendMs:120};  // auto-bend scoop (on by default)
 const AP_DEFAULTS={mode:'free', rate:15, bpm:120, div:'1/4', width:0.5, shape:'sine', spread:1, char:'rotate', lTopSpread:1, lTopSpeed:1.12, lBotSpread:0.5, lBotSpeed:0.86};  // auto-pan engine (gentle defaults; l* = Leslie per-rotor spread/speed)
 
 const FAMILIES = [
@@ -1207,7 +1198,12 @@ const AP_CHARS={ rotate:{shape:'sine',spread:1,width:0.85,mode:'free',rate:45}, 
 let autoPanOn=false, autoPanTimer=null, autoPanT=0, autoPanLast=[-1,-1,-1,-1,-1,-1], autoPanStart=[0,0,0,0,0,0], autoPanRampMs=0;
 let apPhase=0, apBreathe=0, apSwap=1, apSwapStep=0, apSH=[0,0,0,0,0,0], apSHstep=[-1,-1,-1,-1,-1,-1], apDrift=[0,0,0,0,0,0], apDriftTgt=[0,0,0,0,0,0], apDriftT=[0,0,0,0,0,0];
 function apCyclesPerSec(){ const a=settings.ap; if(a.mode==='sync'){ const beats=AP_DIVMAP[a.div]||1; return 1/((60/Math.max(60,Math.min(200,a.bpm)))*beats); } const v=Math.max(1,Math.min(100,a.rate)); return 0.05+(v-1)/99*(1-0.05); }  // free: 0.05–1 Hz; sync: one cycle per note division
-function apShapeVal(x,shape){ return shape==='triangle' ? 2/Math.PI*Math.asin(Math.sin(x)) : Math.sin(x); }
+function apShapeVal(x,shape){
+  if(shape==='triangle') return 2/Math.PI*Math.asin(Math.sin(x));
+  if(shape==='square') return Math.sin(x)>=0?1:-1;
+  if(shape==='sawup'||shape==='sawdown'){ const p=((x/(2*Math.PI))%1+1)%1; return shape==='sawup'?(2*p-1):(1-2*p); }
+  return Math.sin(x);   // sine (sh is stepped in autoPanCompute)
+}
 function sendPan(pos){ if(!midiOut) return; const st=0xB0|((settings.channel-1)&0x0F); pos.forEach((p,i)=> midiOut.send([st, settings.panCCs[i]&0x7F, panToCC(p)&0x7F])); }
 function applyPan(id){
   const m=PANMODES.find(x=>x.id===id); if(!m) return;
@@ -1283,7 +1279,15 @@ const AP_CHARDESC={ rotate:'All six notes circle the room together.', leslie:'Tw
 const glideLbl=ms=> ms===0?'instant' : ms>=1000?(ms/1000).toFixed(2).replace(/\.?0+$/,'')+'S' : ms+' ms';
 const rateCycLbl=v=>{ const hz=0.05+(Math.max(1,Math.min(100,v))-1)/99*(1-0.05); return '≈ '+(1/hz).toFixed(1).replace(/\.0$/,'')+'s / cycle'; };
 const spreadLbl=v=> v<0.02?'block' : v>=0.98?'full rotation' : v<0.4?'narrow fan' : v<0.75?'wide fan' : 'near rotation';
-let apFineOpen=false;
+const AP_WV='<svg class="wv" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';
+const AP_SHAPES=[
+  {id:'sine',     name:'Sine',          ico:AP_WV+'<path d="M2 12 Q7 3 12 12 T22 12"/></svg>'},
+  {id:'triangle', name:'Triangle',      ico:AP_WV+'<path d="M2 17 L7 7 L12 17 L17 7 L22 17"/></svg>'},
+  {id:'square',   name:'Square',        ico:AP_WV+'<path d="M2 17 V7 H9 V17 H16 V7 H22"/></svg>'},
+  {id:'sawup',    name:'Saw Up',        ico:AP_WV+'<path d="M3 16 L10 6 L10 16 L17 6 L17 16"/></svg>'},
+  {id:'sawdown',  name:'Saw Down',      ico:AP_WV+'<path d="M3 6 L10 16 L10 6 L17 16 L17 6"/></svg>'},
+  {id:'sh',       name:'Sample & Hold', label:'S&amp;H'},
+];
 // When enabling auto-pan / switching to a taller mode, bring the newly-revealed controls into view
 function ensurePanVisible(){ const wrap=document.getElementById('panWrap'); if(!wrap) return;
   requestAnimationFrame(()=>{ const r=wrap.getBoundingClientRect(); if(r.bottom > window.innerHeight-6) wrap.scrollIntoView({behavior:'smooth', block:'end'}); }); }
@@ -1306,11 +1310,18 @@ function renderPan(){
         <div><div class="pg-lbl"><span>Spread</span><b id="apLBSv">${Math.round(a.lBotSpread*100)}%</b></div><input type="range" class="slider" id="apLBS" min="0" max="100" value="${Math.round(a.lBotSpread*100)}"></div>
         <div><div class="pg-lbl"><span>Speed</span><b id="apLBZv">${a.lBotSpeed.toFixed(2)}×</b></div><input type="range" class="slider" id="apLBZ" min="25" max="200" value="${Math.round(a.lBotSpeed*100)}"></div>
       </div>` : '';
+  const shapeBtns = AP_SHAPES.map(s=>`<button class="${a.shape===s.id?'on':''}" data-shape="${s.id}" title="${s.name}">${s.ico||s.label}</button>`).join('');
   const autoBody=`<div id="apBody">
       <p class="apsub">Each string sweeps the stereo field</p>
       <div class="apcap" style="margin-top:10px">Character</div>
       <div class="panmodes">${charBtns}</div>
       <p class="apdesc">${AP_CHARDESC[a.char]||''}</p>
+      <div class="apduo">
+        <div><div class="pg-lbl"><span>Phase spread</span><b id="apSpreadVal">${spreadLbl(a.spread)}</b></div><input type="range" class="slider" id="apSpread" min="0" max="100" value="${Math.round(a.spread*100)}"></div>
+        <div><div class="pg-lbl"><span>Width</span><b id="apWidthVal">${Math.round(a.width*100)}%</b></div><input type="range" class="slider" id="apWidth" min="0" max="100" value="${Math.round(a.width*100)}"></div>
+      </div>
+      <div class="apcap">Shape</div>
+      <div class="seg">${shapeBtns}</div>
       ${leslieBlock}
       <div class="apcap">Rate</div>
       <div class="seg" style="margin-bottom:10px"><button class="${a.mode==='free'?'on':''}" data-mode="free">Free</button><button class="${a.mode==='sync'?'on':''}" data-mode="sync">Sync</button></div>
@@ -1323,17 +1334,6 @@ function renderPan(){
         <input type="range" class="slider" id="apBpm" min="60" max="200" value="${a.bpm}">
         <div class="apcap">Division</div><div class="apdivs">${divBtns}</div>
       </div>
-      <details class="apfine"${apFineOpen?' open':''}>
-        <summary>Fine-tune<span class="apfine-hint" id="apFineHint">${spreadLbl(a.spread)} · ${Math.round(a.width*100)}%</span></summary>
-        <div class="apfine-body">
-          <div class="apduo">
-            <div><div class="pg-lbl"><span>Phase spread</span><b id="apSpreadVal">${spreadLbl(a.spread)}</b></div><input type="range" class="slider" id="apSpread" min="0" max="100" value="${Math.round(a.spread*100)}"></div>
-            <div><div class="pg-lbl"><span>Width</span><b id="apWidthVal">${Math.round(a.width*100)}%</b></div><input type="range" class="slider" id="apWidth" min="0" max="100" value="${Math.round(a.width*100)}"></div>
-          </div>
-          <div class="apcap">Shape</div>
-          <div class="seg"><button class="${a.shape==='sine'?'on':''}" data-shape="sine">Sine</button><button class="${a.shape==='triangle'?'on':''}" data-shape="triangle">Triangle</button><button class="${a.shape==='sh'?'on':''}" data-shape="sh">S&amp;H</button></div>
-        </div>
-      </details>
     </div>`;
   const autoBtn=`<button class="panmode autopan${autoPanOn?' on':''}" data-autopan title="Toggle auto-pan">Auto-pan</button>`;
   wrap.innerHTML=`<div class="apcap" style="margin-top:0">Manual placement</div>
@@ -1345,9 +1345,8 @@ function renderPan(){
   if(apbtn) apbtn.addEventListener('click',()=>{ if(!autoPanOn){ startAutoPan(); renderPan(); ensurePanVisible(); } else { stopAutoPan(); renderPan(); applyPan(activePan); } });
   const pg=document.getElementById('panGlide'), pgv=document.getElementById('panGlideVal');
   if(pg) pg.addEventListener('input',()=>{ settings.panMs=+pg.value; if(pgv) pgv.textContent=glideLbl(settings.panMs); saveSettingsLS(); });
-  const fineHint=()=>{ const h=document.getElementById('apFineHint'); if(h) h.textContent=spreadLbl(settings.ap.spread)+' · '+Math.round(settings.ap.width*100)+'%'; };
   const sp=document.getElementById('apSpread'), spv=document.getElementById('apSpreadVal');
-  if(sp) sp.addEventListener('input',()=>{ settings.ap.spread=+sp.value/100; if(spv) spv.textContent=spreadLbl(settings.ap.spread); fineHint(); saveSettingsLS(); });
+  if(sp) sp.addEventListener('input',()=>{ settings.ap.spread=+sp.value/100; if(spv) spv.textContent=spreadLbl(settings.ap.spread); saveSettingsLS(); });
   wrap.querySelectorAll('[data-char]').forEach(b=> b.addEventListener('click',()=>{ const id=b.dataset.char; Object.assign(settings.ap, AP_CHARS[id]||{}); settings.ap.char=id; saveSettingsLS(); renderPan(); ensurePanVisible(); }));
   wrap.querySelectorAll('[data-mode]').forEach(b=> b.addEventListener('click',()=>{ settings.ap.mode=b.dataset.mode; saveSettingsLS(); renderPan(); ensurePanVisible(); }));
   const ar=document.getElementById('apRate'), arv=document.getElementById('apRateVal');
@@ -1356,9 +1355,8 @@ function renderPan(){
   if(bpm) bpm.addEventListener('input',()=>{ settings.ap.bpm=+bpm.value; if(bpmv) bpmv.textContent=settings.ap.bpm+' BPM'; saveSettingsLS(); });
   wrap.querySelectorAll('[data-div]').forEach(b=> b.addEventListener('click',()=>{ settings.ap.div=b.dataset.div; saveSettingsLS(); renderPan(); }));
   const w=document.getElementById('apWidth'), wv=document.getElementById('apWidthVal');
-  if(w) w.addEventListener('input',()=>{ settings.ap.width=+w.value/100; if(wv) wv.textContent=Math.round(settings.ap.width*100)+'%'; fineHint(); saveSettingsLS(); });
-  wrap.querySelectorAll('[data-shape]').forEach(b=> b.addEventListener('click',()=>{ settings.ap.shape=b.dataset.shape; saveSettingsLS(); renderPan(); }));
-  const fine=wrap.querySelector('.apfine'); if(fine) fine.addEventListener('toggle',()=>{ apFineOpen=fine.open; if(fine.open) setTimeout(ensurePanVisible,300); });
+  if(w) w.addEventListener('input',()=>{ settings.ap.width=+w.value/100; if(wv) wv.textContent=Math.round(settings.ap.width*100)+'%'; saveSettingsLS(); });
+  wrap.querySelectorAll('[data-shape]').forEach(b=> b.addEventListener('click',()=>{ const id=b.dataset.shape; settings.ap.shape=id; saveSettingsLS(); const s=AP_SHAPES.find(x=>x.id===id); if(s) toast(s.name); wrap.querySelectorAll('[data-shape]').forEach(x=> x.classList.toggle('on', x.dataset.shape===id)); }));
   const lts=document.getElementById('apLTS'); if(lts) lts.addEventListener('input',()=>{ settings.ap.lTopSpread=+lts.value/100; const v=document.getElementById('apLTSv'); if(v) v.textContent=Math.round(settings.ap.lTopSpread*100)+'%'; saveSettingsLS(); });
   const ltz=document.getElementById('apLTZ'); if(ltz) ltz.addEventListener('input',()=>{ settings.ap.lTopSpeed=+ltz.value/100; const v=document.getElementById('apLTZv'); if(v) v.textContent=settings.ap.lTopSpeed.toFixed(2)+'×'; saveSettingsLS(); });
   const lbs=document.getElementById('apLBS'); if(lbs) lbs.addEventListener('input',()=>{ settings.ap.lBotSpread=+lbs.value/100; const v=document.getElementById('apLBSv'); if(v) v.textContent=Math.round(settings.ap.lBotSpread*100)+'%'; saveSettingsLS(); });
