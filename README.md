@@ -1,37 +1,40 @@
-# VG800 MIDI Control — Boss VG-800 tuning from the browser
+# VG800 MIDI Control — retune your Boss VG-800 from the browser
 
-Pick an alternate tuning in your browser and the **Boss VG-800** retunes every string instantly over MIDI — no menu diving. It's a single self-contained HTML file (no build step, no dependencies) that uses the **Web MIDI API** to send Control Change messages to the VG-800's per-string **String Bend** engine.
+Pick an alternate tuning and all six strings of your **Boss VG-800** retune instantly over MIDI — no menu-diving. It also does pedal-steel **bends**, ethnic-instrument voicings and stereo **auto-panning**, all from a single self-contained HTML page (no build step, no dependencies) that talks to the pedal through the **Web MIDI API**.
 
 **▶ Live app: https://fxcircus.github.io/boss-vg800-midi-control-from-browser/**
-(Open in Chrome or Edge, allow MIDI, and select your interface — GitHub Pages is served over HTTPS, so Web MIDI works.)
+Open in **Chrome or Edge**, allow MIDI, and pick your interface. (GitHub Pages serves over HTTPS, so Web MIDI works.)
 
-![Standard tuning](screenshots/standard_tuning.png)
+☕ Like it? [Buy me a coffee](https://buymeacoffee.com/fxcircus).
 
-*The app (right) next to Boss Tone Studio (left). Selecting **STANDARD** sends every string a "0" offset, so all six BEND DEPTH values sit at 0 and the guitar plays in standard `E A D G B E`.*
+![The app](screenshots/app.png)
+
+---
+
+## Quick start
+
+1. Open the [live app](https://fxcircus.github.io/boss-vg800-midi-control-from-browser/) in **Chrome or Edge** (Safari & Firefox don't support Web MIDI) and allow MIDI access when asked.
+2. Open **⚙ Settings → MIDI Output**, pick your interface's output port and set **Channel** to match the VG-800 (factory default **1**). The dot on the ⚙ button glows **green** once a port is live.
+3. Click any **tuning card** — all six strings retune at once.
+4. First time connecting the hardware? Do the [one-time VG-800 setup](#one-time-vg-800-setup) below so the pedal actually responds.
 
 ---
 
 ## How it works
 
-Each of the six strings is controlled by its own MIDI **CC number**. The app converts a per-string semitone offset (−12 … +12) into a CC value (0 … 127) and sends it on the VG-800's receive channel. On the VG-800, each of those CCs is assigned to a **STR BEND → BEND DEPTH** parameter with a range of −12 … +12 semitones, so the CC value maps linearly onto the string's pitch shift.
+Each of the six strings is driven by its own MIDI **CC number**. The app converts a per-string semitone offset (−12 … +12) into a CC value (0 … 127) and sends it on the VG-800's receive channel. On the VG-800, each CC is assigned to a **STR BEND → BEND DEPTH** parameter with a range of −12 … +12 semitones, so the CC value maps linearly onto the string's pitch shift.
 
 - Offset `0` → CC `64` → 0 semitones
 - Offset `−12` → CC `0` → one octave down
 - Offset `+12` → CC `127` → one octave up
 
-Click a tuning and all six strings retune at once.
-
-![C6 tuning](screenshots/c6_tuning.png)
-
-*Selecting **C6** shifts the strings by `0 +1 +2 +5 −5 −4` (high E → low E). You can see those exact values land on BEND DEPTH 1–6 on the VG-800, producing `C E G A C E`.*
-
-![Cyrus Hybrid tuning](screenshots/cyrus_tuning.png)
-
-*Any of the built-in tunings — or your own **+ Custom** tunings — work the same way. Here **Cyrus Hybrid** is applied and the six BEND DEPTH knobs move to match.*
+Panning works the same way, driving **STRING(A) · PAN 1–6** (default CC# 71–76, MIN `L50` / MAX `R50`).
 
 ---
 
-## VG-800 setup (do this once)
+## One-time VG-800 setup
+
+Configure the pedal once so it listens to the app.
 
 ### 1. Turn on String Bend and set Bend Control to 100
 
@@ -42,11 +45,11 @@ In **INST → STR BEND** (Bend Control tab):
 - **STR BEND SW = ON**
 - **BEND CONTROL = 100**
 
-This is essential: the VG-800 only applies **BEND DEPTH** to the pitch when **BEND CONTROL is 100**. At 0 (its normal default) the depth values are ignored and nothing changes, no matter what the app sends. The seven **BEND DEPTH** knobs above are the per-string pitch shifts (DEPTH 1 = high E … DEPTH 6 = low E; DEPTH 7 is unused on a 6-string) — these are what the app drives over MIDI.
+This is essential — the VG-800 only applies **BEND DEPTH** when **BEND CONTROL = 100**. At 0 (its normal default) the depth values are ignored and nothing changes, no matter what the app sends. The **BEND DEPTH** knobs are the per-string pitch shifts (DEPTH 1 = high E … DEPTH 6 = low E; DEPTH 7 is unused on a 6-string) — these are what the app drives over MIDI.
 
 ### 2. Map each string's BEND DEPTH to a CC number
 
-Under **CONTROL/ASSIGN → ASSIGN**, create one assign per string. Here's a single assign in detail:
+Under **CONTROL/ASSIGN → ASSIGN**, create one assign per string:
 
 ![Individual assign example](screenshots/mapping_individual_string_example.png)
 
@@ -62,8 +65,8 @@ Repeat for all six strings:
 
 ![Full assign mapping](screenshots/mapping_page.png)
 
-| ASSIGN | TARGET (INST:STR BEND(A)) | String | SOURCE | TARGET MIN | TARGET MAX | MODE |
-|:------:|:--------------------------|:-------|:-------|:----------:|:----------:|:-----|
+| ASSIGN | TARGET (INST:STR BEND(A)) | String | SOURCE | MIN | MAX | MODE |
+|:------:|:--------------------------|:-------|:-------|:---:|:---:|:-----|
 | 1 | DEPTH 1 | high E (1st) | `CC# 30` | −12 | +12 | MOMENT |
 | 2 | DEPTH 2 | B (2nd)     | `CC# 31` | −12 | +12 | MOMENT |
 | 3 | DEPTH 3 | G (3rd)     | `CC# 64` | −12 | +12 | MOMENT |
@@ -73,46 +76,53 @@ Repeat for all six strings:
 
 Notes:
 
-- **DEPTH 1 is the high E string** and DEPTH 6 is the low E — the app already sends in this order.
-- **MODE must be `MOMENT`, not `TOGGLE`.** Toggle latches the value to only the min/max extremes; moment lets the incoming CC track continuously across the −12 … +12 range.
-- The VG-800 only exposes **CC# 1–31 and CC# 64–95** as assign sources (CC# 32–63 aren't selectable), which is why the mapping skips into the 60s.
-- Set **MIDI → RX CHANNEL** to match the app's channel (default **1**).
-- These CC numbers must match the app's **⚙ Settings → CC number per string**. They're the defaults, so out of the box they already line up.
+- **DEPTH 1 is the high E string**, DEPTH 6 the low E — the app already sends in this order.
+- **MODE must be `MOMENT`, not `TOGGLE`** so the incoming CC tracks continuously across the −12 … +12 range instead of snapping to the extremes.
+- The VG-800 exposes only **CC# 0–31 and 64+** as assign sources (32–63 aren't selectable) and may not track 64–95 continuously — prefer CC# **1–31**.
+- Set **MIDI → RX CHANNEL** to match the app's channel. These CC numbers are the app's defaults, so out of the box they already line up (see **⚙ Settings → CC numbers**).
 
 ---
 
-## Running it
+## Features
 
-Web MIDI only works from a **secure context**, so you must serve the file over `http://localhost` — opening it as a `file://` path will fail with "MIDI access denied."
+- **Tuning cards** — click to retune all six strings. Families: **Common** (Standard, DADGAD, Nashville, Baritone), **Open Majors**, **Drop**, and an **Artists** set (Fripp NST, Gambale, Page's Rain Song, Sonic Youth, Nick Drake, Keith Richards, American Football, Soundgarden, Joni Mitchell). Each card shows its note names and per-string ± offset.
+- **Ethnic** — mandolin, Irish/Greek bouzouki, oud, charango, saz/bağlama, cavaquinho, balalaika, 5-string banjo. Each maps the instrument's pitches onto a chosen cluster of strings (pick the placement with the string-dot buttons). A **capo hint** says where to physically capo, since the VG-800 only bends ±12 semitones.
+- **Pedal Steel** — load a real steel tuning (**E9 Nashville**, **C6 Swing/Jazz**, **B6 Universal**) and choose which contiguous **6 of the 10** strings map onto the guitar; the **Bends** section reconfigures to that tuning's copedent.
+- **Bends** — hold the on-screen **Pedal A / B** and knee levers **LKL / LKR** (or keys <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> <kbd>F</kbd>) to bend the root / 3rd / 5th of the current tuning, pedal-steel style. They stack, the icons animate as they move, and any bend beyond ±12 greys out. **Combos** (A+B…) engage a whole grip at once. **Latch** toggles instead of holding; **Key Mapping** lets you rebind any control to a key.
+- **Panning & auto-pan** — manual stereo modes (Center, Equal Spread, Split, Zig-Zag, Pairs…) glide each string to its new position; the **Pan glide** toggle sets the sweep time (Instant → Long). **Auto-pan** gives each string its own pan LFO with character presets (**Rotate, Leslie, Fan Breathe, Ping-Pong, Drift**), Width, Shape, Phase spread, and Free-rate or Tempo-synced timing.
+- **Current Tuning readout** — an always-on panel combining pitch and pan for all six strings: a **pan strip** up top over a **pitch neck** where each note slides flat↔sharp from standard. Updates and animates live from the current tuning, bends and panning (parks in the left sidebar on wide screens).
+- **Themes & display** — the pedal button (top-right) opens the theme picker: **CS3, DS1, RC500, DD500, GT1000**, each styled after a Boss pedal. **Compact mode** hides note/offset text on cards to fit more on screen.
+- **⚙ Settings** — MIDI Output (port + channel), CC numbers (per-string pitch + pan), and **Bend effect** (a scoop articulation that swells into each new tuning).
+- **+ Custom tuning** — dial each string ±12 from standard, name it and save it.
+
+![The Bends section](screenshots/bends.png)
+
+---
+
+## Run it locally
+
+Web MIDI needs a **secure context**, so serve over `http://localhost` — opening the file as a `file://` path fails with "MIDI access denied."
 
 ```bash
+git clone https://github.com/fxcircus/boss-vg800-midi-control-from-browser.git
 cd boss-vg800-midi-control-from-browser
 python3 -m http.server 8765
 ```
 
-Then open **http://localhost:8765/vg800-tuner.html** in **Chrome or Edge** (Safari and Firefox don't support the Web MIDI API), allow MIDI access when prompted, and pick your audio interface's MIDI output from the dropdown.
+Then open **http://localhost:8765/vg800-tuner.html** in **Chrome or Edge**, allow MIDI when prompted, and pick your interface's MIDI output.
 
-> Tip: to stop Chrome re-asking for MIDI permission, open the site-info menu (icon left of the address bar) → **MIDI devices → Allow**. Permission is remembered per origin, so keep using the same `localhost:8765` URL.
+> Tip: to stop Chrome re-asking for MIDI permission, open the site-info menu (icon left of the address bar) → **MIDI devices → Allow**. Permission is remembered per origin.
 
 ---
 
-## Using it
+## Troubleshooting
 
-- **Tuning cards** — click any tuning to retune all six strings: 6th/open/dominant families, **Drop** (D → A), **Modal** (DADGAD, Nashville high-strung), and an **Artists** set (Fripp NST, Gambale, Jimmy Page's Rain Song, Sonic Youth, Nick Drake, Keith Richards, American Football, Soundgarden, Joni Mitchell). Every card shows its note names and the per-string ±semitone offset up front.
-- **Ethnic Instruments** — mandolin, Irish/Greek bouzouki, oud, charango, saz/bağlama, cavaquinho, balalaika. Each maps its (3–6) pitches onto a chosen cluster of strings — pick the placement with the string-dot buttons — while the remaining strings return to standard. Because the VG-800's string bend only spans ±12 semitones, high instruments land an octave low, so each card shows a **capo hint** (e.g. mandolin → *\*capo on 12th fret*, in-range instruments → *no capo*) to reach the real instrument's octave.
-- **Pedal Steel** — load a real steel tuning (**E9 Nashville**, **C6 Swing/Jazz**, **B6 Universal**) and pick which contiguous **6 of the 10** strings map onto the guitar (windows 3–8 / 1–6 / 4–9 / 5–10, with a mini string graphic). The Steel Pedals section below then **reconfigures to that tuning's real copedent** (E9 A/B/C + knees, C6's boo-wah set, etc.), targeting the correct strings by scale degree and greying out any pedal whose degree isn't in the chosen window.
-- **Steel Pedals** — hold the on-screen **A / B** pedals and **LKL / LKR** knee levers (or keys `A`, `B`, `Z`, `X`) to bend the root / 3rd / 5th of the *current* tuning, pedal-steel style. They stack, each button previews the destination pitches for the selected tuning, and any bend that would exceed ±12 greys out. **Combos** (A+B "cry", keys `V` / `C`) engage a whole grip at once.
-- **Panning** — per-string stereo modes (Center, Equal Spread 1/2, Split 1/2, Zig-Zag 1/2, Narrow, Pairs) driving `INST:STRING(A) PAN 1–6` (CC# 71–76 by default). Clicking a mode **glides** each string to its new pan position so you feel the sweep; a **Pan glide** slider in the section sets the duration (default 0.5 s, up to 5 s, 0 = instant).
-- **Auto-pan engine** — flip it on and each string runs its own pan LFO, streamed continuously (rate-limited, per-string CC dedupe). Controls: **Free rate** (Hz) or **Tempo-synced** (BPM + note division, straight/dotted/triplet); **Width** (subtle shimmer → full L↔R); **Shape** (sine / triangle / sample-and-hold); and **Phase spread** — the Pan glide slider becomes a spread control while it's engaged (0° = all together → full even rotation). **Character presets** configure the engine for distinct effects — **Rotate**, **Leslie**, **Fan Breathe**, **Ping-Pong**, **Drift** — which you can then fine-tune. Turning it off eases back to the manual pan preset.
-- **Current Tuning readout** — one at-a-glance panel (parked in the left **sidebar** on wide screens, inline otherwise) that combines pitch and pan for all six strings: a **pitch neck** (each string's note slides flat↔sharp from standard, with its offset and a fixed per-string color swatch) above a **pan strip** of colored, numbered dots placed L↔R, linked by that same per-string color. Everything updates live — and animates — from the current tuning + pedals + pan.
-- **Jump-to sidebar** (wide screens) — a left nav to hop between tuning families and sections; the combined Current Tuning readout lives here to save vertical space.
-- **+ Custom** — dial each string up/down from standard, name it, and save your own tuning.
-- **All strings** — buttons from −12 to +12 shift every string by a fixed amount at once; handy for verifying each string's CC tracks across its whole range. `DELAY MS` spaces out the six messages (also applied to normal tuning changes).
-- **⚙ Settings** — collapsible sections (each remembers its open/closed state): **MIDI Output** (output port + channel, with a live connection LED on the gear), **CC numbers for MIDI mapping** (per-string pitch + panning CCs), **Theme**, and **Bend effect** (the scoop articulation).
-- **Themes** (⚙ Settings → Theme) — **BOSS Blue** (default, brushed-metal blue) or **Workbench** (warm wood/brass). Your choice is remembered.
+- **Nothing changes?** Check the **green dot** on ⚙ (MIDI connected), that **BEND CONTROL = 100** on the VG-800, and that the app's CC numbers match your assigns.
+- **Wrong strings move?** Confirm the DEPTH → CC mapping order (DEPTH 1 = high E) and that MODE is `MOMENT`.
+- **No sound / no MIDI?** Use Chrome or Edge over HTTPS or `localhost`, and select the correct output port in Settings.
 
 ---
 
 ## Browser support
 
-Requires the **Web MIDI API**: Chrome, Edge, and other Chromium browsers. Not supported in Safari or Firefox.
+Requires the **Web MIDI API**: Chrome, Edge and other Chromium browsers. Not supported in Safari or Firefox.
