@@ -579,6 +579,49 @@
   .docgrp-body li { margin-bottom: 8px; }
   .docgrp-body kbd { font-family: var(--mono); font-size: 10.5px; background: var(--ink); border: 1px solid var(--edge); border-radius: 4px; padding: 1px 5px; color: var(--bone); white-space: nowrap; }
   .docgrp-body a { color: var(--brass); }
+
+  /* User tunings section */
+  .user-tools { display: flex; flex-wrap: wrap; gap: 8px; margin: 2px 0 14px; }
+  .user-tool { flex: 1 1 auto; display: inline-flex; align-items: center; justify-content: center; gap: 7px; font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; padding: 10px 12px; border-radius: 9px; cursor: pointer; border: 1px solid var(--edge); background: var(--wood); color: var(--bone-dim); transition: border-color .13s, color .13s, background .13s, filter .13s; }
+  .user-tool:hover { border-color: var(--brass-deep); color: var(--bone); }
+  .user-tool svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .user-tool.primary { background: var(--brass); color: var(--ink); border-color: var(--brass); }
+  .user-tool.primary:hover { filter: brightness(1.07); color: var(--ink); }
+  .user-empty { font-family: var(--mono); font-size: 11px; color: var(--bone-faint); text-align: center; padding: 6px 6px 14px; line-height: 1.7; }
+  .ucard-badges { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+  .ubadge { font-family: var(--mono); font-size: 8.5px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; background: var(--ink); color: var(--bone-faint); border: 1px solid var(--edge-soft); }
+  .ubadge.on { color: var(--brass); border-color: var(--brass-deep); }
+  .ucard-acts { display: flex; gap: 6px; margin-top: 11px; }
+  .ucard-acts button { flex: 1; font-family: var(--mono); font-size: 9.5px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; padding: 7px 4px; border-radius: 6px; cursor: pointer; border: 1px solid var(--edge); background: none; color: var(--bone-dim); transition: border-color .12s, color .12s; }
+  .ucard-acts button:hover { border-color: var(--brass-deep); color: var(--bone); }
+  .ucard-acts button[data-act="del"]:hover { border-color: var(--err); color: var(--err); }
+  html.compact .ucard-badges { display: none; }   /* compact hides notes; keep the actions usable */
+
+  /* Export / import dialog bits */
+  .chk-row { display: flex; align-items: flex-start; gap: 11px; padding: 11px 13px; border: 1px solid var(--edge-soft); border-radius: 9px; margin-bottom: 8px; font-family: var(--mono); font-size: 12px; color: var(--bone); cursor: pointer; }
+  .chk-row input[type=checkbox] { accent-color: var(--brass); width: 16px; height: 16px; margin-top: 1px; flex-shrink: 0; }
+  .chk-row.locked { cursor: default; opacity: 0.85; }
+  .chk-row.off { opacity: 0.45; }
+  .chk-sub { display: block; font-family: var(--sans); font-size: 11px; color: var(--bone-faint); margin-top: 3px; letter-spacing: 0; }
+  .imp-bulk { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 14px; }
+  .imp-bulk button { font-family: var(--mono); font-size: 10px; padding: 6px 10px; border-radius: 7px; border: 1px solid var(--edge); background: var(--wood); color: var(--bone-dim); cursor: pointer; transition: border-color .12s, color .12s; }
+  .imp-bulk button:hover { border-color: var(--brass-deep); color: var(--bone); }
+  .imp-item { border: 1px solid var(--edge-soft); border-radius: 9px; padding: 11px 12px; margin-bottom: 8px; }
+  .imp-head { display: flex; align-items: baseline; gap: 9px; margin-bottom: 4px; }
+  .imp-name { font-family: var(--cond); font-weight: 700; font-size: 16px; color: var(--bone); }
+  .imp-flag { font-family: var(--mono); font-size: 8px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; margin-left: auto; white-space: nowrap; }
+  .imp-flag.new { color: var(--ok); border: 1px solid var(--ok); }
+  .imp-flag.name { color: var(--amber); border: 1px solid var(--amber); }
+  .imp-flag.dup { color: var(--steel-blue); border: 1px solid var(--steel-blue); }
+  .imp-notes { font-family: var(--mono); font-size: 10px; color: var(--bone-faint); margin: 0 0 9px; letter-spacing: 0.2px; }
+  .imp-choices { display: flex; gap: 6px; }
+  .imp-choices button { flex: 1; font-family: var(--mono); font-size: 10px; padding: 7px 4px; border-radius: 6px; border: 1px solid var(--edge); background: none; color: var(--bone-dim); cursor: pointer; transition: all .12s; }
+  .imp-choices button.sel { background: var(--brass); color: var(--ink); border-color: var(--brass); font-weight: 700; }
+  .imp-err { font-family: var(--sans); font-size: 13px; color: var(--err); padding: 16px; border: 1px solid var(--err); border-radius: 9px; background: rgba(232,103,79,0.09); margin-bottom: 4px; line-height: 1.5; }
+  .imp-scroll { max-height: 46vh; overflow-y: auto; margin: 0 -4px; padding: 0 4px; }
+
+  /* Editor: pedal (bends) setup */
+  .ed-bends { margin-top: 20px; border-top: 1px solid var(--edge-soft); padding-top: 15px; }
   /* Collapsible "Key mapping" drawer inside the Bends panel — keeps the centered cut-line header + a chevron */
   .kdraw { margin: 2px 0 30px; }
   .kdraw-sum { list-style: none; cursor: pointer; margin: 0; padding: 4px 0; user-select: none; transition: color .12s; }
@@ -654,7 +697,6 @@
 
   <div id="sec-tunings">
     <div id="grid"></div>
-    <button class="add" id="openEditor">+ Custom tuning</button>
   </div>
 
   <fieldset class="panel" id="sec-ethnic">
@@ -674,6 +716,18 @@
     <legend class="panel-hd">Pedal Steel</legend>
     <div class="panel-sub">6 of 10 strings</div>
     <div id="steelWrap"></div>
+  </fieldset>
+
+  <fieldset class="panel" id="sec-user">
+    <legend class="panel-hd">User</legend>
+    <div class="panel-sub">Your own tunings · saved on this device</div>
+    <div class="user-tools">
+      <button class="user-tool primary" id="userCreate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Create</button>
+      <button class="user-tool" id="userImport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M8 7l4-4 4 4M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>Import</button>
+      <button class="user-tool" id="userExportAll"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 11l4 4 4-4M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>Export all</button>
+    </div>
+    <div id="userGrid"></div>
+    <input type="file" id="userFile" accept="application/json,.json" hidden>
   </fieldset>
 
   <fieldset class="panel" id="sec-pedals">
@@ -702,13 +756,20 @@
 
 <div class="scrim" id="editorModal">
   <div class="sheet">
-    <h2>Custom <em>Tuning</em></h2>
-    <p>Dial each string up or down from standard, name it, and save. It joins your set below.</p>
+    <h2 id="edTitle">New <em>Tuning</em></h2>
+    <p>Dial each string up or down from standard, name it, and save. It joins your <b style="color:var(--bone)">User</b> tunings.</p>
     <div id="edStrings"></div>
     <div class="fld"><input type="text" id="customName" placeholder="Name this tuning…" maxlength="24"></div>
     <div class="acts">
       <button class="btn" id="loadCurrentBtn">Load current</button>
       <button class="btn" id="resetEditBtn">Reset to standard</button>
+    </div>
+    <div class="ed-bends">
+      <label class="latch-tog" style="margin-bottom:0"><input type="checkbox" id="edBendsChk"><span>Include pedals &amp; knee levers with this tuning</span></label>
+      <div id="edBendsBody" hidden>
+        <p class="note-hint" style="margin:11px 0 0">Assign a keyboard key to each control — click a chip, then press a key. Saved with the preset and applied when you load this tuning.</p>
+        <div class="kb-chips" id="edBendsChips" style="margin-top:12px"></div>
+      </div>
     </div>
     <div class="foot">
       <button class="btn" id="closeEditor">Cancel</button>
@@ -808,7 +869,7 @@
         <li><b>Tuning cards</b> (Common, Open Majors, Drop, Artists…): click to retune all six strings. Each card shows its note names and per-string ± offset.</li>
         <li><b>Ethnic</b> (mandolin, oud, bouzouki, banjo…): maps the instrument's pitches onto a cluster of strings — pick the placement with the string-dot buttons. A <b>capo hint</b> says where to physically capo, since the VG-800 only bends ±12 semitones.</li>
         <li><b>Pedal Steel</b>: load a real steel tuning (E9, C6, B6) and choose which 6 of the 10 strings map onto the guitar; the <b>Bends</b> section reconfigures to that tuning's copedent.</li>
-        <li><b>+ Custom tuning</b>: dial each string ±12 from standard, name it and save it.</li>
+        <li><b>User</b>: your own tunings, saved on this device. <em>Create</em> dials each string ±12 from standard, names it, and (optionally) saves a pedal/knee-lever setup with it. <em>Export</em> writes a JSON file — your backup and the way to move tunings to another device — and <em>Import</em> reads one back, flagging any name clashes or duplicates.</li>
       </ul></div>
     </details>
 
@@ -857,6 +918,27 @@
     <div class="foot">
       <button class="btn" id="closeAbout">Close</button>
     </div>
+  </div>
+</div>
+
+<div class="scrim" id="exportModal">
+  <div class="sheet">
+    <h2 style="text-align: center">Export</h2>
+    <p id="expWhat" style="text-align:center; margin-bottom:14px"></p>
+    <div id="expOpts"></div>
+    <p class="note-hint" style="margin:2px 0 0">Writes a small JSON file — your backup and the way to share tunings. There's no automatic sync; import the file on another device to add them there.</p>
+    <div class="foot">
+      <button class="btn" id="closeExport">Cancel</button>
+      <button class="btn go" id="doExport">Download</button>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="importModal">
+  <div class="sheet">
+    <h2 style="text-align: center">Import</h2>
+    <div id="importBody"></div>
+    <div class="foot" id="importFoot"></div>
   </div>
 </div>
 
@@ -1288,7 +1370,7 @@ function famBlock(f, isC, panel){
 function renderGrid(){
   const wrap=document.getElementById('grid'); wrap.innerHTML='';
   const lap=document.getElementById('lapWrap'); if(lap) lap.innerHTML='';
-  const all=FAMILIES.slice(); if(customs.length) all.push({family:'Your Own', tunings:customs, custom:true});
+  const all=FAMILIES.slice();
   let i=0;
   while(i<all.length){
     const f=all[i];
@@ -1300,15 +1382,13 @@ function renderGrid(){
       block.appendChild(body); (lap||wrap).appendChild(block);   // Lap Steel renders in its own section (between Ethnic and Pedal Steel)
     } else { wrap.appendChild(famBlock(f, !!f.custom, true)); i++; }
   }
-  document.querySelectorAll('.del').forEach(x=>x.addEventListener('click',()=>{
-    customs=customs.filter(t=>t.name!==x.dataset.name); saveCustomLS(); renderGrid(); toast('Deleted "'+x.dataset.name+'"');
-  }));
+  renderUser();
   renderNav();
 }
 function slug(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
 function renderNav(){
   const box=document.getElementById('navLinks'); if(!box) return;
-  const items=FAMILIES.slice(); if(customs.length) items.push({family:'Your Own', id:'fam-your-own'});
+  const items=FAMILIES.slice();
   let links='', sections='', i=0; const seen=new Set();
   while(i<items.length){
     const f=items[i];
@@ -1326,6 +1406,7 @@ function renderNav(){
     +'<a class="sub" href="#sec-strings">Transpose</a>'
     + sections                                       // Lap Steel
     +'<a class="sub" href="#sec-steel">Pedal Steel</a>'
+    +'<a class="sub" href="#sec-user">User</a>'
     +'<a class="group" href="#sec-pedals">'+I.pedals+'Bends</a>'
     +'<a class="group" href="#sec-pan">'+I.pan+'Panning</a>';
   const jm=document.getElementById('jumpMenu'); if(jm) jm.innerHTML=box.innerHTML;   // mobile menu mirrors the sidebar
@@ -1632,6 +1713,7 @@ function apply(t){
   if(tuningSend(t.offsets)){
     active=t.name;
     baseOffsets=[...t.offsets]; held.clear(); ethnicInst=null; clearSteel();
+    if(t.bends&&t.bends.keys){ settings.keys={...DEFAULT_KEYS, ...t.bends.keys}; rebuildKeymap(); saveSettingsLS(); }   // user preset carries its own pedal key mapping
     const n=document.getElementById('nowName'); n.textContent=t.name; n.classList.toggle('std',t.name==='Standard');
     renderStrings(t.offsets); renderGrid(); renderPedals(); renderEthnic(); renderSteel();
   }
@@ -1659,7 +1741,129 @@ function renderEd(){
     const i=+b.dataset.s,d=+b.dataset.d; edOff[i]=Math.max(-12,Math.min(12,edOff[i]+d)); renderEd();
   }));
 }
-document.getElementById('openEditor').addEventListener('click',()=>{ renderEd(); open('editorModal'); });
+/* ===== User tunings — create / edit / import / export (file-based, localStorage) ===== */
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+const TUNE_FMT='vg800-tunings', TUNE_VER=1;
+const USER_CTRLS=[['A','Pedal A'],['B','Pedal B'],['LKL','LKL'],['LKR','LKR'],['AB','A + B'],['ABR','A+B+LKR']];
+function tuneSig(t){ return JSON.stringify([t.offsets, t.bends&&t.bends.keys?USER_CTRLS.map(([id])=>t.bends.keys[id]||''):null]); }   // name-independent content signature
+function userUniqueName(base, taken){ const names=taken||new Set(customs.map(t=>t.name)); let n=base, k=2; while(names.has(n)){ n=base+' ('+k+')'; k++; } return n; }
+function badgesFor(t){ return '<span class="ubadge on">Pitch</span>'+(t.bends?'<span class="ubadge on">Bends</span>':''); }
+
+function renderUser(){
+  const wrap=document.getElementById('userGrid'); if(!wrap) return;
+  const exAll=document.getElementById('userExportAll'); if(exAll) exAll.disabled=!customs.length;
+  if(!customs.length){ wrap.innerHTML='<div class="user-empty">No user tunings yet.<br>Tap <b style="color:var(--brass)">Create</b> to make one, or <b style="color:var(--brass)">Import</b> a file someone shared.</div>'; return; }
+  wrap.innerHTML='<div class="grid">'+customs.map((t,i)=>
+    '<div class="card ucard" data-i="'+i+'"><div class="card-name">'+esc(t.name)+'</div>'+
+    '<div class="card-notes">'+(t.notes||notesOf(t.offsets)).split(' ').map(x=>'<span>'+esc(x)+'</span>').join('')+'</div>'+
+    '<div class="ucard-badges">'+badgesFor(t)+'</div>'+
+    '<div class="ucard-acts"><button data-act="edit" data-i="'+i+'">Edit</button><button data-act="export" data-i="'+i+'">Export</button><button data-act="del" data-i="'+i+'">Delete</button></div></div>').join('')+'</div>';
+  wrap.querySelectorAll('.ucard').forEach(c=> c.addEventListener('click',e=>{ if(e.target.closest('.ucard-acts')) return; apply(customs[+c.dataset.i]); }));
+  wrap.querySelectorAll('.ucard-acts button').forEach(b=> b.addEventListener('click',e=>{ e.stopPropagation(); const i=+b.dataset.i, a=b.dataset.act; if(a==='edit') openEditorFor(i); else if(a==='export') openExport([i]); else delUser(i); }));
+}
+function delUser(i){ const t=customs[i]; if(!t) return; if(!confirm('Delete “'+t.name+'”? This can’t be undone.')) return; customs.splice(i,1); saveCustomLS(); renderGrid(); toast('Deleted "'+t.name+'"'); }
+
+/* editor: new / edit, with an optional pedal (bends) setup captured into the preset */
+let edBends=null, edEditIdx=-1, edBindingCtrl=null;
+function renderEdBends(){
+  const chk=document.getElementById('edBendsChk'), body=document.getElementById('edBendsBody');
+  chk.checked=!!edBends; body.hidden=!edBends;
+  if(!edBends) return;
+  document.getElementById('edBendsChips').innerHTML=USER_CTRLS.map(([id,nm])=>{ const k=(edBends.keys[id]||'').toUpperCase(), L=edBindingCtrl===id;
+    return '<button type="button" class="kb-chip'+(L?' listening':'')+'" data-edbind="'+id+'"><span class="kb-cname">'+nm+'</span><span class="kb-key">'+(L?'press…':(k||'—'))+'</span></button>'; }).join('');
+  document.querySelectorAll('[data-edbind]').forEach(b=> b.addEventListener('click',()=>{ edBindingCtrl=b.dataset.edbind; renderEdBends(); }));
+}
+document.getElementById('edBendsChk').addEventListener('change',e=>{ edBends=e.target.checked?{keys:{...DEFAULT_KEYS}}:null; edBindingCtrl=null; renderEdBends(); });
+document.addEventListener('keydown',e=>{        // capture key for the editor's pedal binding
+  if(!edBindingCtrl || !document.getElementById('editorModal').classList.contains('open')) return;
+  e.preventDefault(); e.stopImmediatePropagation();
+  if(e.key==='Escape'){ edBindingCtrl=null; renderEdBends(); return; }
+  if((e.key||'').length!==1) return;
+  const k=e.key.toLowerCase();
+  USER_CTRLS.forEach(([id])=>{ if(id!==edBindingCtrl && edBends.keys[id]===k) edBends.keys[id]=''; });   // no dupes
+  edBends.keys[edBindingCtrl]=k; edBindingCtrl=null; renderEdBends();
+});
+function openEditorNew(){ edEditIdx=-1; edOff=[0,0,0,0,0,0]; edBends=null; edBindingCtrl=null; document.getElementById('customName').value=''; document.getElementById('edTitle').innerHTML='New <em>Tuning</em>'; renderEd(); renderEdBends(); open('editorModal'); }
+function openEditorFor(i){ const t=customs[i]; if(!t) return; edEditIdx=i; edOff=[...t.offsets]; edBends=t.bends?{keys:{...DEFAULT_KEYS, ...t.bends.keys}}:null; edBindingCtrl=null; document.getElementById('customName').value=t.name; document.getElementById('edTitle').innerHTML='Edit <em>Tuning</em>'; renderEd(); renderEdBends(); open('editorModal'); }
+document.getElementById('userCreate').addEventListener('click', openEditorNew);
+
+/* export */
+let expList=[];
+function openExport(indices){ expList=indices.slice(); const one=indices.length===1;
+  document.getElementById('expWhat').textContent = one ? ('Export “'+customs[indices[0]].name+'”') : ('Export all '+indices.length+' user tunings');
+  const anyBends=indices.some(i=>customs[i]&&customs[i].bends);
+  document.getElementById('expOpts').innerHTML=
+    '<label class="chk-row locked"><input type="checkbox" checked disabled><span>Pitch / tuning<span class="chk-sub">The 6 string offsets — always included.</span></span></label>'+
+    '<label class="chk-row'+(anyBends?'':' off')+'"><input type="checkbox" id="expBends"'+(anyBends?' checked':' disabled')+'><span>Bends<span class="chk-sub">'+(anyBends?('Pedal &amp; knee-lever setup saved with '+(one?'this tuning.':'these tunings.')):'None of the selected tunings have bends.')+'</span></span></label>';
+  open('exportModal');
+}
+document.getElementById('userExportAll').addEventListener('click',()=>{ if(customs.length) openExport(customs.map((_,i)=>i)); });
+document.getElementById('doExport').addEventListener('click',()=>{
+  const inclBends=document.getElementById('expBends') && document.getElementById('expBends').checked;
+  const tunings=expList.map(i=>{ const t=customs[i]; const o={name:t.name, offsets:[...t.offsets], notes:t.notes||notesOf(t.offsets)}; if(inclBends&&t.bends) o.bends={keys:{...t.bends.keys}}; return o; });
+  const one=expList.length===1;
+  const fn=one ? ('vg800-tuning-'+(slug(customs[expList[0]].name)||'untitled')+'.json') : ('vg800-tunings-'+new Date().toISOString().slice(0,10)+'.json');
+  const blob=new Blob([JSON.stringify({format:TUNE_FMT, version:TUNE_VER, exported:new Date().toISOString(), tunings},null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob), a=document.createElement('a'); a.href=url; a.download=fn; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1500);
+  close('exportModal'); toast('Exported '+tunings.length+(tunings.length===1?' tuning':' tunings'));
+});
+document.getElementById('closeExport').addEventListener('click',()=>close('exportModal'));
+
+/* import + conflict resolution */
+let impState=null;
+document.getElementById('userImport').addEventListener('click',()=> document.getElementById('userFile').click());
+document.getElementById('userFile').addEventListener('change',e=>{ const f=e.target.files[0]; e.target.value=''; if(!f) return; const r=new FileReader(); r.onload=()=>parseImport(r.result); r.onerror=()=>importError(); r.readAsText(f); });
+function importError(msg){ document.getElementById('importBody').innerHTML='<div class="imp-err">'+(msg||"This doesn’t look like a valid tuning file.")+'</div>'; document.getElementById('importFoot').innerHTML='<button class="btn" id="closeImport">Close</button>'; document.getElementById('closeImport').addEventListener('click',()=>close('importModal')); open('importModal'); }
+function parseImport(text){
+  let data; try{ data=JSON.parse(text); }catch(_){ return importError(); }
+  if(!data || data.format!==TUNE_FMT || !Array.isArray(data.tunings) || !data.tunings.length) return importError();
+  const items=[]; let anyBends=false;
+  for(const raw of data.tunings){
+    if(!raw || typeof raw.name!=='string' || !Array.isArray(raw.offsets) || raw.offsets.length!==6 || !raw.offsets.every(n=>Number.isFinite(n)&&n>=-12&&n<=12)) return importError('That file has an invalid tuning entry.');
+    const offs=raw.offsets.map(n=>Math.round(n));
+    const clean={name:(raw.name.trim().slice(0,40))||'Untitled', offsets:offs, notes:raw.notes||notesOf(offs)};
+    if(raw.bends && raw.bends.keys && typeof raw.bends.keys==='object'){ const keys={}; USER_CTRLS.forEach(([id])=>{ const k=raw.bends.keys[id]; if(typeof k==='string'&&k) keys[id]=k.toLowerCase().slice(0,1); }); clean.bends={keys}; anyBends=true; }
+    const sig=tuneSig(clean), dupIdx=customs.findIndex(u=>tuneSig(u)===sig), nameIdx=customs.findIndex(u=>u.name===clean.name);
+    let flag, choice;
+    if(dupIdx>=0){ flag='dup'; choice='skip'; } else if(nameIdx>=0){ flag='name'; choice='replace'; } else { flag='new'; choice='import'; }
+    items.push({t:clean, flag, dupIdx, nameIdx, choice});
+  }
+  impState={items, anyBends}; renderImport(true);
+}
+function renderImport(first){
+  const s=impState, body=document.getElementById('importBody');
+  const conflicts=s.items.some(it=>it.flag!=='new');
+  let html='';
+  if(s.anyBends) html+='<label class="chk-row"><input type="checkbox" id="impBends" checked><span>Apply bends<span class="chk-sub">Pedal &amp; knee-lever setups included in this file.</span></span></label>';
+  if(conflicts) html+='<div class="imp-bulk"><button data-bulk="skip">Skip all dupes</button><button data-bulk="replace">Replace all</button><button data-bulk="both">Keep both for all</button></div>';
+  html+='<div class="imp-scroll">'+s.items.map((it,i)=>{
+    const ft={new:'New',name:'Name exists',dup:'Identical'}[it.flag];
+    const note = it.flag==='dup' ? ('Same content as “'+customs[it.dupIdx].name+'”.') : it.flag==='name' ? ('You already have a tuning named “'+it.t.name+'”.') : (it.t.notes+(it.t.bends?' · with bends':''));
+    const opts = it.flag==='new' ? [['import','Import'],['skip','Skip']] : [['skip','Skip'],['replace','Replace'],['both','Keep both']];
+    return '<div class="imp-item"><div class="imp-head"><span class="imp-name">'+esc(it.t.name)+'</span><span class="imp-flag '+it.flag+'">'+ft+'</span></div><div class="imp-notes">'+esc(note)+'</div><div class="imp-choices">'+opts.map(([v,l])=>'<button data-i="'+i+'" data-choice="'+v+'" class="'+(it.choice===v?'sel':'')+'">'+l+'</button>').join('')+'</div></div>';
+  }).join('')+'</div>';
+  body.innerHTML=html;
+  document.getElementById('importFoot').innerHTML='<button class="btn" id="closeImport">Cancel</button><button class="btn go" id="doImport">Import</button>';
+  body.querySelectorAll('.imp-choices button').forEach(b=> b.addEventListener('click',()=>{ s.items[+b.dataset.i].choice=b.dataset.choice; renderImport(); }));
+  body.querySelectorAll('.imp-bulk button').forEach(b=> b.addEventListener('click',()=>{ const m=b.dataset.bulk; s.items.forEach(it=>{ if(it.flag!=='new') it.choice=m; }); renderImport(); }));
+  document.getElementById('closeImport').addEventListener('click',()=>close('importModal'));
+  document.getElementById('doImport').addEventListener('click',applyImport);
+  if(first) open('importModal');
+}
+function applyImport(){
+  const s=impState, inclBends = !s.anyBends || (document.getElementById('impBends') && document.getElementById('impBends').checked);
+  let imported=0, skipped=0, replaced=0; const work=customs.slice();
+  const mk=it=>{ const t={name:it.t.name, offsets:[...it.t.offsets], notes:it.t.notes}; if(inclBends&&it.t.bends) t.bends={keys:{...it.t.bends.keys}}; return t; };
+  for(const it of s.items){
+    if(it.choice==='skip'){ skipped++; continue; }
+    const t=mk(it);
+    if(it.choice==='both'){ t.name=userUniqueName(t.name, new Set(work.map(u=>u.name))); work.push(t); imported++; }
+    else if(it.choice==='replace'){ let idx = it.flag==='dup' ? work.findIndex(u=>tuneSig(u)===tuneSig(t)) : -1; if(idx<0) idx=work.findIndex(u=>u.name===t.name); if(idx>=0){ work[idx]=t; replaced++; } else { work.push(t); imported++; } }
+    else { work.push(t); imported++; }
+  }
+  customs=work; saveCustomLS(); renderGrid(); close('importModal');
+  toast('Imported '+imported+', skipped '+skipped+(replaced?', replaced '+replaced:''));
+}
 document.getElementById('closeEditor').addEventListener('click',()=>close('editorModal'));
 document.getElementById('resetEditBtn').addEventListener('click',()=>{ edOff=[0,0,0,0,0,0]; renderEd(); });
 document.getElementById('loadCurrentBtn').addEventListener('click',()=>{
@@ -1669,11 +1873,12 @@ document.getElementById('loadCurrentBtn').addEventListener('click',()=>{
 document.getElementById('saveCustomBtn').addEventListener('click',()=>{
   const nm=document.getElementById('customName').value.trim();
   if(!nm){ toast('Enter a name first', true); return; }
-  if(BUILTIN.some(t=>t.name===nm)){ toast('Name already used', true); return; }
-  const i=customs.findIndex(t=>t.name===nm);
-  const e={name:nm, offsets:[...edOff], notes:notesOf(edOff)};
-  if(i>=0) customs[i]=e; else customs.push(e);
-  saveCustomLS(); renderGrid(); document.getElementById('customName').value=''; close('editorModal'); toast('Saved "'+nm+'"');
+  if(BUILTIN.some(t=>t.name===nm)){ toast('That name is a built-in tuning', true); return; }
+  if(customs.some((t,j)=>j!==edEditIdx && t.name===nm)){ toast('You already have a tuning with that name', true); return; }
+  const rec={name:nm, offsets:[...edOff], notes:notesOf(edOff)};
+  if(edBends) rec.bends={keys:{...edBends.keys}};
+  if(edEditIdx>=0) customs[edEditIdx]=rec; else customs.push(rec);   // edit in place, or add
+  saveCustomLS(); renderGrid(); close('editorModal'); toast('Saved "'+nm+'"');
 });
 
 const DEPTH_LBL=['DEPTH 1 · high E (1st)','DEPTH 2 · B (2nd)','DEPTH 3 · G (3rd)','DEPTH 4 · D (4th)','DEPTH 5 · A (5th)','DEPTH 6 · low E (6th)'];
@@ -1775,8 +1980,8 @@ function renderTestBtns(){
 
 function open(id){ document.getElementById(id).classList.add('open'); }
 function close(id){ document.getElementById(id).classList.remove('open'); }
-['editorModal','settingsModal','aboutModal'].forEach(id=>document.getElementById(id).addEventListener('click',e=>{ if(e.target.id===id) close(id); }));
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ close('editorModal'); close('settingsModal'); close('aboutModal'); } });
+['editorModal','settingsModal','aboutModal','exportModal','importModal'].forEach(id=>document.getElementById(id).addEventListener('click',e=>{ if(e.target.id===id) close(id); }));
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ close('editorModal'); close('settingsModal'); close('aboutModal'); close('exportModal'); close('importModal'); } });
 
 let tt;
 function toast(m,err,action){
