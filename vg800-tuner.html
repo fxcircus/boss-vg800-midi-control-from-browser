@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script>try{var t=localStorage.getItem('vg800_theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
 <title>VG800 MIDI Control</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNyIgZmlsbD0iIzBmMjEzOCIvPjxyZWN0IHg9IjEiIHk9IjEiIHdpZHRoPSIzMCIgaGVpZ2h0PSIzMCIgcng9IjYuNSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYzk4ZjJiIiBzdHJva2Utb3BhY2l0eT0iLjU1Ii8+PGcgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+PGxpbmUgeDE9IjgiIHkxPSI3IiB4Mj0iMjQiIHkyPSI3IiBzdHJva2U9IiNlZjUzNTAiLz48bGluZSB4MT0iOCIgeTE9IjEwLjgiIHgyPSIyNCIgeTI9IjEwLjgiIHN0cm9rZT0iI2YyYTMzZCIvPjxsaW5lIHgxPSI4IiB5MT0iMTQuNiIgeDI9IjI0IiB5Mj0iMTQuNiIgc3Ryb2tlPSIjYzZkNDNmIi8+PGxpbmUgeDE9IjgiIHkxPSIxOC40IiB4Mj0iMjQiIHkyPSIxOC40IiBzdHJva2U9IiM0Y2MxNzgiLz48bGluZSB4MT0iOCIgeTE9IjIyLjIiIHgyPSIyNCIgeTI9IjIyLjIiIHN0cm9rZT0iIzRmOWRlYSIvPjxsaW5lIHgxPSI4IiB5MT0iMjYiIHgyPSIyNCIgeTI9IjI2IiBzdHJva2U9IiNhNTYzZDQiLz48L2c+PC9zdmc+">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -111,9 +112,12 @@
     position: relative;
     box-shadow: inset 0 1px 0 rgba(236,227,210,0.05), 0 16px 40px rgba(0,0,0,0.35);
   }
-  .bench-head { display: flex; align-items: baseline; justify-content: space-between; padding: 0 18px 16px; }
-  .bench-head .lbl { font-family: var(--mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--bone-faint); }
-  .bench-head .name { font-family: var(--cond); font-weight: 700; font-size: 22px; letter-spacing: 0.3px; color: var(--brass); text-transform: uppercase; }
+  .bench-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 0 18px 16px; }
+  .bench-head .lbl { font-family: var(--mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--bone-faint); flex: 0 0 auto; white-space: nowrap; }
+  .bench-head .name { font-family: var(--cond); font-weight: 700; font-size: 22px; letter-spacing: 0.3px; color: var(--brass); text-transform: uppercase; min-width: 0; flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bench-head .name.long { font-size: 18px; }
+  .bench-head .name.xlong { font-size: 15px; }
+  .bench-head .name.xlong + .lbl { display: none; }   /* very long name → drop the label to free space */
   .bench-head .name.std { color: var(--bone); }
 
   .str { position: relative; display: grid; grid-template-columns: 58px 1fr 52px; align-items: center; height: 40px; padding: 0 18px; }
@@ -245,7 +249,9 @@
   #sideNav .bench { margin: 18px 0 0; padding: 13px 4px 9px; border-radius: 10px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
   #sideNav .bench-head { padding: 0 8px 9px; }
   #sideNav .bench-head .name { font-size: 15px; }
-  #sideNav .bench-head .lbl { font-size: 8px; letter-spacing: 2px; }
+  #sideNav .bench-head .name.long { font-size: 13px; }
+  #sideNav .bench-head .name.xlong { font-size: 11px; }
+  #sideNav .bench-head .lbl { display: none; }   /* sidebar is tight — drop the label, give the name the full width */
   #sideNav .str { grid-template-columns: 46px 1fr 24px; height: 25px; padding: 0 8px; }
   #sideNav .str-lbl { font-size: 9px; letter-spacing: 0; }
   #sideNav .slide { min-width: 21px; height: 17px; font-size: 11px; padding: 0 4px; border-radius: 4px; }
@@ -254,7 +260,9 @@
   #sideNav .nav-title { font-family: var(--mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--brass-deep); margin: 0 0 12px 10px; }
   #sideNav a { display: block; font-family: var(--mono); font-size: 11px; color: var(--bone-faint); text-decoration: none; padding: 5px 10px; border-left: 2px solid transparent; letter-spacing: 0.2px; transition: color .12s, background .12s, border-color .12s; }
   #sideNav a:hover { color: var(--bone); background: var(--felt); }
-  #sideNav a.group { color: var(--bone-dim); font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 1px; margin-top: 12px; }
+  #sideNav a.group { display: flex; align-items: center; gap: 7px; color: var(--bone-dim); font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 1px; margin-top: 12px; }
+  #sideNav a.group .nav-ico { width: 14px; height: 14px; flex-shrink: 0; opacity: 0.9; }
+  #sideNav a.group:hover .nav-ico, #sideNav a.group.active .nav-ico { opacity: 1; }
   #sideNav a.sub { padding-left: 22px; }
   #sideNav a.sub2 { padding-left: 34px; }
   #sideNav a.active { color: var(--brass); border-left-color: var(--brass); background: var(--felt); }
@@ -282,6 +290,10 @@
   .panmode { font-family: var(--mono); font-size: 11px; font-weight: 700; padding: 10px 8px; border-radius: 8px; cursor: pointer; border: 1px solid var(--edge); background: var(--wood); color: var(--bone-dim); transition: all .12s; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 5px rgba(0,0,0,0.28); }
   .panmode:hover { border-color: var(--brass); color: var(--bone); background: var(--felt); transform: translateY(-1px); }
   .panmode.on { border-color: var(--brass); color: var(--brass); background: var(--felt); box-shadow: inset 0 0 0 1px var(--brass-glow); }
+  /* Pan-glide duration slider — lives in the Panning section itself */
+  .pan-glide { margin-top: 4px; padding: 12px 14px; background: var(--wood); border: 1px solid var(--edge); border-radius: 10px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
+  .pan-glide .pg-lbl { display: flex; justify-content: space-between; align-items: baseline; font-family: var(--mono); font-size: 11px; color: var(--bone-dim); letter-spacing: 0.3px; margin-bottom: 9px; }
+  .pan-glide .pg-lbl b { color: var(--brass); font-size: 12px; }
   /* Combined compact view — pitch neck (renderStrings) sits above a pan strip, linked by fixed per-string color */
   .cv-pan { margin: 12px 6px 2px; }
   .cv-scale { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 8px; color: var(--bone-faint); letter-spacing: 1px; padding: 0 3px; margin-bottom: 4px; }
@@ -292,6 +304,8 @@
   /* Smaller-screen (inline) mode: the readout is parked in the main column, so scale it ~20% bigger for readability */
   @media (max-width: 1279px) {
     #sec-current .bench-head .name { font-size: 26px; }
+    #sec-current .bench-head .name.long { font-size: 21px; }
+    #sec-current .bench-head .name.xlong { font-size: 17px; }
     #sec-current .bench-head .lbl { font-size: 12px; }
     #sec-current .str { height: 48px; }
     #sec-current .str-lbl { font-size: 12px; }
@@ -328,11 +342,14 @@
   .card.active .card-name { color: var(--brass); }
   .card-notes { font-family: var(--mono); font-size: 11px; color: var(--bone-dim); display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; text-align: center; }
   .card-notes span { white-space: nowrap; }
-  .card-off { font-family: var(--mono); font-size: 10px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; text-align: center; margin-top: 7px; opacity: 0; max-height: 0; overflow: hidden; transition: opacity 0.15s, max-height 0.15s; }
+  .card-off { font-family: var(--mono); font-size: 10px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; text-align: center; margin-top: 7px; }
   .card-off span { color: var(--bone-faint); }
   .card-off span.flat { color: var(--steel-blue); }
   .card-off span.sharp { color: var(--amber); }
-  .card:hover .card-off, .card.active .card-off { opacity: 1; max-height: 20px; }
+  /* Ethnic capo hint — the sounded octave differs from concert pitch (VG-800 ±12 semitone range), so guide the physical capo */
+  .card-capo { font-family: var(--mono); font-size: 9.5px; color: var(--brass); text-align: center; letter-spacing: 0.2px; margin-top: 8px; }
+  .card-capo.zero { color: var(--bone-faint); }
+  .card-capo.high { color: var(--amber); }
   .del { position: absolute; bottom: 11px; right: 12px; font-family: var(--mono); font-size: 9px; color: var(--bone-faint); background: none; border: none; cursor: pointer; letter-spacing: 1px; opacity: 0; transition: all 0.14s; }
   .card:hover .del { opacity: 1; }
   .del:hover { color: var(--err); }
@@ -464,7 +481,7 @@
   <div id="steelWrap"></div>
 
   <div class="sec" id="sec-pedals" style="margin-top:8px">
-    <h2>Steel Pedals</h2>
+    <h2>Pedals</h2>
     <div class="rule"></div>
     <span id="pedalHint" style="font-family:var(--mono);font-size:10px;color:var(--bone-faint);white-space:nowrap">HOLD TO BEND</span>
   </div>
@@ -637,7 +654,7 @@ const PANMODES=[
 const STR_COLORS=['#ef5350','#f2a33d','#c6d43f','#4cc178','#4f9dea','#a563d4'];
 let dispOffsets=[0,0,0,0,0,0];   // the pitch offsets currently shown (base tuning + engaged pedal bends)
 
-function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; if(typeof s.glide!=='number') s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], ...AB_DEFAULTS}; }
+function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; if(typeof s.glide!=='number') s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, ...AB_DEFAULTS}; }
 function saveSettingsLS(){ localStorage.setItem('vg800_settings', JSON.stringify(settings)); }
 function loadCustom(){ try{ return JSON.parse(localStorage.getItem('vg800_custom'))||[]; }catch(e){ return []; } }
 function saveCustomLS(){ localStorage.setItem('vg800_custom', JSON.stringify(customs)); }
@@ -723,6 +740,13 @@ function tuningSend(offsets){                                   // tuning change
   return send(offsets);
 }
 
+// Long tuning names (e.g. "Greek Bouzouki") would drag the header layout, so tag by length for CSS to shrink/adapt.
+function fitBenchName(){
+  const el=document.getElementById('nowName'); if(!el) return;
+  const n=(el.textContent||'').trim().length;
+  el.classList.toggle('long', n>12 && n<=17);
+  el.classList.toggle('xlong', n>17);
+}
 function renderStrings(offsets){
   const wrap=document.getElementById('strings');
   if(wrap.children.length!==6){           // build the rows once…
@@ -743,7 +767,7 @@ function renderStrings(offsets){
     row.querySelector('.oct').textContent=oct;
     const off=row.querySelector('.str-off'); off.className='str-off '+dir; off.textContent=s===0?'·':sign+s;
   }
-  dispOffsets=offsets.slice(); updateOverview();   // keep the linked overview in sync with the shown pitch
+  dispOffsets=offsets.slice(); updateOverview(); fitBenchName();   // sync overview + fit the tuning name
 }
 
 /* ===== Pedal steel simulation ===== */
@@ -965,13 +989,17 @@ function renderNav(){
       while(i<items.length && items[i].section===sec){ links+=`<a class="sub2" href="#fam-${slug(items[i].family)}">${items[i].family}</a>`; i++; }
     } else { links+=`<a class="sub" href="#${f.id||('fam-'+slug(f.family))}">${f.family}</a>`; i++; }
   }
+  const I={
+    tunings:'<svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v6M16 3v6M8 9a4 4 0 0 0 8 0M12 13v8"/></svg>',
+    pedals:'<svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M8 8h8"/><circle cx="12" cy="14.5" r="2.2"/></svg>',
+    pan:'<svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M4 12h16"/></svg>' };
   box.innerHTML='<div class="nav-title">Jump to</div>'
-    +'<a class="group" href="#sec-tunings">Tunings</a>'+links
+    +'<a class="group" href="#sec-tunings">'+I.tunings+'Tunings</a>'+links
     +'<a class="sub" href="#sec-ethnic">Ethnic</a>'
     +'<a class="sub" href="#sec-steel">Pedal Steel</a>'
     +'<a class="sub" href="#sec-strings">Transpose</a>'
-    +'<a class="group" href="#sec-pedals">Steel Pedals</a>'
-    +'<a class="group" href="#sec-pan">Panning</a>';
+    +'<a class="group" href="#sec-pedals">'+I.pedals+'Pedals</a>'
+    +'<a class="group" href="#sec-pan">'+I.pan+'Panning</a>';
   updateSpy();
 }
 function placeBench(){
@@ -999,7 +1027,13 @@ function computeCluster(pitches, start){
   const lo=Math.min(...base), hi=Math.max(...base), k12=-Math.round(((lo+hi)/2)/12);
   const offsets=[0,0,0,0,0,0]; let ok=true;
   for(let k=0;k<N;k++){ const idx=start+N-1-k, o=base[k]+12*k12; offsets[idx]=o; if(o<-12||o>12) ok=false; }
-  return {offsets, ok};
+  return {offsets, ok, delta: 12*k12};   // delta = sounded pitch − concert pitch (negative = an octave low → capo up to correct)
+}
+// The VG-800 only bends ±12 semitones, so instruments in a distant register sound an octave off; tell the player where to capo.
+function capoText(delta){
+  if(delta<0) return `Capo fret ${-delta} for concert pitch`;
+  if(delta>0) return delta>=24?`Sounds ${delta/12} octaves high`:`Sounds an octave high`;
+  return `Concert pitch · no capo`;
 }
 function applyInst(inst, start){
   const N=inst.pitches.length; start=Math.max(0, Math.min(6-N, start));
@@ -1013,7 +1047,9 @@ function applyInst(inst, start){
 function ethnicCardHTML(inst){
   const on = ethnicInst && ethnicInst.name===inst.name;
   const notes=inst.notes.split(' ').map(x=>`<span>${x}</span>`).join('');
-  return `<div class="card inst${on?' active':''}" data-name="${inst.name}" data-ref="${inst.ref}"><div class="card-name">${inst.name}</div><div class="card-notes">${notes}</div></div>`;
+  const d=computeCluster(inst.pitches, 0).delta;   // default placement (what a click applies)
+  const capo=`<div class="card-capo${d===0?' zero':d>0?' high':''}">${capoText(d)}</div>`;
+  return `<div class="card inst${on?' active':''}" data-name="${inst.name}" data-ref="${inst.ref}"><div class="card-name">${inst.name}</div><div class="card-notes">${notes}</div>${capo}</div>`;
 }
 function clusterRowHTML(inst, start){
   const N=inst.pitches.length, opts=[];
@@ -1022,7 +1058,8 @@ function clusterRowHTML(inst, start){
     const dots=[0,1,2,3,4,5].map(i=>`<i class="${i>=s&&i<s+N?'on':''}"></i>`).join('');
     opts.push(`<button class="clbtn${res.ok?'':' disabled'}${s===start?' on':''}" data-start="${s}"${res.ok?'':' aria-disabled="true"'}><span class="cldots">${dots}</span><span class="cllbl">${s+1}–${s+N}</span></button>`);
   }
-  return `<div class="cl-head">String placement for <b>${inst.name}</b> — leftmost = high E (1st string); the rest stay standard.</div><div class="clrow">${opts.join('')}</div>`;
+  const d=computeCluster(inst.pitches, start).delta;
+  return `<div class="cl-head">String placement for <b>${inst.name}</b> — leftmost = high E (1st string); the rest stay standard.<br><b>${capoText(d)}</b> to match the real instrument's octave.</div><div class="clrow">${opts.join('')}</div>`;
 }
 function renderEthnic(){
   const wrap=document.getElementById('ethnicWrap'); if(!wrap) return;
@@ -1067,22 +1104,47 @@ function applySteel(t, win){
   renderStrings(res.offsets); renderGrid(); renderEthnic(); renderSteel(); renderPedals();
 }
 function clearSteel(){ steelInst=null; steelRoot=null; steelWin=0; copedent=COPEDENTS.generic; }
-/* ===== Panning — per-string pan modes + stereo-field display ===== */
+/* ===== Panning — per-string pan modes, glided so the sweep is felt ===== */
 function panToCC(p){ return Math.round((Math.max(-1,Math.min(1,p))+1)/2*127); }   // −1→L50(0), +1→R50(127)
+let panTimer=null, panCur=[0,0,0,0,0,0];   // live sounded pan per string, so glides start from where we are
+function sendPan(pos){ if(!midiOut) return; const st=0xB0|((settings.channel-1)&0x0F); pos.forEach((p,i)=> midiOut.send([st, settings.panCCs[i]&0x7F, panToCC(p)&0x7F])); }
 function applyPan(id){
   const m=PANMODES.find(x=>x.id===id); if(!m) return;
   activePan=id;
-  if(midiOut){ const st=0xB0|((settings.channel-1)&0x0F); m.pos.forEach((p,i)=> midiOut.send([st, settings.panCCs[i]&0x7F, panToCC(p)&0x7F])); }
   document.querySelectorAll('.panmode').forEach(b=> b.classList.toggle('on', b.dataset.pan===id));
-  updateOverview();
+  panGlide(m.pos.slice());
+}
+function panGlide(target){
+  const ms=Math.max(0, settings.panMs|0);
+  updateOverview(panCur);                                              // place the dots at the live position (no jump)
+  const dots=document.getElementById('cvDots');
+  if(dots) for(const d of dots.children) d.style.transitionDuration=(ms<40?'0ms':ms+'ms');
+  updateOverview(target);                                             // then glide the sidebar dots to the target
+  if(panTimer){ clearInterval(panTimer); panTimer=null; }
+  if(ms<40 || !midiOut){ panCur=target.slice(); sendPan(target); return; }   // instant
+  const start=panCur.slice(), stepMs=20, steps=Math.max(1, Math.round(ms/stepMs)); let n=0;
+  sendPan(start);
+  panTimer=setInterval(()=>{                                          // ramp each string's pan CC toward the target
+    n++; const t=n>=steps?1:n/steps;
+    const pos=target.map((tp,i)=> start[i]+(tp-start[i])*t);
+    panCur=pos; sendPan(pos);
+    if(n>=steps){ clearInterval(panTimer); panTimer=null; panCur=target.slice(); }
+  }, stepMs);
 }
 function renderPan(){
   const wrap=document.getElementById('panWrap'); if(!wrap) return;
   const btns=PANMODES.map(m=>`<button class="panmode${activePan===m.id?' on':''}" data-pan="${m.id}">${m.name}</button>`).join('');
-  wrap.innerHTML=`<div class="panmodes">${btns}</div>`;
+  const pm=settings.panMs|0;
+  wrap.innerHTML=`<div class="panmodes">${btns}</div>
+    <div class="pan-glide">
+      <div class="pg-lbl"><span>Pan glide — ease between modes</span><b id="panMsVal">${pm===0?'instant':pm+' ms'}</b></div>
+      <input type="range" class="slider" id="panMsSlider" min="0" max="1500" step="50" value="${pm}">
+    </div>`;
   wrap.querySelectorAll('.panmode').forEach(b=>{
     b.addEventListener('click',()=>applyPan(b.dataset.pan));   // pan animates only on click (no hover preview)
   });
+  const sl=document.getElementById('panMsSlider'), val=document.getElementById('panMsVal');
+  if(sl) sl.addEventListener('input',()=>{ settings.panMs=+sl.value; if(val) val.textContent=(settings.panMs===0?'instant':settings.panMs+' ms'); saveSettingsLS(); });
 }
 /* ===== Combined view — pan dots (top strip) linked by fixed per-string color to the pitch neck (renderStrings, below).
    Lives in #sec-current, which placeBench() parks in the sidebar on wide screens. ===== */
