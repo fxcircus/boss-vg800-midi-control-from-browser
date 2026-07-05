@@ -551,7 +551,19 @@
           <span class="lamp" id="lamp"></span>
           <select id="portSelect" aria-label="MIDI output port"><option>No ports</option></select>
         </div>
-        <span class="conn-txt" id="connTxt">MIDI disconnected</span>
+        <div class="ch" style="margin-top:14px"><label>Channel</label><input type="number" class="num" id="chanInput" min="1" max="16" value="1"></div>
+        <p class="note-hint">Choose the MIDI port wired to your VG-800, then set <em>Channel</em> to match the pedal's <em>MIDI · RX CHANNEL</em> (factory default is 1). The dot on the ⚙ button glows green once a port is live.</p>
+      </div>
+    </details>
+
+    <details class="settgrp" data-grp="cc">
+      <summary>CC numbers for MIDI mapping</summary>
+      <div class="settgrp-body">
+        <div class="subhd" style="margin-top:2px">Pitch · one CC per string</div>
+        <div class="cc-grid" id="ccRows"></div>
+        <div class="subhd">Panning · one CC per string</div>
+        <div class="cc-grid" id="panCcRows"></div>
+        <p class="note-hint">Each value is the CC number a string listens on — it must match the <em>SOURCE</em> you assign on the VG-800 (order runs high&nbsp;E → low&nbsp;E). Point <em>STR&nbsp;BEND · BEND&nbsp;DEPTH 1–6</em> at the pitch CCs (MIN −12 / MAX +12, MODE = MOMENT) and <em>STRING(A) · PAN 1–6</em> at the panning CCs (MIN L50 / MAX R50). Prefer CC# <em>1–31</em>: the VG-800 exposes only 0–31 and 64+, and may not track 64–95 continuously.</p>
       </div>
     </details>
 
@@ -565,16 +577,16 @@
       </div>
     </details>
 
-    <details class="settgrp" data-grp="general">
-      <summary>Channel &amp; glide</summary>
+    <details class="settgrp" data-grp="glide">
+      <summary>String glide</summary>
       <div class="settgrp-body">
-        <div class="ch"><label>Channel</label><input type="number" class="num" id="chanInput" min="1" max="16" value="1"></div>
-        <div class="ch"><label>String glide — ms to slide between tunings (0 = instant)</label><input type="number" class="num" id="glideInput" min="0" max="5000" step="50" value="0"></div>
+        <div class="ch"><label>Glide time (ms) — 0 = instant</label><input type="number" class="num" id="glideInput" min="0" max="5000" step="50" value="0"></div>
+        <p class="note-hint">Makes the strings <em>slide</em> between tunings instead of snapping. At <em>0</em> every string jumps to its new pitch at once; higher values ramp each string to its target over that many milliseconds — a portamento sweep as the whole neck bends into the new tuning.</p>
       </div>
     </details>
 
     <details class="settgrp" data-grp="autobend">
-      <summary>Auto-bend</summary>
+      <summary>Bend effect</summary>
       <div class="settgrp-body">
         <label class="latch-tog" style="margin-bottom:16px"><input type="checkbox" id="autoBendChk"><span>Scoop into each tuning (quick bend articulation)</span></label>
         <div class="ab-slider"><div class="ab-lbl"><span>Scoop depth</span><span id="bendDepthVal"></span></div><input type="range" class="slider" id="bendDepthInput" min="0" max="50"></div>
@@ -584,24 +596,7 @@
           <div class="cc-c"><label>Bend Ctrl CC#</label><input type="number" class="num" id="bendCCInput" min="0" max="127"></div>
           <div class="cc-c"><label>Inst Level CC#</label><input type="number" class="num" id="levelCCInput" min="0" max="127"></div>
         </div>
-        <p class="note-hint">On the VG-800, map <em>STR BEND · BEND CONTROL</em> (MIN 0 / MAX 100) to Bend Ctrl CC#, and <em>INST · INST LEVEL</em> to Inst Level CC#. When a tuning is applied, both briefly dip then rise back to 100% together with the new pitch. Best with glide off.</p>
-      </div>
-    </details>
-
-    <details class="settgrp" data-grp="stringcc">
-      <summary>CC number per string</summary>
-      <div class="settgrp-body">
-        <p style="margin-top:0">Each string sends its pitch on its own CC. On the VG-800: INST → <em>STR BEND SW = ON</em>, <em>BEND CONTROL = 100</em>. In ASSIGN 1–6 target <em>INST:STR BEND (A) BEND DEPTH 1…6</em>, MIN −12 / MAX +12, MODE = MOMENT, SOURCE = the CC below (DEPTH 1 = high E … DEPTH 6 = low E). Prefer CC# in the <em>1–31</em> range — CC# 64–95 are MIDI switch controllers and the VG-800 may not track them continuously.</p>
-        <div class="cc-grid" id="ccRows"></div>
-        <p class="note-hint">Each must match the CC # set as the SOURCE in that string's VG-800 assign slot. Heads-up: the VG-800 only exposes CC# 0–31 and 64+ as assign sources — CC# 32–63 are not selectable.</p>
-      </div>
-    </details>
-
-    <details class="settgrp" data-grp="pancc">
-      <summary>Panning CC per string</summary>
-      <div class="settgrp-body">
-        <div class="cc-grid" id="panCcRows"></div>
-        <p class="note-hint">Map to VG-800 <em>INST:STRING(A) PAN 1–6</em> (MIN L50 / MAX R50). PAN 1 = high E … PAN 6 = low E.</p>
+        <p class="note-hint">Swells into each new tuning: <em>Bend Ctrl CC#</em> (VG-800 <em>STR BEND · BEND CONTROL</em>, 0–100) and <em>Inst Level CC#</em> (<em>INST · INST LEVEL</em>) dip, then rise back to 100% together with the new pitch — scooping over the jump. Best with <em>String glide</em> off.</p>
       </div>
     </details>
 
@@ -677,7 +672,7 @@ let settings = loadSettings();
 let customs = loadCustom();
 let edOff = [0,0,0,0,0,0];
 let active = 'Standard';
-let midiAccess=null, midiOut=null;
+let midiAccess=null, midiOut=null, lastConnMsg=null;
 let curOffsets=[0,0,0,0,0,0], glideTimer=null;
 let baseOffsets=[0,0,0,0,0,0], held=new Set(), curInfo=null, pedalStateCache={}, ctrlStateCache={};
 let ethnicInst=null, ethnicStart=0;
@@ -728,7 +723,12 @@ function ports(){
   const pick=outs.find(o=>o.id===saved)||outs.find(o=>/scarlett|focusrite/i.test(o.name))||outs[0];
   sel.value=pick.id; midiOut=pick; localStorage.setItem('vg800_port',pick.id); setLamp(true,pick.name);
 }
-function setLamp(ok,msg){ const l=document.getElementById('lamp'); if(l) l.classList.toggle('on',ok); const c=document.getElementById('connTxt'); if(c) c.textContent=msg; const g=document.getElementById('settingsBtn'); if(g) g.classList.toggle('ok',ok); }
+function setLamp(ok,msg){
+  const l=document.getElementById('lamp'); if(l) l.classList.toggle('on',ok);
+  const g=document.getElementById('settingsBtn'); if(g) g.classList.toggle('ok',ok);
+  if(ok && msg && msg!==lastConnMsg) toast('Connected · '+msg);   // announce only on a new successful connection
+  lastConnMsg = ok ? msg : null;
+}
 document.getElementById('portSelect').addEventListener('change',e=>{
   const outs=[...midiAccess.outputs.values()]; midiOut=outs.find(o=>o.id===e.target.value);
   if(midiOut){ localStorage.setItem('vg800_port',midiOut.id); setLamp(true,midiOut.name); }
