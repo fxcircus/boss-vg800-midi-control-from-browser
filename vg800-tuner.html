@@ -960,8 +960,8 @@ const COPEDENTS={
     {id:'B',   name:'Pedal B', group:'foot', key:'s', act:'3rd +½ step',    moves:[{deg:'3',semis:1}]},
     {id:'LKL', name:'LKL',     group:'knee', key:'d', act:'root +½',         moves:[{deg:'1',semis:1}]},
     {id:'LKR', name:'LKR',     group:'knee', key:'f', act:'root −½ (maj7)',  moves:[{deg:'1',semis:-1}]},
-    {id:'AB',  name:'A + B',   group:'combo',key:'g', act:'the I → IV cry',  moves:[{deg:'5',semis:2},{deg:'3',semis:1}]},
-    {id:'ABR', name:'A+B+LKR', group:'combo',key:'h', act:'IV, maj-7th',     moves:[{deg:'5',semis:2},{deg:'3',semis:1},{deg:'1',semis:-1}]},
+    {id:'AB',  name:'A + B',   group:'combo',parts:['A','B'],key:'g', act:'the I → IV cry',  moves:[{deg:'5',semis:2},{deg:'3',semis:1}]},
+    {id:'ABR', name:'A+B+LKR', group:'combo',parts:['A','B','LKR'],key:'h', act:'IV, maj-7th',     moves:[{deg:'5',semis:2},{deg:'3',semis:1},{deg:'1',semis:-1}]},
   ]},
   e9:{ controls:[   // standard Emmons E9
     {id:'A',   name:'Pedal A', group:'foot', key:'a', act:'5th +1 step',     moves:[{deg:'5',semis:2}]},
@@ -970,7 +970,7 @@ const COPEDENTS={
     {id:'LKL', name:'LKL',     group:'knee', key:'d', act:'root +½',          moves:[{deg:'1',semis:1}]},
     {id:'LKR', name:'LKR',     group:'knee', key:'f', act:'root −½ (maj7)',   moves:[{deg:'1',semis:-1}]},
     {id:'VERT',name:'Vertical',group:'knee', key:'e', act:'5th −½',           moves:[{deg:'5',semis:-1}]},
-    {id:'AB',  name:'A + B',   group:'combo',key:'g', act:'the I → IV cry',   moves:[{deg:'5',semis:2},{deg:'3',semis:1}]},
+    {id:'AB',  name:'A + B',   group:'combo',parts:['A','B'],key:'g', act:'the I → IV cry',   moves:[{deg:'5',semis:2},{deg:'3',semis:1}]},
   ]},
   c6:{ controls:[   // C6 mechanism set (distinct from E9)
     {id:'P5', name:'P5',      group:'foot', key:'a', act:'5th −½ (9th)',     moves:[{deg:'5',semis:-1}]},
@@ -1095,16 +1095,18 @@ function renderPedals(){
     b.addEventListener('pointercancel', ()=> releaseCtrl(ctrl));
     b.addEventListener('lostpointercapture', ()=> releaseCtrl(ctrl));
   });
-  wrap.querySelectorAll('.pedal').forEach(b=> b.classList.toggle('on', held.has(b.dataset.ctrl)));  // keep latched state after re-render
+  wrap.querySelectorAll('.pedal').forEach(b=> b.classList.toggle('on', ctrlEngaged(b.dataset.ctrl)));  // keep latched state after re-render
   const latchEl=wrap.querySelector('#latchChk');
   if(latchEl) latchEl.addEventListener('change', e=>{ settings.latch=e.target.checked; saveSettingsLS(); updatePedalHint(); });
   wrap.querySelectorAll('.kb-chip[data-bind]').forEach(b=> b.addEventListener('click', ()=>{ bindingCtrl=b.dataset.bind; renderPedals(); }));
   const rb=wrap.querySelector('.kb-chip[data-reset]'); if(rb) rb.addEventListener('click', ()=>{ copedent.controls.forEach(c=> settings.keys[c.id]=c.key); rebuildKeymap(); saveSettingsLS(); bindingCtrl=null; renderPedals(); });
 }
+// a control shows engaged (highlighted + animated) if it's held directly OR it's a part of a held combo
+function ctrlEngaged(ctrl){ if(held.has(ctrl)) return true; for(const h of held){ const c=ctrlById(h); if(c&&c.parts&&c.parts.includes(ctrl)) return true; } return false; }
 function setCtrl(ctrl,on){
   const st=ctrlStateCache[ctrl];
   if(on){ if(!st||!st.avail) return; held.add(ctrl); } else held.delete(ctrl);
-  document.querySelectorAll('#pedalWrap .pedal').forEach(b=> b.classList.toggle('on', held.has(b.dataset.ctrl)));
+  document.querySelectorAll('#pedalWrap .pedal').forEach(b=> b.classList.toggle('on', ctrlEngaged(b.dataset.ctrl)));
   const bends=bendsFromEngaged();
   const eff=baseOffsets.map((o,i)=> o+bends[i]);
   if(midiOut) send(eff);
