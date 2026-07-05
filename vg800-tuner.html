@@ -235,7 +235,7 @@
   @media (min-width: 1280px) { .jump-wrap { display: none; } }
 
   /* Steel pedals */
-  .pedal-info { font-family: var(--mono); font-size: 11px; color: var(--bone-dim); margin: 0 2px 15px; letter-spacing: 0.3px; }
+  .pedal-info { font-family: var(--mono); font-size: 11px; color: var(--bone-dim); margin: 0 2px 15px; letter-spacing: 0.3px; text-align: center; }
   .pedal-info b { color: var(--brass); font-weight: 700; }
   .pedals { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; margin-bottom: 8px; }
   .pedal { position: relative; text-align: left; background: var(--wood); border: 1px solid var(--edge-soft); border-radius: 10px; padding: 12px 13px; cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 3px 8px rgba(0,0,0,0.32); transition: transform .1s, border-color .12s, background .12s, box-shadow .12s; user-select: none; -webkit-user-select: none; touch-action: none; }
@@ -659,7 +659,7 @@
           <select id="portSelect" aria-label="MIDI output port"><option>No ports</option></select>
         </div>
         <div class="ch" style="margin-top:14px"><label>Channel</label><select class="num" id="chanInput"></select></div>
-        <p class="note-hint">Choose the MIDI port wired to your VG-800, then set <em>Channel</em> to match the pedal's <em>MIDI · RX CHANNEL</em> (factory default is 1). The dot on the ⚙ button glows green once a port is live.</p>
+        <p class="note-hint">Choose the MIDI port wired to your VG-800, then set <em>Channel</em> to match the pedal's <em>MIDI · RX&nbsp;CHANNEL</em> (factory default is 1).<br><br>The dot on the ⚙ button glows green once a port is live.</p>
       </div>
     </details>
 
