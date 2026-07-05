@@ -181,11 +181,10 @@
   .sec h2 { font-family: var(--cond); font-weight: 700; font-size: 20px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--bone); }
   .sec .rule { flex: 1; height: 1px; background: var(--edge); }
 
-  /* Unified section panel — every section/family is a bordered box with a big centered header */
-  .panel { border: 1px solid var(--edge); border-radius: 14px; padding: 15px 15px 16px; margin: 0 0 14px; background: color-mix(in srgb, var(--wood) 24%, transparent); }
-  .panel-hd { display: flex; align-items: center; gap: 13px; font-family: var(--cond); font-weight: 700; font-size: 21px; line-height: 1.05; text-transform: uppercase; letter-spacing: 0.5px; color: var(--bone); margin: 0 2px 13px; }
-  .panel-hd::before, .panel-hd::after { content: ""; flex: 1; height: 1px; background: var(--edge); }   /* rules both sides → centered title */
-  .panel-sub { text-align: center; font-family: var(--mono); font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--bone-faint); margin: -7px 0 14px; }
+  /* Unified section panel — a fieldset so its legend header straddles (breaks) the top border */
+  .panel { min-width: 0; border: 1px solid var(--edge); border-radius: 15px; padding: 9px 18px 18px; margin: 0 0 18px; background: color-mix(in srgb, var(--wood) 18%, transparent); }
+  .panel-hd { margin: 0 auto; padding: 0 14px; font-family: var(--cond); font-weight: 700; font-size: 20px; line-height: 1; text-transform: uppercase; letter-spacing: 1.5px; color: var(--bone); }
+  .panel-sub { text-align: center; font-family: var(--mono); font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--bone-faint); margin: 7px 0 14px; }
 
   .add {
     display: block; width: 100%; font-family: var(--mono); font-size: 12px; color: var(--brass); background: none;
@@ -415,7 +414,7 @@
   .fam-name::after { content: ""; flex: 1; height: 1px; background: var(--edge-soft); }
 
   /* Grouped section (e.g. Lap Steel) with visually separated sub-areas */
-  .lapsec { margin: 0 0 14px; border: 1px solid var(--edge); border-radius: 14px; padding: 15px 15px 3px; background: color-mix(in srgb, var(--wood) 24%, transparent); scroll-margin-top: 24px; }
+  .lapsec { min-width: 0; margin: 0 0 18px; border: 1px solid var(--edge); border-radius: 15px; padding: 9px 18px 3px; background: color-mix(in srgb, var(--wood) 18%, transparent); scroll-margin-top: 24px; }
   .lapsec-hd { font-family: var(--cond); font-weight: 700; font-size: 15px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--brass); margin: 0 0 16px; display: flex; align-items: center; gap: 12px; }
   .lapsec-hd::after { content: ""; flex: 1; height: 1px; background: var(--brass-deep); opacity: 0.45; }
   .lapsec-body .fam { margin-bottom: 18px; }
@@ -587,36 +586,36 @@
     <button class="add" id="openEditor">+ Custom tuning</button>
   </div>
 
-  <section class="panel" id="sec-ethnic">
-    <div class="panel-hd">Ethnic Instruments</div>
+  <fieldset class="panel" id="sec-ethnic">
+    <legend class="panel-hd">Ethnic Instruments</legend>
     <div class="panel-sub">Others stay standard</div>
     <div id="ethnicWrap"></div>
-  </section>
+  </fieldset>
 
-  <section class="panel" id="sec-strings">
-    <div class="panel-hd">Transpose</div>
+  <fieldset class="panel" id="sec-strings">
+    <legend class="panel-hd">Transpose</legend>
     <div id="testBtns"></div>
-  </section>
+  </fieldset>
 
   <div id="lapWrap"></div>
 
-  <section class="panel" id="sec-steel">
-    <div class="panel-hd">Pedal Steel</div>
+  <fieldset class="panel" id="sec-steel">
+    <legend class="panel-hd">Pedal Steel</legend>
     <div class="panel-sub">6 of 10 strings</div>
     <div id="steelWrap"></div>
-  </section>
+  </fieldset>
 
-  <section class="panel" id="sec-pedals">
-    <div class="panel-hd">Pedals</div>
+  <fieldset class="panel" id="sec-pedals">
+    <legend class="panel-hd">Pedals</legend>
     <div class="panel-sub" id="pedalHint">Hold to bend</div>
     <div id="pedalWrap"></div>
-  </section>
+  </fieldset>
 
-  <section class="panel" id="sec-pan">
-    <div class="panel-hd">Panning</div>
+  <fieldset class="panel" id="sec-pan">
+    <legend class="panel-hd">Panning</legend>
     <div class="panel-sub">Per-string stereo</div>
     <div id="panWrap"></div>
-  </section>
+  </fieldset>
 
   <div class="bench" id="sec-current">
     <div class="cv-pan">
@@ -1115,8 +1114,8 @@ function makeCard(t,isC){
   return c;
 }
 function famBlock(f, isC, panel){
-  const b=document.createElement('div'); b.className=panel?'panel':'fam'; b.id='fam-'+slug(f.family);
-  const h=document.createElement('div'); h.className=panel?'panel-hd':'fam-name'; h.textContent=f.family; b.appendChild(h);
+  const b=document.createElement(panel?'fieldset':'div'); b.className=panel?'panel':'fam'; b.id='fam-'+slug(f.family);
+  const h=document.createElement(panel?'legend':'div'); h.className=panel?'panel-hd':'fam-name'; h.textContent=f.family; b.appendChild(h);
   const g=document.createElement('div'); g.className='grid';
   f.tunings.forEach(t=>g.appendChild(makeCard(t, isC))); b.appendChild(g); return b;
 }
@@ -1128,8 +1127,8 @@ function renderGrid(){
   while(i<all.length){
     const f=all[i];
     if(f.section){
-      const sec=f.section, block=document.createElement('div'); block.className='lapsec'; block.id='sec-'+slug(sec);
-      const hd=document.createElement('div'); hd.className='panel-hd'; hd.textContent=sec; block.appendChild(hd);
+      const sec=f.section, block=document.createElement('fieldset'); block.className='lapsec'; block.id='sec-'+slug(sec);
+      const hd=document.createElement('legend'); hd.className='panel-hd'; hd.textContent=sec; block.appendChild(hd);
       const body=document.createElement('div'); body.className='lapsec-body';
       while(i<all.length && all[i].section===sec){ body.appendChild(famBlock(all[i], !!all[i].custom)); i++; }
       block.appendChild(body); (lap||wrap).appendChild(block);   // Lap Steel renders in its own section (between Ethnic and Pedal Steel)
