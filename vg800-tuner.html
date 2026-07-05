@@ -396,9 +396,15 @@
     font-family: var(--mono); font-size: 13px; padding: 10px 12px; border-radius: 8px;
   }
   .fld input:focus, .num:focus { outline: none; border-color: var(--brass); }
+  select.num { -webkit-appearance: none; appearance: none; cursor: pointer; padding-right: 30px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23889bb0' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 11px center; }
+  select.num:hover { border-color: var(--brass-deep); }
+  .num option { background: var(--wood); color: var(--bone); }
   .acts { display: flex; gap: 9px; margin-top: 11px; }
   .acts button { flex: 1; }
-  .foot { display: flex; gap: 10px; justify-content: flex-end; position: sticky; bottom: 0; margin: 22px -26px 0; padding: 14px 26px 20px; background: var(--wood); border-top: 1px solid var(--edge); }
+  .foot { display: flex; gap: 10px; justify-content: flex-end; position: sticky; bottom: 0; margin: 8px -26px 0; padding: 30px 26px 20px; background: linear-gradient(to bottom, transparent, var(--wood) 58%); pointer-events: none; }
+  .foot .btn { pointer-events: auto; }
   .btn { font-family: var(--mono); font-size: 11px; letter-spacing: 0.5px; padding: 9px 15px; border-radius: 8px; cursor: pointer; border: 1px solid var(--edge); background: var(--wood); color: var(--bone-dim); transition: all 0.14s; }
   .btn:hover { border-color: var(--brass-deep); color: var(--bone); }
   .btn.go { background: var(--brass); color: var(--ink); border-color: var(--brass); font-weight: 700; }
@@ -543,7 +549,7 @@
 
 <div class="scrim" id="settingsModal">
   <div class="sheet">
-    <h2>MIDI <em>Settings</em></h2>
+    <h2>App <em>Settings</em></h2>
 
     <details class="settgrp" data-grp="midi" open>
       <summary>MIDI Output</summary>
@@ -552,7 +558,7 @@
           <span class="lamp" id="lamp"></span>
           <select id="portSelect" aria-label="MIDI output port"><option>No ports</option></select>
         </div>
-        <div class="ch" style="margin-top:14px"><label>Channel</label><input type="number" class="num" id="chanInput" min="1" max="16" value="1"></div>
+        <div class="ch" style="margin-top:14px"><label>Channel</label><select class="num" id="chanInput"></select></div>
         <p class="note-hint">Choose the MIDI port wired to your VG-800, then set <em>Channel</em> to match the pedal's <em>MIDI · RX CHANNEL</em> (factory default is 1). The dot on the ⚙ button glows green once a port is live.</p>
       </div>
     </details>
@@ -586,8 +592,8 @@
         <div class="ab-slider"><div class="ab-lbl"><span>Scoop time</span><span id="bendMsVal"></span></div><input type="range" class="slider" id="bendMsInput" min="40" max="400" step="10"></div>
         <div class="ab-slider"><div class="ab-lbl"><span>Volume dip</span><span id="levelDipVal"></span></div><input type="range" class="slider" id="levelDipInput" min="0" max="50"></div>
         <div class="cc-grid" style="margin-top:2px">
-          <div class="cc-c"><label>Bend Ctrl CC#</label><input type="number" class="num" id="bendCCInput" min="0" max="127"></div>
-          <div class="cc-c"><label>Inst Level CC#</label><input type="number" class="num" id="levelCCInput" min="0" max="127"></div>
+          <div class="cc-c"><label>Bend Ctrl CC#</label><select class="num" id="bendCCInput"></select></div>
+          <div class="cc-c"><label>Inst Level CC#</label><select class="num" id="levelCCInput"></select></div>
         </div>
         <p class="note-hint">Swells into each new tuning: <em>Bend Ctrl CC#</em> (VG-800 <em>STR BEND · BEND CONTROL</em>, 0–100) and <em>Inst Level CC#</em> (<em>INST · INST LEVEL</em>) dip, then rise back to 100% together with the new pitch — scooping over the jump. Best with <em>String glide</em> off.</p>
       </div>
@@ -1028,12 +1034,12 @@ function slug(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-
 function renderNav(){
   const box=document.getElementById('navLinks'); if(!box) return;
   const items=FAMILIES.slice(); if(customs.length) items.push({family:'Your Own', id:'fam-your-own'});
-  let links='', i=0;
+  let links='', sections='', i=0; const seen=new Set();
   while(i<items.length){
     const f=items[i];
-    if(f.section){
-      const sec=f.section; links+=`<a class="sub" href="#sec-${slug(sec)}">${sec}</a>`;
-      while(i<items.length && items[i].section===sec){ links+=`<a class="sub2" href="#fam-${slug(items[i].family)}">${items[i].family}</a>`; i++; }
+    if(f.section){                                  // grouped section (Lap Steel): one link, no per-family sub-items
+      if(!seen.has(f.section)){ sections+=`<a class="sub" href="#sec-${slug(f.section)}">${f.section}</a>`; seen.add(f.section); }
+      i++;
     } else { links+=`<a class="sub" href="#${f.id||('fam-'+slug(f.family))}">${f.family}</a>`; i++; }
   }
   const I={
@@ -1042,6 +1048,7 @@ function renderNav(){
     pan:'<svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8.5a6.5 6.5 0 1 1 13 0c0 6-6 6-6 10a3.5 3.5 0 1 1-7 0"/><path d="M15 8.5a2.5 2.5 0 0 0-5 0v1a2 2 0 1 1 0 4"/></svg>' };
   box.innerHTML='<a class="group" href="#sec-tunings">'+I.tunings+'Tunings</a>'+links
     +'<a class="sub" href="#sec-ethnic">Ethnic</a>'
+    + sections                                       // Lap Steel — moved to sit right above Pedal Steel
     +'<a class="sub" href="#sec-steel">Pedal Steel</a>'
     +'<a class="sub" href="#sec-strings">Transpose</a>'
     +'<a class="group" href="#sec-pedals">'+I.pedals+'Pedals</a>'
@@ -1254,23 +1261,24 @@ document.getElementById('saveCustomBtn').addEventListener('click',()=>{
 });
 
 const DEPTH_LBL=['DEPTH 1 · high E (1st)','DEPTH 2 · B (2nd)','DEPTH 3 · G (3rd)','DEPTH 4 · D (4th)','DEPTH 5 · A (5th)','DEPTH 6 · low E (6th)'];
+function optList(lo,hi,sel){ let s=''; for(let v=lo;v<=hi;v++) s+=`<option value="${v}"${v===+sel?' selected':''}>${v}</option>`; return s; }
 function renderSettings(){
   markThemeBtns();
-  document.getElementById('chanInput').value=settings.channel;
+  document.getElementById('chanInput').innerHTML=optList(1,16,settings.channel);
   document.getElementById('autoBendChk').checked=!!settings.autoBend;
   document.getElementById('bendDepthInput').value=settings.bendDepth;
   document.getElementById('bendMsInput').value=settings.bendMs;
   document.getElementById('levelDipInput').value=settings.levelDip;
-  document.getElementById('bendCCInput').value=settings.bendCC;
-  document.getElementById('levelCCInput').value=settings.levelCC;
+  document.getElementById('bendCCInput').innerHTML=optList(1,127,settings.bendCC);
+  document.getElementById('levelCCInput').innerHTML=optList(1,127,settings.levelCC);
   ['bendDepthInput','bendMsInput','levelDipInput'].forEach(refreshAb);
   const r=document.getElementById('ccRows'); r.innerHTML='';
   for(let i=0;i<6;i++){ const c=document.createElement('div'); c.className='cc-c';
-    c.innerHTML=`<label>${DEPTH_LBL[i]} — CC #</label><input type="number" class="num" min="0" max="127" data-cc="${i}" value="${settings.ccs[i]}">`; r.appendChild(c);
+    c.innerHTML=`<label>${DEPTH_LBL[i]} — CC #</label><select class="num" data-cc="${i}">${optList(1,127,settings.ccs[i])}</select>`; r.appendChild(c);
   }
   const pr=document.getElementById('panCcRows'); pr.innerHTML=''; const pn=['high E','B','G','D','A','low E'];
   for(let i=0;i<6;i++){ const c=document.createElement('div'); c.className='cc-c';
-    c.innerHTML=`<label>PAN ${i+1} · ${pn[i]}</label><input type="number" class="num" min="0" max="127" data-pcc="${i}" value="${settings.panCCs[i]}">`; pr.appendChild(c);
+    c.innerHTML=`<label>PAN ${i+1} · ${pn[i]}</label><select class="num" data-pcc="${i}">${optList(1,127,settings.panCCs[i])}</select>`; pr.appendChild(c);
   }
 }
 function openSettings(){ renderSettings(); applyGrpState(); open('settingsModal'); }
@@ -1292,10 +1300,10 @@ markThemeBtns();
 document.getElementById('closeSettings').addEventListener('click',()=>close('settingsModal'));
 document.getElementById('saveSettings').addEventListener('click',()=>{
   const ch=Math.max(1,Math.min(16,+document.getElementById('chanInput').value||1));
-  const ccs=[]; document.querySelectorAll('#ccRows input').forEach(x=>ccs[+x.dataset.cc]=Math.max(0,Math.min(127,+x.value||0)));
+  const ccs=[]; document.querySelectorAll('#ccRows select').forEach(x=>ccs[+x.dataset.cc]=Math.max(1,Math.min(127,+x.value||1)));
   const num=(id,lo,hi,d)=>{ const v=+document.getElementById(id).value; return isNaN(v)?d:Math.max(lo,Math.min(hi,v)); };
   const ab={ autoBend:document.getElementById('autoBendChk').checked, bendCC:num('bendCCInput',0,127,69), levelCC:num('levelCCInput',0,127,70), bendDepth:num('bendDepthInput',0,50,25), levelDip:num('levelDipInput',0,50,15), bendMs:num('bendMsInput',40,400,120) };
-  const panCCs=[]; document.querySelectorAll('#panCcRows input').forEach(x=>panCCs[+x.dataset.pcc]=Math.max(0,Math.min(127,+x.value||0)));
+  const panCCs=[]; document.querySelectorAll('#panCcRows select').forEach(x=>panCCs[+x.dataset.pcc]=Math.max(1,Math.min(127,+x.value||1)));
   settings={channel:ch,ccs,gap:settings.gap??20,glide:0,keys:settings.keys,latch:settings.latch,panCCs, ...ab}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
 });
 
