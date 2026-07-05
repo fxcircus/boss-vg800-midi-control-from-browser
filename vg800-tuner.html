@@ -1179,7 +1179,7 @@ let panTimer=null, panCur=[0,0,0,0,0,0];   // live sounded pan per string, so gl
 const AUTOPAN_MS = 40;                                        // MIDI refresh cap (~25 updates/sec) — raise to send fewer messages
 const AUTOPAN_PHASE = [0,1,2,3,4,5].map(i=> i*(Math.PI*2/6)); // staggered phase so the six strings swirl, not move as a block
 let autoPanOn=false, autoPanTimer=null, autoPanT=0, autoPanLast=[-1,-1,-1,-1,-1,-1], autoPanStart=[0,0,0,0,0,0], autoPanRampMs=0;
-function autoPanHz(){ const v=Math.max(1,Math.min(100, settings.autoPanRate|0)); return 0.03 + (v-1)/99*(0.5-0.03); }  // slider 1–100 → 0.03–0.5 Hz
+function autoPanHz(){ const v=Math.max(1,Math.min(100, settings.autoPanRate|0)); return 0.03 + (v-1)/99*(1-0.03); }  // slider 1–100 → 0.03–1 Hz (33s → 1s / cycle)
 function sendPan(pos){ if(!midiOut) return; const st=0xB0|((settings.channel-1)&0x0F); pos.forEach((p,i)=> midiOut.send([st, settings.panCCs[i]&0x7F, panToCC(p)&0x7F])); }
 function applyPan(id){
   const m=PANMODES.find(x=>x.id===id); if(!m) return;
@@ -1230,7 +1230,7 @@ function renderPan(){
   const pm=settings.panMs|0;
   const lbl=ms=> ms===0?'instant' : ms>=1000?(ms/1000).toFixed(2).replace(/\.?0+$/,'')+'S' : ms+' ms';  // ≥1s → "1S"/"1.5S"
   const apr=settings.autoPanRate|0;
-  const rateLbl=v=>{ const hz=0.03+(Math.max(1,Math.min(100,v))-1)/99*(0.5-0.03); return '≈ '+(1/hz).toFixed(1)+'s / cycle'; };
+  const rateLbl=v=>{ const hz=0.03+(Math.max(1,Math.min(100,v))-1)/99*(1-0.03); return '≈ '+(1/hz).toFixed(1).replace(/\.0$/,'')+'s / cycle'; };
   wrap.innerHTML=`<div class="panmodes">${btns}</div>
     <div class="pan-glide">
       <div class="pg-lbl"><span>Pan glide — ease between modes</span><b id="panMsVal">${lbl(pm)}</b></div>
