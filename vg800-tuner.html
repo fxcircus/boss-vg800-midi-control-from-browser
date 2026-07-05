@@ -101,7 +101,7 @@
 
   #hdrSentinel { height: 1px; margin-bottom: -1px; }
   header { position: sticky; top: 0; z-index: 90; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin: 0 -20px 22px; padding: 12px 20px; transition: background .2s ease, box-shadow .2s ease; }
-  header.stuck { background: var(--ink); background: color-mix(in srgb, var(--ink) 82%, transparent); backdrop-filter: blur(14px) saturate(1.15); -webkit-backdrop-filter: blur(14px) saturate(1.15); box-shadow: 0 6px 20px rgba(0,0,0,0.28), inset 0 -1px 0 var(--edge-soft); }
+  header.stuck { background: var(--bg); background-attachment: fixed; box-shadow: 0 6px 16px rgba(0,0,0,0.18); }   /* matches the page bg (fixed) so it's seamless yet opaque — hides content scrolling under it */
   .mast { line-height: 0.92; }
   .mast .kick { font-family: var(--mono); font-size: 10px; letter-spacing: 4px; color: var(--brass-deep); text-transform: uppercase; margin-bottom: 8px; }
   .mast h1 { font-family: var(--cond); font-weight: 700; font-size: 46px; letter-spacing: -0.5px; color: var(--bone); text-transform: uppercase; }
@@ -225,8 +225,8 @@
   .jump-menu a.group .nav-ico { width: 15px; height: 15px; flex-shrink: 0; }
   .jump-menu a.sub { padding-left: 22px; font-size: 12px; }
   .jump-menu a.sub2 { padding-left: 32px; }
-  .sec, #sec-current, [id^="fam-"] { scroll-margin-top: 108px; }
-  @media (min-width: 1280px) { .jump-wrap { display: none; } .sec, #sec-current, [id^="fam-"] { scroll-margin-top: 80px; } }
+  .sec, #sec-current, [id^="fam-"] { scroll-margin-top: calc(var(--hdr-h, 92px) + 16px); }
+  @media (min-width: 1280px) { .jump-wrap { display: none; } }
 
   /* Steel pedals */
   .pedal-info { font-family: var(--mono); font-size: 11px; color: var(--bone-dim); margin: 0 2px 15px; letter-spacing: 0.3px; }
@@ -619,13 +619,13 @@
   <div id="panWrap"></div>
 
   <div class="bench" id="sec-current">
-    <div class="bench-head">
-      <span class="name std" id="nowName">Standard</span>
-      <span class="lbl">Current Tuning</span>
-    </div>
     <div class="cv-pan">
       <div class="cv-scale"><span>L</span><span>C</span><span>R</span></div>
       <div class="cv-panfield"><span class="cv-panmid"></span><div id="cvDots"></div></div>
+    </div>
+    <div class="bench-head">
+      <span class="name std" id="nowName">Standard</span>
+      <span class="lbl">Current Tuning</span>
     </div>
     <div id="strings"></div>
   </div>
@@ -1555,6 +1555,9 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') setThemeMenu(false
 // Frozen-header treatment kicks in once the top scrolls away
 (function(){ const hdr=document.querySelector('header'), sen=document.getElementById('hdrSentinel');
   if(hdr&&sen&&'IntersectionObserver'in window){ new IntersectionObserver(([e])=>{ hdr.classList.toggle('stuck', !e.isIntersecting); },{threshold:0}).observe(sen); } })();
+// Keep the jump-anchor offset in sync with the header's real height (varies with title wrapping)
+function setHdrH(){ const h=document.querySelector('header'); if(h) document.documentElement.style.setProperty('--hdr-h', h.offsetHeight+'px'); }
+setHdrH(); window.addEventListener('resize', setHdrH); window.addEventListener('load', setHdrH);
 // Mobile "jump to section" dropdown
 const jumpBtn=document.getElementById('jumpBtn'), jumpMenu=document.getElementById('jumpMenu');
 function setJumpMenu(open){ jumpMenu.classList.toggle('open',open); jumpBtn.classList.toggle('open',open); jumpBtn.setAttribute('aria-expanded',open?'true':'false'); }
