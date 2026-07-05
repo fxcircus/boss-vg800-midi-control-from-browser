@@ -218,6 +218,54 @@
   .kb-chip.listening .kb-key { color: var(--brass); font-size: 10px; font-family: var(--mono); text-transform: none; }
   .kb-reset .kb-key { color: var(--brass); font-family: var(--sans); }
 
+  /* Pedals — skin toggle (Blueprint / Classic) */
+  .pskin { display: inline-flex; gap: 3px; padding: 3px; background: var(--ink); border: 1px solid var(--edge); border-radius: 9px; margin-bottom: 16px; }
+  .pskin .seg-b { font-family: var(--mono); font-size: 10.5px; font-weight: 700; padding: 6px 15px; border: none; border-radius: 6px; background: transparent; color: var(--bone-dim); cursor: pointer; letter-spacing: 0.4px; transition: color .12s, background .12s; }
+  .pskin .seg-b:hover { color: var(--bone); }
+  .pskin .seg-b.on { background: var(--brass); color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,0.35); }
+
+  /* Pedals — Blueprint schematic skin (fixed navy palette, theme-independent) */
+  .bp { --bp-bg:#122850; --bp-line:#6f96cc; --bp-ink:#dce8fb; --bp-dim:#8aa6d4; --bp-acc:#f2a33d;
+    background-color: var(--bp-bg);
+    background-image: linear-gradient(rgba(130,170,225,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(130,170,225,0.08) 1px, transparent 1px);
+    background-size: 22px 22px;
+    border: 1px solid rgba(150,185,235,0.4); border-radius: 12px; padding: 15px 16px 18px; margin-bottom: 22px;
+    box-shadow: inset 0 0 0 3px rgba(130,170,225,0.06), 0 12px 32px rgba(0,0,0,0.4);
+    font-family: var(--mono); color: var(--bp-ink); overflow-x: auto; }
+  .bp-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; margin-bottom: 16px; flex-wrap: wrap; }
+  .bp-title { font-family: var(--cond); font-weight: 700; font-size: 21px; letter-spacing: 3px; text-transform: uppercase; color: var(--bp-ink); }
+  .bp-title em { display: block; font-style: normal; font-family: var(--mono); font-size: 9.5px; letter-spacing: 1.5px; color: var(--bp-dim); margin-top: 4px; }
+  .bp-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 3px 11px; font-size: 8.5px; color: var(--bp-dim); border: 1px solid rgba(150,185,235,0.4); border-radius: 7px; padding: 7px 11px; letter-spacing: 0.4px; }
+  .bp-legend b { color: var(--bp-ink); font-size: 9px; letter-spacing: 2px; margin-right: 3px; }
+  .bp-grid { display: grid; grid-template-rows: auto repeat(6, 34px); align-items: stretch; min-width: max-content; }
+  .bp-corner { font-size: 8px; color: var(--bp-dim); letter-spacing: 1.5px; display: flex; align-items: flex-end; padding: 0 0 8px 2px; }
+  .bp-pedal { position: relative; background: rgba(110,150,210,0.07); border: 1px solid var(--bp-line); border-radius: 7px; color: var(--bp-ink); cursor: pointer; padding: 7px 9px; margin: 0 4px 9px; display: flex; flex-direction: column; gap: 3px; text-align: left; user-select: none; -webkit-user-select: none; touch-action: none; transition: border-color .12s, background .12s, box-shadow .12s; }
+  .bp-pedal::after { content: ""; position: absolute; left: 50%; bottom: -10px; width: 1.5px; height: 10px; background: var(--bp-line); transform: translateX(-50%); }   /* stub bridging into the rod below (accounts for the 1px border) */
+  .bp-pedal:hover:not(.disabled) { border-color: var(--bp-ink); background: rgba(130,170,225,0.16); }
+  .bp-pedal.disabled { opacity: 0.42; cursor: not-allowed; border-style: dashed; }
+  .bp-pedal.disabled::after { display: none; }   /* no rod to connect to */
+  .bp-pedal.on { border-color: var(--bp-acc); background: rgba(242,163,61,0.16); box-shadow: 0 0 0 1px rgba(242,163,61,0.45), 0 0 16px rgba(242,163,61,0.28); }
+  .bp-pedal.on::after { background: var(--bp-acc); box-shadow: 0 0 8px rgba(242,163,61,0.6); }
+  .bp-ptag { font-size: 7.5px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--bp-dim); }
+  .bp-pname { font-family: var(--cond); font-weight: 700; font-size: 15px; letter-spacing: 0.3px; display: flex; align-items: center; gap: 6px; line-height: 1; }
+  .bp-pkey { font-family: var(--mono); font-style: normal; font-size: 8px; border: 1px solid var(--bp-line); border-radius: 3px; padding: 1px 4px; color: var(--bp-dim); }
+  .bp-pact { font-size: 8.5px; color: var(--bp-dim); letter-spacing: 0.2px; }
+  .bp-pedal.on .bp-pname { color: var(--bp-acc); }
+  .bp-slbl { display: flex; align-items: center; gap: 6px; font-size: 10px; padding-right: 8px; white-space: nowrap; }
+  .bp-slbl b { font-family: var(--cond); font-size: 14px; color: var(--bp-dim); }
+  .bp-slbl span { color: var(--bp-ink); }
+  .bp-cell { position: relative; }
+  .bp-cell::before { content: ""; position: absolute; left: -1px; right: -1px; top: 50%; height: 1.5px; background: var(--bp-line); transform: translateY(-50%); }   /* string line */
+  .bp-cell.dis::before { opacity: 0.4; }
+  .bp-cell.rod::after { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 1.5px; background: var(--bp-line); transform: translateX(-50%); }   /* linkage rod */
+  .bp-cell.on.rod::after { background: var(--bp-acc); box-shadow: 0 0 7px rgba(242,163,61,0.55); }
+  .bp-tab { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); z-index: 2; background: var(--bp-bg); border: 1px solid var(--bp-line); border-radius: 4px; padding: 2px 5px; font-family: var(--cond); font-weight: 700; font-size: 12px; color: var(--bp-ink); display: flex; flex-direction: column; align-items: center; line-height: 1; min-width: 24px; }
+  .bp-tab i { font-family: var(--mono); font-style: normal; font-size: 7px; color: var(--bp-dim); margin-top: 1px; }
+  .bp-tab.dn { color: #a9d7ea; }
+  .bp-tab.bad { border-color: #e07a5f; color: #f0a08c; opacity: 0.8; }
+  .bp-cell.on .bp-tab { border-color: var(--bp-acc); background: var(--bp-acc); color: var(--bp-bg); box-shadow: 0 0 12px rgba(242,163,61,0.45); }
+  .bp-cell.on .bp-tab i { color: rgba(18,40,80,0.75); }
+
   /* Chunky scrollbar (always on) — easier to grab on touch */
   html[data-scroll="fat"]::-webkit-scrollbar { width: 18px; height: 18px; }
   html[data-scroll="fat"]::-webkit-scrollbar-track { background: var(--ink-2); }
@@ -743,7 +791,7 @@ const PANMODES=[
 const STR_COLORS=['#ef5350','#f2a33d','#c6d43f','#4cc178','#4f9dea','#a563d4'];
 let dispOffsets=[0,0,0,0,0,0];   // the pitch offsets currently shown (base tuning + engaged pedal bends)
 
-function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; if(!s.ap||typeof s.ap!=='object'){ s.ap={...AP_DEFAULTS}; if(typeof s.autoPanRate==='number') s.ap.rate=s.autoPanRate; } else { for(const k in AP_DEFAULTS) if(!(k in s.ap)) s.ap[k]=AP_DEFAULTS[k]; if(s.ap.char==='none') s.ap.char='rotate'; } return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, ap:{...AP_DEFAULTS}, ...AB_DEFAULTS}; }
+function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; if(!s.ap||typeof s.ap!=='object'){ s.ap={...AP_DEFAULTS}; if(typeof s.autoPanRate==='number') s.ap.rate=s.autoPanRate; } else { for(const k in AP_DEFAULTS) if(!(k in s.ap)) s.ap[k]=AP_DEFAULTS[k]; if(s.ap.char==='none') s.ap.char='rotate'; } if(s.pedalSkin!=='classic'&&s.pedalSkin!=='blueprint') s.pedalSkin='blueprint'; return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, ap:{...AP_DEFAULTS}, pedalSkin:'blueprint', ...AB_DEFAULTS}; }
 function saveSettingsLS(){ localStorage.setItem('vg800_settings', JSON.stringify(settings)); }
 function loadCustom(){ try{ return JSON.parse(localStorage.getItem('vg800_custom'))||[]; }catch(e){ return []; } }
 function saveCustomLS(){ localStorage.setItem('vg800_custom', JSON.stringify(customs)); }
@@ -969,12 +1017,8 @@ function keymapHTML(){
     <label class="latch-tog"><input type="checkbox" id="latchChk"${settings.latch?' checked':''}><span>Latch — tap on/off instead of holding</span></label>
     <div class="kb-chips">${chips}<button class="kb-chip kb-reset" data-reset="1"><span class="kb-cname">Reset</span><span class="kb-key">↺</span></button></div>`;
 }
-function renderPedals(){
-  const wrap=document.getElementById('pedalWrap'); if(!wrap) return;
-  curInfo=chordInfo(baseOffsets, active); if(steelRoot!=null) curInfo.root=steelRoot;   // pedal-steel forces the real root
-  rebuildKeymap();
-  ctrlStateCache={};
-  copedent.controls.forEach(c=>{ ctrlStateCache[c.id]=controlState(c,curInfo,baseOffsets); });
+function semisToStep(s){ const sign=s<0?'−':'+'; const a=Math.abs(s), whole=Math.floor(a/2), half=a%2; let t=''; if(whole) t+=whole; if(half) t+='½'; return sign+(t||'0'); }  // 2 semitones = 1 whole step
+function pedalsClassicHTML(){
   const info = curInfo.root==null
     ? 'No chord root here — pedals disabled.'
     : `Chord: root <b>${NOTE[curInfo.root]}</b> · 3rd <b>${NOTE[(curInfo.root+4)%12]}</b> · 5th <b>${NOTE[(curInfo.root+7)%12]}</b>`;
@@ -984,9 +1028,44 @@ function renderPedals(){
   if(foot)  html+=`<div class="fam-name">Foot Pedals</div><div class="pedals">${foot}</div>`;
   if(knee)  html+=`<div class="fam-name">Knee Levers</div><div class="pedals">${knee}</div>`;
   if(combo) html+=`<div class="fam-name">Combos</div><div class="pedals">${combo}</div>`;
-  html+=keymapHTML();
-  wrap.innerHTML=html;
-  wrap.querySelectorAll('.pedal').forEach(b=>{
+  return html;
+}
+function pedalsBlueprintHTML(){                                    // schematic copedent: strings × controls, rods + step tabs
+  const ctrls=copedent.controls, N=ctrls.length;
+  const sub = steelInst
+    ? `TUNED TO ${steelInst.name} · STRINGS ${WINDOWS[steelWin].label}`
+    : (curInfo.root!=null ? `ROOT ${NOTE[curInfo.root]} · 3RD ${NOTE[(curInfo.root+4)%12]} · 5TH ${NOTE[(curInfo.root+7)%12]}` : 'NO CHORD ROOT — PEDALS IDLE');
+  const meta = ctrls.map(c=>{ const st=ctrlStateCache[c.id], aff={}; let maxA=-1; if(st.avail) st.moves.forEach(m=>{ aff[m.i]=m; if(m.i>maxA) maxA=m.i; }); return {c, st, aff, maxA}; });
+  let cells = `<div class="bp-corner">STR</div>`;
+  cells += meta.map(({c,st})=>{ const key=(keyFor(c.id)||'').toUpperCase(), dis=!st.avail;
+    return `<button class="bp-pedal g-${c.group}${dis?' disabled':''}" data-ctrl="${c.id}"${dis?' aria-disabled="true"':''}>
+      <span class="bp-ptag">${c.group}</span>
+      <span class="bp-pname">${c.name}${key?`<i class="bp-pkey">${key}</i>`:''}</span>
+      <span class="bp-pact">${dis?`${c.act} · ${st.why||'n/a here'}`:c.act}</span>
+    </button>`; }).join('');
+  for(let s=0;s<6;s++){
+    const n=nameOf(STD_MIDI[s]+baseOffsets[s]);
+    cells += `<div class="bp-slbl"><b>${SLBL[s]}</b><span>${n.name}${n.oct}</span></div>`;
+    cells += meta.map(({c,st,aff,maxA})=>{ const rod=st.avail&&s<=maxA, m=aff[s];
+      const tab = m ? `<span class="bp-tab ${m.bend>=0?'up':'dn'}${m.ok?'':' bad'}" title="${nameOf(m.from).name}→${nameOf(m.to).name}">${semisToStep(m.bend)}<i>${nameOf(m.to).name}</i></span>` : '';
+      return `<div class="bp-cell${rod?' rod':''}${st.avail?'':' dis'}" data-ctrl="${c.id}">${tab}</div>`; }).join('');
+  }
+  const legend = `<div class="bp-legend"><b>KEY</b><span>+ raise</span><span>− lower</span><span>½ half-step</span><span>1 whole-step</span></div>`;
+  return `<div class="bp">
+    <div class="bp-head"><div class="bp-title">PEDALS <em>${sub}</em></div>${legend}</div>
+    <div class="bp-grid" style="grid-template-columns:52px repeat(${N},minmax(64px,1fr))">${cells}</div>
+  </div>`;
+}
+function renderPedals(){
+  const wrap=document.getElementById('pedalWrap'); if(!wrap) return;
+  curInfo=chordInfo(baseOffsets, active); if(steelRoot!=null) curInfo.root=steelRoot;   // pedal-steel forces the real root
+  rebuildKeymap();
+  ctrlStateCache={};
+  copedent.controls.forEach(c=>{ ctrlStateCache[c.id]=controlState(c,curInfo,baseOffsets); });
+  const skin = settings.pedalSkin==='classic' ? 'classic' : 'blueprint';
+  const toggle = `<div class="pskin"><button class="seg-b${skin==='blueprint'?' on':''}" data-skin="blueprint">Blueprint</button><button class="seg-b${skin==='classic'?' on':''}" data-skin="classic">Classic</button></div>`;
+  wrap.innerHTML = toggle + (skin==='classic'?pedalsClassicHTML():pedalsBlueprintHTML()) + keymapHTML();
+  wrap.querySelectorAll('button[data-ctrl]').forEach(b=>{                 // hold-to-bend on the pedal boxes (both skins)
     if(b.classList.contains('disabled')) return;
     const ctrl=b.dataset.ctrl;
     b.addEventListener('pointerdown', e=>{ e.preventDefault(); try{ b.setPointerCapture(e.pointerId); }catch(_){}; pressCtrl(ctrl); });
@@ -994,7 +1073,8 @@ function renderPedals(){
     b.addEventListener('pointercancel', ()=> releaseCtrl(ctrl));
     b.addEventListener('lostpointercapture', ()=> releaseCtrl(ctrl));
   });
-  wrap.querySelectorAll('.pedal').forEach(b=> b.classList.toggle('on', held.has(b.dataset.ctrl)));  // keep latched state after re-render
+  document.querySelectorAll('#pedalWrap [data-ctrl]').forEach(b=> b.classList.toggle('on', held.has(b.dataset.ctrl)));  // reflect engaged pedals (boxes + schematic cells)
+  wrap.querySelectorAll('.pskin [data-skin]').forEach(b=> b.addEventListener('click', ()=>{ settings.pedalSkin=b.dataset.skin; saveSettingsLS(); renderPedals(); }));
   const latchEl=wrap.querySelector('#latchChk');
   if(latchEl) latchEl.addEventListener('change', e=>{ settings.latch=e.target.checked; saveSettingsLS(); updatePedalHint(); });
   wrap.querySelectorAll('.kb-chip[data-bind]').forEach(b=> b.addEventListener('click', ()=>{ bindingCtrl=b.dataset.bind; renderPedals(); }));
@@ -1003,7 +1083,7 @@ function renderPedals(){
 function setCtrl(ctrl,on){
   const st=ctrlStateCache[ctrl];
   if(on){ if(!st||!st.avail) return; held.add(ctrl); } else held.delete(ctrl);
-  document.querySelectorAll('#pedalWrap .pedal').forEach(b=> b.classList.toggle('on', held.has(b.dataset.ctrl)));
+  document.querySelectorAll('#pedalWrap [data-ctrl]').forEach(b=> b.classList.toggle('on', held.has(b.dataset.ctrl)));
   const bends=bendsFromEngaged();
   const eff=baseOffsets.map((o,i)=> o+bends[i]);
   if(midiOut) send(eff);
@@ -1476,7 +1556,7 @@ document.getElementById('saveSettings').addEventListener('click',()=>{
   const num=(id,lo,hi,d)=>{ const v=+document.getElementById(id).value; return isNaN(v)?d:Math.max(lo,Math.min(hi,v)); };
   const ab={ autoBend:document.getElementById('autoBendChk').checked, bendCC:num('bendCCInput',0,127,69), levelCC:num('levelCCInput',0,127,70), bendDepth:num('bendDepthInput',0,50,25), levelDip:num('levelDipInput',0,50,15), bendMs:num('bendMsInput',40,400,120) };
   const panCCs=[]; document.querySelectorAll('#panCcRows select').forEach(x=>panCCs[+x.dataset.pcc]=Math.max(1,Math.min(127,+x.value||1)));
-  settings={channel:ch,ccs,gap:settings.gap??20,glide:0,keys:settings.keys,latch:settings.latch,panCCs,panMs:settings.panMs,ap:settings.ap, ...ab}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
+  settings={channel:ch,ccs,gap:settings.gap??20,glide:0,keys:settings.keys,latch:settings.latch,panCCs,panMs:settings.panMs,ap:settings.ap,pedalSkin:settings.pedalSkin, ...ab}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
 });
 
 function applyTest(v){
