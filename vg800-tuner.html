@@ -246,7 +246,7 @@
   #sideNav .bench-head { padding: 0 8px 9px; }
   #sideNav .bench-head .name { font-size: 15px; }
   #sideNav .bench-head .lbl { font-size: 8px; letter-spacing: 2px; }
-  #sideNav .str { grid-template-columns: 34px 1fr 24px; height: 25px; padding: 0 8px; }
+  #sideNav .str { grid-template-columns: 46px 1fr 24px; height: 25px; padding: 0 8px; }
   #sideNav .str-lbl { font-size: 9px; letter-spacing: 0; }
   #sideNav .slide { min-width: 21px; height: 17px; font-size: 11px; padding: 0 4px; border-radius: 4px; }
   #sideNav .slide .oct { font-size: 7px; }
@@ -282,41 +282,13 @@
   .panmode { font-family: var(--mono); font-size: 11px; font-weight: 700; padding: 10px 8px; border-radius: 8px; cursor: pointer; border: 1px solid var(--edge); background: var(--wood); color: var(--bone-dim); transition: all .12s; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 5px rgba(0,0,0,0.28); }
   .panmode:hover { border-color: var(--brass); color: var(--bone); background: var(--felt); transform: translateY(-1px); }
   .panmode.on { border-color: var(--brass); color: var(--brass); background: var(--felt); box-shadow: inset 0 0 0 1px var(--brass-glow); }
-  .panbench { background: linear-gradient(180deg, var(--felt), var(--wood)); border: 1px solid var(--edge); border-radius: 14px; padding: 20px 18px 16px; margin-bottom: 30px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 16px 40px rgba(0,0,0,0.35); }
-  .panbench .bench-head { padding: 0 0 12px; }
-  .pan-scale { display: flex; justify-content: space-between; padding: 0 30px 0 58px; margin-bottom: 8px; font-family: var(--mono); font-size: 9px; color: var(--bone-faint); letter-spacing: 1px; }
-  .pan-row { display: grid; grid-template-columns: 58px 1fr 30px; align-items: center; height: 32px; }
-  .pan-track { position: relative; height: 4px; background: var(--ink); border-radius: 2px; }
-  .pan-mid { position: absolute; left: 50%; top: -5px; bottom: -5px; width: 1px; background: var(--edge); }
-  .pan-dot { position: absolute; top: 50%; width: 15px; height: 15px; border-radius: 50%; background: var(--brass); transform: translate(-50%,-50%); box-shadow: 0 2px 5px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.4); transition: left 0.35s cubic-bezier(.34,1.35,.5,1), background 0.2s; }
-  .pan-dot.l { background: var(--steel-blue); } .pan-dot.r { background: var(--amber); }
-  .pan-side { font-family: var(--mono); font-size: 10px; font-weight: 700; color: var(--bone-faint); text-align: right; }
-
-  /* Overview — Linked Twin Views */
-  #sec-overview { scroll-margin-top: 24px; }
-  .tv-panel { background: linear-gradient(180deg, var(--felt), var(--wood)); border: 1px solid var(--edge); border-radius: 16px; padding: 20px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 16px 40px rgba(0,0,0,0.35); }
-  .tv-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-  .tv-badge { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--brass-deep); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; flex-shrink: 0; }
-  .tv-badge i { width: 15px; height: 3px; border-radius: 2px; background: var(--brass); }
-  .tv-title { font-family: var(--cond); font-weight: 700; font-size: 20px; text-transform: uppercase; letter-spacing: 0.3px; color: var(--bone); }
-  .tv-title em { font-style: normal; color: var(--brass); }
-  .tv-sync { margin-left: auto; font-family: var(--mono); font-size: 10px; color: var(--brass-deep); letter-spacing: 1px; white-space: nowrap; }
-  .tv-desc { font-family: var(--sans); font-size: 12px; color: var(--bone-dim); line-height: 1.55; margin: 0 0 16px; }
-  .tv-pan { background: var(--ink); border: 1px solid var(--edge-soft); border-radius: 12px; padding: 10px 16px 12px; margin-bottom: 12px; }
-  .tv-scale { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 9px; color: var(--bone-faint); letter-spacing: 1px; margin-bottom: 4px; }
-  .tv-panfield { position: relative; height: 62px; }
-  .tv-panmid { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--edge); }
-  .tv-dot { position: absolute; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--cond); font-weight: 700; font-size: 12px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.65); transform: translateX(-50%); box-shadow: 0 2px 6px rgba(0,0,0,0.55); border: 2px solid rgba(0,0,0,0.28); transition: left 0.35s cubic-bezier(.34,1.35,.5,1); }
-  .tv-neck { background: var(--ink); border: 1px solid var(--edge-soft); border-radius: 12px; padding: 12px 16px; }
-  .tv-row { display: grid; grid-template-columns: 20px 1fr 34px; align-items: center; height: 30px; }
-  .tv-swatch { width: 11px; height: 11px; border-radius: 50%; box-shadow: 0 0 6px rgba(0,0,0,0.4); }
-  .tv-line { position: relative; height: 100%; display: flex; align-items: center; }
-  .tv-line::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 2px; background: var(--edge); transform: translateY(-50%); border-radius: 2px; }
-  .tv-note { position: absolute; top: 50%; transform: translate(-50%, -50%); background: linear-gradient(180deg, #f2ede3, #cfc9bd); color: var(--ink); font-family: var(--cond); font-weight: 700; font-size: 13px; padding: 1px 7px; border-radius: 4px; min-width: 24px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.45); transition: left 0.35s cubic-bezier(.34,1.35,.5,1), background 0.2s; z-index: 2; }
-  .tv-note.sharp { background: linear-gradient(180deg, #ffdca6, #e8913c); }
-  .tv-note.flat { background: linear-gradient(180deg, #cfe3f2, #7fa8c9); }
-  .tv-off { font-family: var(--mono); font-size: 11px; text-align: right; color: var(--bone-faint); }
-  .tv-off.sharp { color: var(--amber); } .tv-off.flat { color: var(--steel-blue); }
+  /* Combined compact view — pan strip linked by fixed per-string color to the pitch neck below */
+  .cv-pan { margin: 4px 6px 11px; }
+  .cv-scale { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 8px; color: var(--bone-faint); letter-spacing: 1px; padding: 0 3px; margin-bottom: 4px; }
+  .cv-panfield { position: relative; height: 48px; background: var(--ink); border: 1px solid var(--edge-soft); border-radius: 9px; }
+  .cv-panmid { position: absolute; left: 50%; top: 5px; bottom: 5px; width: 1px; background: var(--edge); }
+  .cv-dot { position: absolute; width: 17px; height: 17px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--cond); font-weight: 700; font-size: 10px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.6); transform: translateX(-50%); box-shadow: 0 1px 4px rgba(0,0,0,0.55); border: 1.5px solid rgba(0,0,0,0.3); transition: left 0.35s cubic-bezier(.34,1.35,.5,1); }
+  .str-sw { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; vertical-align: middle; box-shadow: 0 0 4px rgba(0,0,0,0.4); }
   .cllbl { font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--bone-dim); letter-spacing: 0.5px; }
   .clbtn.on .cllbl { color: var(--brass); }
 
@@ -491,12 +463,14 @@
   </div>
   <div id="panWrap"></div>
 
-  <div id="sec-overview" style="margin-top:22px"></div>
-
   <div class="bench" id="sec-current">
     <div class="bench-head">
       <span class="name std" id="nowName">Standard</span>
       <span class="lbl">Current Tuning</span>
+    </div>
+    <div class="cv-pan">
+      <div class="cv-scale"><span>L</span><span>C</span><span>R</span></div>
+      <div class="cv-panfield"><span class="cv-panmid"></span><div id="cvDots"></div></div>
     </div>
     <div id="strings"></div>
   </div>
@@ -741,7 +715,7 @@ function renderStrings(offsets){
     wrap.innerHTML='';
     for(let i=0;i<6;i++){
       const row=document.createElement('div'); row.className='str'; row.dataset.g=(6-i);
-      row.innerHTML=`<span class="str-lbl">STR <b>${SLBL[i]}</b></span><span class="wire"><span class="slide"><span class="sl-name"></span><span class="oct"></span></span></span><span class="str-off"></span>`;
+      row.innerHTML=`<span class="str-lbl"><i class="str-sw" style="background:${STR_COLORS[i]}"></i>STR <b>${SLBL[i]}</b></span><span class="wire"><span class="slide"><span class="sl-name"></span><span class="oct"></span></span></span><span class="str-off"></span>`;
       wrap.appendChild(row);
     }
   }
@@ -983,8 +957,7 @@ function renderNav(){
     +'<a class="sub" href="#sec-steel">Pedal Steel</a>'
     +'<a class="sub" href="#sec-strings">Transpose</a>'
     +'<a class="group" href="#sec-pedals">Steel Pedals</a>'
-    +'<a class="group" href="#sec-pan">Panning</a>'
-    +'<a class="group" href="#sec-overview">Overview</a>';
+    +'<a class="group" href="#sec-pan">Panning</a>';
   updateSpy();
 }
 function placeBench(){
@@ -1087,63 +1060,29 @@ function applyPan(id){
   activePan=id;
   if(midiOut){ const st=0xB0|((settings.channel-1)&0x0F); m.pos.forEach((p,i)=> midiOut.send([st, settings.panCCs[i]&0x7F, panToCC(p)&0x7F])); }
   document.querySelectorAll('.panmode').forEach(b=> b.classList.toggle('on', b.dataset.pan===id));
-  const pn=document.getElementById('panName'); if(pn) pn.textContent=m.name;
-  updatePanDisplay(m.pos); updateOverview();
-}
-function updatePanDisplay(pos){
-  const wrap=document.getElementById('panRows'); if(!wrap) return;
-  if(wrap.children.length!==6){
-    wrap.innerHTML='';
-    for(let i=0;i<6;i++){ const r=document.createElement('div'); r.className='pan-row';
-      r.innerHTML=`<span class="str-lbl">STR <b>${SLBL[i]}</b></span><span class="pan-track"><span class="pan-mid"></span><span class="pan-dot"></span></span><span class="pan-side"></span>`; wrap.appendChild(r); }
-  }
-  for(let i=0;i<6;i++){ const p=pos[i], row=wrap.children[i], dot=row.querySelector('.pan-dot');
-    dot.style.left=((p+1)/2*100)+'%'; dot.className='pan-dot '+(p<-0.03?'l':p>0.03?'r':'');
-    row.querySelector('.pan-side').textContent = p<-0.03?('L'+Math.round(-p*50)) : p>0.03?('R'+Math.round(p*50)) : 'C'; }
+  updateOverview();
 }
 function renderPan(){
   const wrap=document.getElementById('panWrap'); if(!wrap) return;
-  const cur=PANMODES.find(m=>m.id===activePan)||PANMODES[0];
   const btns=PANMODES.map(m=>`<button class="panmode${activePan===m.id?' on':''}" data-pan="${m.id}">${m.name}</button>`).join('');
-  wrap.innerHTML=`<div class="panmodes">${btns}</div>
-    <div class="panbench"><div class="bench-head"><span class="name" id="panName">${cur.name}</span><span class="lbl">Stereo Field</span></div>
-    <div class="pan-scale"><span>L</span><span>C</span><span>R</span></div>
-    <div id="panRows"></div></div>`;
-  updatePanDisplay(cur.pos);
+  wrap.innerHTML=`<div class="panmodes">${btns}</div>`;
   wrap.querySelectorAll('.panmode').forEach(b=>{
     b.addEventListener('click',()=>applyPan(b.dataset.pan));
-    b.addEventListener('mouseenter',()=>{ const m=PANMODES.find(x=>x.id===b.dataset.pan); if(m){ updatePanDisplay(m.pos); const pn=document.getElementById('panName'); if(pn) pn.textContent=m.name; } });
-    b.addEventListener('mouseleave',()=>{ const m=PANMODES.find(x=>x.id===activePan); if(m){ updatePanDisplay(m.pos); const pn=document.getElementById('panName'); if(pn) pn.textContent=m.name; } });
+    b.addEventListener('mouseenter',()=>{ const m=PANMODES.find(x=>x.id===b.dataset.pan); if(m) updateOverview(m.pos); });   // preview in the sidebar
+    b.addEventListener('mouseleave',()=> updateOverview());
   });
 }
-/* ===== Overview — Linked Twin Views (pan field + pitch neck, joined by fixed per-string colors) ===== */
-function updateOverview(){
-  const neck=document.getElementById('tvNeck'), dots=document.getElementById('tvDots'); if(!neck||!dots) return;
-  const pan=(PANMODES.find(m=>m.id===activePan)||PANMODES[0]).pos;
-  for(let i=0;i<6;i++){
-    const s=dispOffsets[i], dir=s<0?'flat':s>0?'sharp':'', row=neck.children[i];
-    if(row){
-      const note=row.querySelector('.tv-note');
-      note.style.left=Math.max(4,Math.min(96,50+(s/12)*44))+'%';
-      note.textContent=nameOf(STD_MIDI[i]+s).name; note.className='tv-note '+dir;
-      const off=row.querySelector('.tv-off'); off.textContent=s===0?'·':(s>0?'+'+s:''+s); off.className='tv-off '+dir;
-    }
-    const d=dots.children[i]; if(d) d.style.left=(8+(pan[i]+1)/2*84)+'%';
+/* ===== Combined view — pan dots (top strip) linked by fixed per-string color to the pitch neck (renderStrings, below).
+   Lives in #sec-current, which placeBench() parks in the sidebar on wide screens. ===== */
+function updateOverview(posOverride){
+  const dots=document.getElementById('cvDots'); if(!dots) return;
+  if(dots.children.length!==6){                    // build the six colored, numbered pan dots once…
+    dots.innerHTML='';
+    for(let i=0;i<6;i++){ const d=document.createElement('div'); d.className='cv-dot';
+      d.style.background=STR_COLORS[i]; d.style.top=(4+i*5)+'px'; d.textContent=(i+1); dots.appendChild(d); }
   }
-}
-function renderOverview(){
-  const wrap=document.getElementById('sec-overview'); if(!wrap) return;
-  wrap.innerHTML=`<div class="tv-panel">
-    <div class="tv-head"><span class="tv-badge"><i></i><i></i></span><h2 class="tv-title">Linked <em>Twin Views</em></h2><span class="tv-sync">synced by color</span></div>
-    <p class="tv-desc">Both editors stay separate but linked: every string keeps a fixed color used in both. Top = pan field, bottom = pitch neck — your eye connects the same-colored dot across the two.</p>
-    <div class="tv-pan"><div class="tv-scale"><span>L</span><span>C</span><span>R</span></div><div class="tv-panfield"><div class="tv-panmid"></div><div id="tvDots"></div></div></div>
-    <div class="tv-neck" id="tvNeck"></div></div>`;
-  const neck=document.getElementById('tvNeck');
-  for(let i=0;i<6;i++){ const r=document.createElement('div'); r.className='tv-row';
-    r.innerHTML=`<span class="tv-swatch" style="background:${STR_COLORS[i]}"></span><span class="tv-line"><span class="tv-note"></span></span><span class="tv-off"></span>`; neck.appendChild(r); }
-  const dots=document.getElementById('tvDots');
-  for(let i=0;i<6;i++){ const d=document.createElement('div'); d.className='tv-dot'; d.style.background=STR_COLORS[i]; d.style.top=(4+i*6)+'px'; d.textContent=(i+1); dots.appendChild(d); }
-  updateOverview();
+  const pan=posOverride||(PANMODES.find(m=>m.id===activePan)||PANMODES[0]).pos;
+  for(let i=0;i<6;i++){ const d=dots.children[i]; if(d) d.style.left=(8+(pan[i]+1)/2*84)+'%'; }   // …then slide L↔R
 }
 function notesOf(offsets){ return offsets.map((s,i)=>nameOf(STD_MIDI[i]+s).name).reverse().join(' '); }
 function apply(t){
@@ -1269,7 +1208,6 @@ renderPedals();
 renderEthnic();
 renderSteel();
 renderPan();
-renderOverview();
 placeBench();
 updatePedalHint();
 initMIDI();
