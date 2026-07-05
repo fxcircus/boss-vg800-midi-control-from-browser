@@ -587,6 +587,8 @@
   .user-tool svg { width: 14px; height: 14px; flex-shrink: 0; }
   .user-tool.primary { background: var(--brass); color: var(--ink); border-color: var(--brass); }
   .user-tool.primary:hover { filter: brightness(1.07); color: var(--ink); }
+  .user-tool:disabled { opacity: .4; cursor: default; }
+  .user-tool:disabled:hover { border-color: var(--edge); color: var(--bone-dim); filter: none; }
   .user-empty { font-family: var(--mono); font-size: 11px; color: var(--bone-faint); text-align: center; padding: 6px 6px 14px; line-height: 1.7; }
   .ucard-badges { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
   .ubadge { font-family: var(--mono); font-size: 8.5px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; background: var(--ink); color: var(--bone-faint); border: 1px solid var(--edge-soft); }
@@ -710,14 +712,6 @@
     <div id="testBtns"></div>
   </fieldset>
 
-  <div id="lapWrap"></div>
-
-  <fieldset class="panel" id="sec-steel">
-    <legend class="panel-hd">Pedal Steel</legend>
-    <div class="panel-sub">6 of 10 strings</div>
-    <div id="steelWrap"></div>
-  </fieldset>
-
   <fieldset class="panel" id="sec-user">
     <legend class="panel-hd">User</legend>
     <div class="panel-sub">Your own tunings · saved on this device</div>
@@ -728,6 +722,14 @@
     </div>
     <div id="userGrid"></div>
     <input type="file" id="userFile" accept="application/json,.json" hidden>
+  </fieldset>
+
+  <div id="lapWrap"></div>
+
+  <fieldset class="panel" id="sec-steel">
+    <legend class="panel-hd">Pedal Steel</legend>
+    <div class="panel-sub">6 of 10 strings</div>
+    <div id="steelWrap"></div>
   </fieldset>
 
   <fieldset class="panel" id="sec-pedals">
@@ -1379,7 +1381,7 @@ function renderGrid(){
       const hd=document.createElement('legend'); hd.className='panel-hd'; hd.textContent=sec; block.appendChild(hd);
       const body=document.createElement('div'); body.className='lapsec-body';
       while(i<all.length && all[i].section===sec){ body.appendChild(famBlock(all[i], !!all[i].custom)); i++; }
-      block.appendChild(body); (lap||wrap).appendChild(block);   // Lap Steel renders in its own section (between Ethnic and Pedal Steel)
+      block.appendChild(body); (lap||wrap).appendChild(block);   // Lap Steel renders in its own section (#lapWrap, between User and Pedal Steel)
     } else { wrap.appendChild(famBlock(f, !!f.custom, true)); i++; }
   }
   renderUser();
@@ -1404,9 +1406,9 @@ function renderNav(){
   box.innerHTML='<a class="group" href="#sec-tunings">'+I.tunings+'Tunings</a>'+links
     +'<a class="sub" href="#sec-ethnic">Ethnic</a>'
     +'<a class="sub" href="#sec-strings">Transpose</a>'
+    +'<a class="sub" href="#sec-user">User</a>'
     + sections                                       // Lap Steel
     +'<a class="sub" href="#sec-steel">Pedal Steel</a>'
-    +'<a class="sub" href="#sec-user">User</a>'
     +'<a class="group" href="#sec-pedals">'+I.pedals+'Bends</a>'
     +'<a class="group" href="#sec-pan">'+I.pan+'Panning</a>';
   const jm=document.getElementById('jumpMenu'); if(jm) jm.innerHTML=box.innerHTML;   // mobile menu mirrors the sidebar
