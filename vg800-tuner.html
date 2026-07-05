@@ -298,6 +298,11 @@
   .panmode { font-family: var(--mono); font-size: 11px; font-weight: 700; padding: 10px 8px; border-radius: 8px; cursor: pointer; border: 1px solid var(--edge); background: var(--wood); color: var(--bone-dim); transition: all .12s; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 5px rgba(0,0,0,0.28); }
   .panmode:hover { border-color: var(--brass); color: var(--bone); background: var(--felt); transform: translateY(-1px); }
   .panmode.on { border-color: var(--brass); color: var(--brass); background: var(--felt); box-shadow: inset 0 0 0 1px var(--brass-glow); }
+  /* Auto-pan toggle — a distinct dashed chip in the pan-modes grid (not a static placement) */
+  .panmode.autopan { border-style: dashed; border-color: var(--brass-deep); color: var(--brass); background: transparent; }
+  .panmode.autopan:hover { border-color: var(--brass); background: var(--felt); transform: translateY(-1px); }
+  .panmode.autopan.on { color: var(--ink); background: linear-gradient(180deg, var(--brass), var(--brass-deep)); border-color: var(--brass-deep); box-shadow: 0 0 0 1px var(--brass-glow), 0 3px 12px var(--brass-glow); }
+  .apsub { font-family: var(--mono); font-size: 10px; color: var(--bone-faint); letter-spacing: 0.4px; margin: 2px 2px 0; }
   /* Pan-glide duration slider — lives in the Panning section itself */
   .glide-row { margin: 12px 2px 4px; }                 /* Pan glide — bare, grouped with the manual placement controls */
   .pg-lbl { display: flex; justify-content: space-between; align-items: baseline; font-family: var(--mono); font-size: 11px; color: var(--bone-dim); letter-spacing: 0.3px; margin-bottom: 9px; }
@@ -1211,7 +1216,7 @@ function applyPan(id){
   const wasAuto=autoPanOn;
   if(autoPanOn) stopAutoPan();
   activePan=id;
-  if(wasAuto){ const c=document.getElementById('autoPanChk'); if(c) c.checked=false; renderPan(); }   // picking a preset exits auto-pan → revert the UI
+  if(wasAuto){ renderPan(); }   // picking a preset exits auto-pan → revert the UI (Auto-pan button de-activates)
   else document.querySelectorAll('.panmode[data-pan]').forEach(b=> b.classList.toggle('on', b.dataset.pan===id));
   panGlide(m.pos.slice());
 }
@@ -1303,8 +1308,9 @@ function renderPan(){
         <div><div class="pg-lbl"><span>Spread</span><b id="apLBSv">${Math.round(a.lBotSpread*100)}%</b></div><input type="range" class="slider" id="apLBS" min="0" max="100" value="${Math.round(a.lBotSpread*100)}"></div>
         <div><div class="pg-lbl"><span>Speed</span><b id="apLBZv">${a.lBotSpeed.toFixed(2)}×</b></div><input type="range" class="slider" id="apLBZ" min="25" max="200" value="${Math.round(a.lBotSpeed*100)}"></div>
       </div>` : '';
-  const autoBody=`<div id="apBody"${autoPanOn?'':' hidden'}>
-      <div class="apcap" style="margin-top:2px">Character</div>
+  const autoBody=`<div id="apBody">
+      <p class="apsub">Each string sweeps the stereo field</p>
+      <div class="apcap" style="margin-top:10px">Character</div>
       <div class="panmodes">${charBtns}</div>
       <p class="apdesc">${AP_CHARDESC[a.char]||''}</p>
       ${leslieBlock}
@@ -1331,16 +1337,14 @@ function renderPan(){
         </div>
       </details>
     </div>`;
+  const autoBtn=`<button class="panmode autopan${autoPanOn?' on':''}" data-autopan title="Toggle auto-pan">Auto-pan</button>`;
   wrap.innerHTML=`<div class="apcap" style="margin-top:0">Manual placement</div>
-    <div class="panmodes">${btns}</div>
+    <div class="panmodes">${btns}${autoBtn}</div>
     ${autoPanOn?'':glideBlock}
-    <div class="pan-auto">
-      <label class="latch-tog aphdr" style="margin-bottom:${autoPanOn?'4px':'0'}"><input type="checkbox" id="autoPanChk"${autoPanOn?' checked':''}><span>Auto-pan — each string sweeps the stereo field</span></label>
-      ${autoBody}
-    </div>`;
+    ${autoPanOn?`<div class="pan-auto">${autoBody}</div>`:''}`;
   wrap.querySelectorAll('[data-pan]').forEach(b=> b.addEventListener('click',()=>applyPan(b.dataset.pan)));
-  const ap=document.getElementById('autoPanChk');
-  if(ap) ap.addEventListener('change',()=>{ if(ap.checked){ startAutoPan(); renderPan(); ensurePanVisible(); } else { stopAutoPan(); renderPan(); applyPan(activePan); } });
+  const apbtn=wrap.querySelector('[data-autopan]');
+  if(apbtn) apbtn.addEventListener('click',()=>{ if(!autoPanOn){ startAutoPan(); renderPan(); ensurePanVisible(); } else { stopAutoPan(); renderPan(); applyPan(activePan); } });
   const pg=document.getElementById('panGlide'), pgv=document.getElementById('panGlideVal');
   if(pg) pg.addEventListener('input',()=>{ settings.panMs=+pg.value; if(pgv) pgv.textContent=glideLbl(settings.panMs); saveSettingsLS(); });
   const fineHint=()=>{ const h=document.getElementById('apFineHint'); if(h) h.textContent=spreadLbl(settings.ap.spread)+' · '+Math.round(settings.ap.width*100)+'%'; };
