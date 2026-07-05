@@ -711,7 +711,12 @@ const AB_DEFAULTS={autoBend:true, bendCC:69, levelCC:70, bendDepth:25, levelDip:
 const AP_DEFAULTS={mode:'free', rate:15, bpm:120, div:'1/2 bar', width:0.65, shape:'sine', spread:1, char:'rotate', lTopSpread:1, lTopSpeed:1.12, lBotSpread:0.5, lBotSpeed:0.86};  // auto-pan engine (gentle defaults; l* = Leslie per-rotor spread/speed)
 
 const FAMILIES = [
-  { family:'Standard', tunings:[ {name:'Standard', notes:'E A D G B E', offsets:[0,0,0,0,0,0]} ]},
+  { family:'Common', tunings:[
+    {name:'Standard', notes:'E A D G B E', offsets:[0,0,0,0,0,0]},
+    {name:'DADGAD', notes:'D A D G A D', offsets:[-2,-2,0,0,0,-2]},       // D-modal
+    {name:'Nashville', notes:'E A D G B E', offsets:[0,0,12,12,12,12]},   // high-strung: low 4 up an octave
+    {name:'Baritone', notes:'B E A D F# B', offsets:[-5,-5,-5,-5,-5,-5]},  // B Standard: whole guitar down a 4th
+  ]},
   { family:'6th Family', section:'Lap Steel', tunings:[
     {name:'C6', notes:'C E G A C E', offsets:[0,1,2,5,-5,-4]},
     {name:'A6', notes:'C# E F# A C# E', offsets:[0,2,2,4,-5,-3]},
@@ -741,12 +746,6 @@ const FAMILIES = [
     {name:'Drop B', notes:'B Gb B E Ab Db', offsets:[-3,-3,-3,-3,-3,-5]},
     {name:'Drop Bb', notes:'Bb F Bb Eb G C', offsets:[-4,-4,-4,-4,-4,-6]},
     {name:'Drop A', notes:'A E A D F# B', offsets:[-5,-5,-5,-5,-5,-7]},
-  ]},
-  { family:'Specialties', tunings:[
-    {name:'DADGAD', notes:'D A D G A D', offsets:[-2,-2,0,0,0,-2]},       // D-modal
-    {name:'Nashville', notes:'E A D G B E', offsets:[0,0,12,12,12,12]},   // high-strung: low 4 up an octave
-    {name:'Baritone', notes:'B E A D F# B', offsets:[-5,-5,-5,-5,-5,-5]},  // B Standard: whole guitar down a 4th
-    {name:'Banjo', notes:'D G D G B D', offsets:[-2,0,0,0,-2,-2]},         // open-G 5-string banjo voicing
   ]},
   { family:'Artists', tunings:[
     {name:'NST', notes:'C G D A E G', offsets:[3,5,2,0,-2,-4], ref:'Robert Fripp · New Standard Tuning (all fifths)'},
@@ -779,6 +778,7 @@ const ETHNIC=[
   {name:'Saz / Bağlama', pitches:[47,52,57], notes:'B E A', ref:'Turkish Folk · short neck'},
   {name:'Cavaquinho', pitches:[62,67,71,74], notes:'D G B D', ref:'Samba & Choro'},
   {name:'Balalaika', pitches:[64,64,69], notes:'E E A', ref:'Russian Folk Tunes'},
+  {name:'Banjo', pitches:[50,55,59,62,67], notes:'D G B D G', ref:'5-string · open G'},
 ];
 // Per-string pan positions, index 0 = high E (str 1) … 5 = low E (str 6). −1 = hard L (L50), +1 = hard R (R50).
 let activePan='center';
