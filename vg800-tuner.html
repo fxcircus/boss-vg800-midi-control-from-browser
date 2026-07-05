@@ -410,15 +410,15 @@
   .clbtn.on .cllbl { color: var(--brass); }
 
   .fam { margin-bottom: 26px; }
-  .fam-name { font-family: var(--mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--brass-deep); margin: 0 2px 12px; display: flex; align-items: center; gap: 10px; }
-  .fam-name::after { content: ""; flex: 1; height: 1px; background: var(--edge-soft); }
+  .fam-name { font-family: var(--mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--brass-deep); margin: 2px 2px 12px; display: flex; align-items: center; justify-content: center; gap: 12px; }
+  .fam-name::before, .fam-name::after { content: ""; flex: 1; height: 1px; background: var(--edge-soft); }   /* centered title with the rule cut off on both sides */
 
   /* Grouped section (e.g. Lap Steel) with visually separated sub-areas */
   .lapsec { min-width: 0; margin: 0 0 18px; border: 1px solid var(--edge); border-radius: 15px; padding: 9px 18px 3px; background: color-mix(in srgb, var(--wood) 18%, transparent); scroll-margin-top: 24px; }
   .lapsec-hd { font-family: var(--cond); font-weight: 700; font-size: 15px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--brass); margin: 0 0 16px; display: flex; align-items: center; gap: 12px; }
   .lapsec-hd::after { content: ""; flex: 1; height: 1px; background: var(--brass-deep); opacity: 0.45; }
   .lapsec-body .fam { margin-bottom: 18px; }
-  .lapsec-body .fam:not(:first-child) { padding-top: 16px; border-top: 1px solid var(--edge-soft); }
+  .lapsec-body .fam:not(:first-child) { padding-top: 6px; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
   .card {
     background: var(--wood); border: 1px solid var(--edge-soft); border-radius: 10px;
@@ -436,7 +436,7 @@
   .card-off span.flat { color: var(--steel-blue); }
   .card-off span.sharp { color: var(--amber); }
   /* Ethnic capo hint — the sounded octave differs from concert pitch (VG-800 ±12 semitone range), so guide the physical capo */
-  .card-capo { font-family: var(--mono); font-size: 9.5px; color: var(--brass); text-align: center; letter-spacing: 0.2px; margin-top: 8px; }
+  .card-capo { font-family: var(--mono); font-size: 9.5px; color: var(--brass); text-align: left; letter-spacing: 0.2px; margin-top: 8px; padding-left: 2px; }
   .card-capo.zero { color: var(--bone-faint); }
   .card-capo.high { color: var(--amber); }
   .del { position: absolute; bottom: 11px; right: 12px; font-family: var(--mono); font-size: 9px; color: var(--bone-faint); background: none; border: none; cursor: pointer; letter-spacing: 1px; opacity: 0; transition: all 0.14s; }
@@ -687,7 +687,7 @@
             <div class="cc-c"><label>Inst Level CC#</label><select class="num" id="levelCCInput"></select></div>
           </div>
         </div>
-        <p class="note-hint">Swells into each new tuning: <em>Bend Ctrl CC#</em> (VG-800 <em>STR BEND · BEND CONTROL</em>, 0–100) and <em>Inst Level CC#</em> (<em>INST · INST LEVEL</em>) dip, then rise back to 100% together with the new pitch — scooping over the jump. Best with <em>String glide</em> off.</p>
+        <p class="note-hint">Swells into each new tuning — scooping over the jump: <em>Bend Ctrl CC#</em> and <em>Inst Level CC#</em> dip, then rise back to 100% together with the new pitch.<br><br>Mapping: <em>Bend Ctrl CC#</em> → <em>STR&nbsp;BEND · BEND&nbsp;CONTROL</em> (0–100); <em>Inst Level CC#</em> → <em>INST · INST&nbsp;LEVEL</em>.<br><br>Best with <em>String glide</em> off.</p>
       </div>
     </details>
 
@@ -1423,8 +1423,7 @@ function renderPan(){
       </div>
     </div>`;
   const autoBtn=`<button class="panmode autopan${autoPanOn?' on':''}" data-autopan title="Toggle auto-pan">Auto-pan</button>`;
-  wrap.innerHTML=`<div class="apcap" style="margin-top:0">Manual placement</div>
-    <div class="panmodes">${btns}${autoBtn}</div>
+  wrap.innerHTML=`<div class="panmodes">${btns}${autoBtn}</div>
     ${autoPanOn?'':glideBlock}
     ${autoPanOn?`<div class="pan-auto">${autoBody}</div>`:''}`;
   wrap.querySelectorAll('[data-pan]').forEach(b=> b.addEventListener('click',()=>applyPan(b.dataset.pan)));
