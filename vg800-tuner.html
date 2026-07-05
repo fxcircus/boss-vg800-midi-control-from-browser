@@ -220,6 +220,8 @@
   /* Density toggle in the theme dropdown */
   .menu-sep { height: 1px; background: var(--edge-soft); margin: 6px 6px 4px; }
   .menu-tog { padding: 2px 4px 4px; }
+  .theme-menu .fam-name { margin: 4px 3px 9px; }   /* Theme / Display cut-line headers in the dropdown */
+  .theme-menu .fam-name:not(:first-child) { margin-top: 9px; }
   .menu-tog-lbl { display: block; font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--bone-faint); text-align: center; margin-bottom: 6px; }
   /* Compact mode — hide the note names + semitone offsets on tuning cards to save vertical space */
   html.compact .card .card-notes, html.compact .card .card-off, html.compact .card .card-capo { display: none; }   /* extra specificity beats .card.inst/.card.steel .card-notes */
@@ -597,12 +599,13 @@
       <div class="theme-wrap">
         <button class="themebtn" id="themeBtn" title="Theme" aria-label="Theme" aria-haspopup="true" aria-expanded="false"><svg class="pedal-ico"><use href="#pedalIco"/></svg></button>
         <div class="theme-menu" id="themeMenu" role="menu">
+          <div class="fam-name">Theme</div>
           <button class="theme-item" data-theme-set="cs3" role="menuitem"><svg class="pedal-ico" style="color:#1c6cc0"><use href="#pedalIco"/></svg><span>CS3</span></button>
           <button class="theme-item" data-theme-set="ds1" role="menuitem"><svg class="pedal-ico" style="color:#f28620"><use href="#pedalIco"/></svg><span>DS1</span></button>
           <button class="theme-item" data-theme-set="rc500" role="menuitem"><svg class="pedal-ico" style="color:#d0232c"><use href="#pedalIco"/></svg><span>RC500</span></button>
           <button class="theme-item" data-theme-set="dd500" role="menuitem"><svg class="pedal-ico" style="color:#e7dec8"><use href="#pedalIco"/></svg><span>DD500</span></button>
           <button class="theme-item" data-theme-set="dark" role="menuitem"><svg class="pedal-ico" style="color:#434952"><use href="#pedalIco"/></svg><span>GT1000</span></button>
-          <div class="menu-sep"></div>
+          <div class="fam-name">Display</div>
           <div class="menu-tog">
             <div class="seg" id="compactSeg">
               <button data-compact="1">Compact</button>
