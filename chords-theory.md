@@ -13,12 +13,14 @@ All in `vg800-tuner.html` (single file). Key pieces (search by name — line
 numbers drift):
 
 - **Data:** `CHORD_ROOTS`, `CHORD_FIXED`, `CHORD_EXT`, `CHORD_STR_LO`.
-- **Engine:** `voiceChord(rootPc, formula)` — formula → per-string offsets.
-- **Helpers:** `chordExtDef()`, `chordRows()`, `applyChord()`.
+- **Engine:** `voiceChord(rootPc, formula)` — formula → per-string offsets (Spread).
+- **Voiced engine:** `voiceChordVoiced()`, `clusterIdx()`, `solveCluster()`,
+  `clusterTargetPcs()`, `reachPitch()`, `permsUniq()`, `lastVoiced` — see §Voicing modes.
+- **Helpers:** `chordExtDef()`, `chordRows()`, `applyChord()`, `reapplyActiveChord()`.
 - **Key mode:** `SCALES`, `CHORD_FUNC`, `RN_BASE`, `QUAL_ROW`, `romanNumeral()`, `diatonicMap()` — see §Key mode.
 - **Workbench role tags:** `degLabel()`, `degColor()`, `chordDegrees()` — consumed by `renderStrings()` to colour each string by its chord role. See §Role tags.
 - **Render:** `renderChords()` — builds the key bar + matrix + Extend selector, wires taps.
-- **State:** `activeChord` (`{r, row}` or null); persisted `settings.chordExt`, `settings.keyRoot`, `settings.keyScale`.
+- **State:** `activeChord` (`{r, row}` or null); `lastVoiced` (Legato memory, not persisted); persisted `settings.chordExt`, `settings.keyRoot`, `settings.keyScale`, `settings.voicing`, `settings.voiceSize`, `settings.voiceStart`, `settings.voiceFeel`.
 - **CSS:** `.chord-matrix`, `.chord-cell` (+ `.tonic/.subdom/.dominant/.offkey/.on`), `.chord-rn`, `.chord-rowhd(.ext)`, `.chord-ext`, `.chord-key`, `.chord-legend`; `.str .slide .oct.deg` (workbench role tag).
 - **Integration:** `apply({name, offsets, chord})` sets `activeChord` and reuses
   the normal tuning pipeline. `applyInst`/`applySteel`/`applyTest` clear
@@ -303,6 +305,64 @@ Steps:
 - **Root in the bass** when possible. ✔ (slot 0 = bass root)
 - **Nearest octave** per string, **clamped to ±12**. ✔
 
+## Voicing modes (Spread / Voiced clusters)
+
+The **Voicing** control (in the Chords key bar) picks how a tapped chord is spread
+across the six strings. Full design + feasibility: `voice-leading-plan.md` and
+`voice-leading-research.md`. `applyChord` routes through `voiceChordVoiced()`, which
+dispatches on `settings.voicing`; everything downstream consumes the resulting
+6-offset array unchanged.
+
+- **Spread** (default) — the classic root-in-bass `voiceChord()` (§8). Nothing about
+  the sections above changes; this is what the reference voicings (§5) describe.
+- **Voiced** — a chosen **cluster** of 3 or 4 adjacent strings carries a close,
+  ascending, voice-led voicing; the remaining strings complete the chord (root+5th
+  bass below, nearest chord-tone doublings above). So a full strum sounds the whole
+  chord; strumming just the cluster gives smooth voice leading.
+
+### The knobs (`settings.*`, all persisted; also re-listed in the Settings-save rebuild)
+
+- `voicing` — `'spread'` | `'voiced'`.
+- `voiceSize` — `3` | `4` strings in the cluster.
+- `voiceStart` — 0-based index of the cluster's top string (0 = string 1 / high E).
+  Cluster = `[voiceStart … voiceStart+voiceSize-1]`; the picker offers `1–3`…`4–6`
+  (size 3) or `1–4`…`3–6` (size 4).
+- `voiceFeel` — `'grip'` (stateless, always centered — deterministic) |
+  `'legato'` (voice-leads from the previous voicing, holding common tones).
+
+### Engine (`voiceChordVoiced`)
+
+1. **Cluster tones** (`clusterTargetPcs`): distinct chord tones, then reduce to
+   cluster size — **drop the perfect 5th first, then the root** (the bass re-supplies
+   both), so guide tones (3rd/7th) and any **altered 5th (♭5/♯5)** survive. If the
+   cluster is larger than the chord (triad on 4 strings), **double the root**.
+2. **Solve** (`solveCluster`): pick pitches for the cluster strings — one per string,
+   strictly **ascending / no crossing**, each within its ±12 window — minimising
+   `Σ|pitch − prev| + 0.25·Σ|pitch − center|`. `prev` is the previous cluster voicing
+   (Legato) or `null` (Grip); the `0.25·center` term is the **register guard** that
+   keeps voicings inside ±12 (no drift). `center` = midpoint of the cluster's ±12
+   intersection band.
+3. **Complete**: bass strings below the cluster get root/5th (the chord's *actual*
+   5th), strings above get the nearest chord tone. Any failure → fall back to
+   `voiceChord`.
+
+### Legato memory & re-center
+
+`lastVoiced = {cluster, pitches}` (module-level, **not persisted**) is set after each
+voiced tap and read as `prev` when `voiceFeel==='legato'` and the cluster is unchanged.
+It's cleared on every non-chord path — `applyInst`, `applySteel`, `applyTest`, and a
+**guarded** `if(!t.chord)` in `apply` (chord taps route through `apply` *with*
+`t.chord` set, so the guard prevents wiping memory on every tap). The **⟲ Center**
+button (shown in Voiced+Legato) clears `lastVoiced` so the next chord re-seeds centered.
+
+### Invariants (why nothing else breaks)
+
+Voiced changes **offsets only**, never the `{r, row}` identity — so **Key mode** and
+the **role-tags** are untouched (role-tags derive from the sounded pitch class, and
+every voiced string is a real chord tone, so they always tag correctly). The
+**grey-out** stays on stateless `voiceChord` (§7). Every cluster/key/quality is proven
+reachable within ±12 (see the harness, §10).
+
 ## 9. How to change / add a chord
 
 To **add a fixed row**: add an entry to `CHORD_FIXED` (matrix row order = array
@@ -323,8 +383,18 @@ Extend selector wraps on narrow screens.
 
 ## 10. How to verify after any change (audit script)
 
-Run this in `node` to check every quality × 12 roots for foreign notes, missing
-tones, dropped ♭5, and ±12 range. Paste the *current* `voiceChord` verbatim:
+For the **Voiced engine**, run the committed regression harness — it *extracts*
+the live engine from `vg800-tuner.html` (no copy to drift) and checks every
+cluster × key × quality × feel for range, foreign notes, voice crossing, dropped
+altered-5th, dim7 determinism, and Spread passthrough:
+
+```
+node tests/voiceleading.mjs      # exit 0 = pass (2520 cases)
+```
+
+For **Spread** (`voiceChord`), run this in `node` to check every quality × 12 roots
+for foreign notes, missing tones, dropped ♭5, and ±12 range. Paste the *current*
+`voiceChord` verbatim:
 
 ```js
 const NOTE=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];

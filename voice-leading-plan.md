@@ -157,7 +157,7 @@ every note within its string's ±12 window; `center` = midpoint of the cluster's
 
 ## 5. Phases
 
-> Progress: **[✅] Phase 1** · [✅] Phase 2 · [✅] Phase 3 · [✅] Phase 4 · [ ] Phase 5 · [ ] Phase 6
+> Progress: **[✅] Phase 1** · [✅] Phase 2 · [✅] Phase 3 · [✅] Phase 4 · [✅] Phase 5 · [✅] Phase 6 — **PLAN COMPLETE**
 
 ### Phase 1 — Scaffolding: mode + settings + controls (no behavior change yet) · S · ✅ DONE
 **Goal:** all the plumbing and UI exist; Voiced mode currently just calls `voiceChord`
@@ -221,7 +221,7 @@ chord. Deterministic, the first real payoff.
 - **Test:** harness exhaustive over 12 keys × 14 qualities × 7 clusters; assert no
   voice crossing, altered-5th never dropped, dim7 deterministic.
 
-### Phase 5 — Integration polish & invariants · M
+### Phase 5 — Integration polish & invariants · M · ✅ DONE (verification-only; no code change needed — pipeline is offset-agnostic, CSS wraps cleanly at 360px)
 **Goal:** everything shipped stays correct in Voiced mode.
 - **Role-tags:** confirm `chordDegrees`/`renderStrings` (1720/1235) tag every string
   from its sounded pitch class; any stray tone degrades to the octave superscript
@@ -238,7 +238,7 @@ chord. Deterministic, the first real payoff.
 - **CSS:** finalize the key-bar layout for the added controls on narrow/sidebar widths;
   qlmanage mockups at both sizes (per prior workflow practice).
 
-### Phase 6 — Docs, tests, QA · S
+### Phase 6 — Docs, tests, QA · S · ✅ DONE
 - Update `chords-theory.md` (new "Voicing modes / clusters" section; note §5 spread is
   still the default) and `voice-leading-research.md` (mark implemented).
 - Commit the node **feasibility harness** as the permanent regression test.

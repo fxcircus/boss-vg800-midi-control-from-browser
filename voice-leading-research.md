@@ -5,7 +5,8 @@ Chords section, so that (e.g.) in C major you can strum the *same few strings* a
 hear chords change smoothly — common tones held, one voice gliding a step — instead
 of every button jumping to its own root-position spread.
 
-**Status:** research only, nothing built. **Date:** 2026-07-06.
+**Status:** ✅ **implemented** (movable 3/4-string clusters, Grip + Legato, all in
+`vg800-tuner.html`; regression harness at `tests/voiceleading.mjs`). **Date:** 2026-07-06.
 Verified by an independent adversarial pass (see §Feasibility — the ±3 result is tight).
 Implementation plan: **`voice-leading-plan.md`** (movable-cluster design, phased).
 
