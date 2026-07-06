@@ -15,18 +15,20 @@ numbers drift):
 - **Data:** `CHORD_ROOTS`, `CHORD_FIXED`, `CHORD_EXT`, `CHORD_STR_LO`.
 - **Engine:** `voiceChord(rootPc, formula)` — formula → per-string offsets.
 - **Helpers:** `chordExtDef()`, `chordRows()`, `applyChord()`.
-- **Render:** `renderChords()` — builds the matrix + Extend selector, wires taps.
-- **State:** `activeChord` (`{r, row}` or null); persisted `settings.chordExt`.
-- **CSS:** `.chord-matrix`, `.chord-cell`, `.chord-rowhd(.ext)`, `.chord-ext`.
+- **Key mode:** `SCALES`, `CHORD_FUNC`, `RN_BASE`, `QUAL_ROW`, `romanNumeral()`, `diatonicMap()` — see §Key mode.
+- **Render:** `renderChords()` — builds the key bar + matrix + Extend selector, wires taps.
+- **State:** `activeChord` (`{r, row}` or null); persisted `settings.chordExt`, `settings.keyRoot`, `settings.keyScale`.
+- **CSS:** `.chord-matrix`, `.chord-cell` (+ `.tonic/.subdom/.dominant/.offkey/.on`), `.chord-rn`, `.chord-rowhd(.ext)`, `.chord-ext`, `.chord-key`, `.chord-legend`.
 - **Integration:** `apply({name, offsets, chord})` sets `activeChord` and reuses
   the normal tuning pipeline. `applyInst`/`applySteel`/`applyTest` clear
   `activeChord`. All of them call `renderChords()` so the highlight stays in sync.
 
 ## 2. Layout & behavior (unchanged rules)
 
-- **Rows:** 5 fixed rows (MAJ, MIN, 7, MIN7, MAJ7) + 1 dynamic "special" row set
-  by the **Extend** selector (add9 / 6 / m6 / sus2 / sus4 / dim / dim7 / m7♭5 /
-  aug). Left row label = full quality (spelled out). Button = compact symbol.
+- **Rows:** 6 fixed rows (MAJ, MIN, 7, MIN7, MAJ7, DIM) + 1 dynamic "special" row
+  set by the **Extend** selector (add9 / 6 / m6 / sus2 / sus4 / dim7 / m7♭5 / aug).
+  Left row label = full quality (spelled out). Button = compact symbol.
+  (DIM is a fixed row so every key's one diatonic dim chord is always visible — §Key mode.)
 - **Columns:** 12 roots C … B (all sharps — see §6).
 - **Latching:** one tap = active tuning (radio-button, one active at a time).
 - **Grey-out:** a cell greys + is non-tappable if its voicing can't fit ±12 on
@@ -75,7 +77,7 @@ visible) or extend (special row via the Extend selector).
 | m6 (minor 6) | extend | 0‑3‑7‑9 | R, m3, P5, M6 | `Cm6` | Cm6 |
 | sus2 | extend | 0‑2‑7 | R, M2, P5 | `Csus2` | Csus2 |
 | sus4 | extend | 0‑5‑7 | R, P4, P5 | `Csus` | Csus4 |
-| dim | extend | 0‑3‑6 | R, m3, ♭5 | `C°` | Cdim |
+| dim | **fixed** | 0‑3‑6 | R, m3, ♭5 | `C°` | Cdim |
 | dim7 | extend | 0‑3‑6‑9 | R, m3, ♭5, ♭♭7 | `C°7` | Cdim7 |
 | m7♭5 (half‑dim) | extend | 0‑3‑6‑10 | R, m3, ♭5, m7 | `Cø` | Cm7♭5 |
 | aug | extend | 0‑4‑8 | R, M3, ♯5 | `C+` | Caug |
@@ -86,6 +88,90 @@ Notes:
 - `dim7`'s 7th is a **diminished 7th** = 9 semitones (♭♭7), enharmonic to a M6.
 - `m7♭5` = half-diminished: minor 3rd + ♭5 + **minor** 7th (contrast dim7's ♭♭7).
 - `sus2`/`sus4` have **no 3rd** — the 2nd / 4th is the quality tone.
+
+## Key mode (scale-aware highlighting)
+
+Pick a **root + scale** and the grid highlights that key's seven diatonic chords
+— colored by harmonic function, labeled with Roman numerals. Non-diatonic chords
+dim but stay tappable (borrowed chords are a real songwriting tool). It's a
+lookup-and-highlight layer only: **tapping any cell still retunes exactly as
+before** — key mode never changes what a tap does.
+
+### Data
+
+```js
+SCALES = { 'Major': {alt:'Ionian', intervals:[…7], quals:[…7], special:'add9'}, … }
+```
+
+| Scale | Alt | Intervals (from root) | Diatonic qualities (deg 1→7) | Extend auto-set |
+|---|---|---|---|---|
+| Major | Ionian | 0 2 4 5 7 9 11 | maj min min maj **7** min dim | add9 |
+| Minor | Aeolian | 0 2 3 5 7 8 10 | min dim maj min min maj maj | add9 |
+| Dorian | — | 0 2 3 5 7 9 10 | min min maj maj min dim maj | add9 |
+| Phrygian | — | 0 1 3 5 7 8 10 | min maj maj min dim maj min | add9 |
+| Lydian | — | 0 2 4 6 7 9 11 | maj maj min dim maj min min | add9 |
+| Mixolydian | — | 0 2 4 5 7 9 10 | maj min dim maj min min maj | add9 |
+| Harm. Minor | — | 0 2 3 5 7 8 11 | min dim **aug** min **7** maj **dim7** | aug |
+
+- `intervals` compute each degree's pitch class; `quals` are the diatonic chord
+  qualities (which determine the grid **row** each diatonic chord lands in).
+- `special` is auto-set on scale selection (the user can override the Extend
+  selector afterward). For the six standard scales the diatonic dim chord is the
+  fixed DIM row, so the special row is free (add9 color). Harmonic minor needs
+  **both** aug (III+) and dim7 (vii°7) — see the limitation below.
+
+### Function coloring & Roman numerals
+
+- `CHORD_FUNC = ['tonic','subdom','tonic','subdom','dominant','tonic','dominant']`
+  (by scale degree, 0-indexed). Colors: **tonic = green `#45c07a`**,
+  **subdominant = blue `#5aa2ea`**, **dominant = orange `#ea6a3c`** (also the
+  legend swatches). Applied as the cell's `.tonic/.subdom/.dominant` class.
+- `romanNumeral(deg, qual)`: uppercase for maj (I, IV); lowercase for min (ii,
+  iii, vi); lowercase + `°` for dim (vii°); lowercase + `°7` for dim7 (vii°7);
+  uppercase + `+` for aug (III+); uppercase + `7` for the dominant (**V7**).
+
+### Quality → grid row (`QUAL_ROW`)
+
+Diatonic qualities map straight to row keys **except** the dominant:
+`maj→maj, min→min, '7'→'sev', dim→dim, aug→aug, dim7→dim7`. `diatonicMap(root,
+scale)` returns `{"<pc>-<rowKey>": {func, rn}}`; each grid cell looks up
+`ri + '-' + row.key`.
+
+### Cell states in key mode
+
+Per cell, in source-order so later CSS wins (all equal specificity):
+`.tonic/.subdom/.dominant` (diatonic, + a `.chord-rn`) → `.offkey` (non-diatonic,
+dimmed, still tappable) → `.on` (active, brass, `opacity:1` — plus
+`.offkey.on{opacity:1}` for hovered active borrowed chords) → `.disabled`
+(out-of-range, non-tappable, wins). The Roman-numeral slot (`.chord-rn`,
+`min-height`) is reserved on every cell in key mode so symbols stay aligned.
+
+### Design decisions (deliberate — change here if revisited)
+
+- **The V is a dominant 7th**, per `quals` (`'7'` on degree 5). So the **G7** cell
+  lights as V7 and the plain **G** major triad greys as non-diatonic. To make the
+  V *triad* also diatonic, you'd need a second qual/row concept.
+- **Diatonic = triads (+ V7 + harmonic-minor's dim7).** So the **MIN7 and MAJ7
+  rows stay dark** in key mode for the standard scales (their diatonic sevenths
+  aren't in `quals`). Still tappable as color.
+- **Harmonic Minor is the only scale needing two special-row chords** (III+ aug
+  and vii°7 dim7). Only one shows at a time; auto-set to aug, flip Extend to °7
+  for the vii°7. Every other diatonic chord is a fixed row, so nothing else hides.
+- **III+ in harmonic minor is colored *tonic* (green)** because `CHORD_FUNC[2] =
+  'tonic'`. (Some analyses call it dominant-function.)
+
+### Adding / changing a scale
+
+Add to `SCALES` (7-length `intervals` + `quals`, a `special` Extend key). Every
+`quals` value must be one of `maj/min/7/dim/aug/dim7` (all have rows). The scale
+appears in the dropdown automatically (`Object.keys(SCALES)`). Verify with §10
+plus the independent third-stacking check used to validate these.
+
+### Verified
+
+Independent derivation (stacking thirds on the raw scale intervals) matches every
+declared quality across all 7 scales × 7 degrees; all **588** diatonic chords
+(7 × 12 × 7) voice within ±12 with exactly their own tones.
 
 ## 5. Reference voicings (root C)
 
