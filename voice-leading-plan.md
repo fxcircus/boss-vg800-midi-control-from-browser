@@ -157,7 +157,9 @@ every note within its string's ±12 window; `center` = midpoint of the cluster's
 
 ## 5. Phases
 
-### Phase 1 — Scaffolding: mode + settings + controls (no behavior change yet) · S
+> Progress: **[✅] Phase 1** · [✅] Phase 2 · [ ] Phase 3 · [ ] Phase 4 · [ ] Phase 5 · [ ] Phase 6
+
+### Phase 1 — Scaffolding: mode + settings + controls (no behavior change yet) · S · ✅ DONE
 **Goal:** all the plumbing and UI exist; Voiced mode currently just calls `voiceChord`
 (so output is identical to Spread). Ship-safe, invisible.
 - Add `settings.voicing ('spread'|'voiced', default 'spread')`, `settings.voiceCluster`
@@ -178,7 +180,7 @@ every note within its string's ±12 window; `center` = midpoint of the cluster's
   diff MIDI output = identical.
 - **Risk:** key-bar crowding on narrow screens — budget CSS time; likely a second row.
 
-### Phase 2 — Core engine: stateless Grip on a fixed cluster (triads) · M
+### Phase 2 — Core engine: stateless Grip on a fixed cluster (triads) · M · ✅ DONE
 **Goal:** Voiced+Grip actually voices triads on the selected cluster + completes the
 chord. Deterministic, the first real payoff.
 - Implement Steps A (triads only), B (Grip), C, D of §4.

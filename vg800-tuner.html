@@ -1702,9 +1702,64 @@ function voiceChord(rootPc, f){
 }
 function chordExtDef(){ return CHORD_EXT.find(e=>e.key===settings.chordExt) || CHORD_EXT[0]; }
 function chordRows(){ const e=chordExtDef(); return [...CHORD_FIXED, {key:e.key, label:e.label.toUpperCase(), suffix:e.suffix, sym:e.sym, formula:e.formula, ext:true}]; }
-// Voicing-mode dispatch. Phase 1: Voiced == Spread (identical output); the voiced-cluster engine lands in Phase 2.
+/* ===== Voiced-cluster engine — a chosen 3/4-string cluster carries a close voice-led voicing,
+   the rest of the guitar completes the chord (bass root+5th + doublings). See voice-leading-plan.md. ===== */
+const VOICE_STD=[64,59,55,50,45,40];               // = STD_MIDI; str1(hi E) … str6(lo E)
+function clusterIdx(){                              // string indices (0=str1 hi E) of the active cluster
+  const N=(settings.voiceSize===4?4:3), s=Math.max(0, Math.min(6-N, settings.voiceStart||0));
+  return Array.from({length:N}, (_,i)=>s+i);
+}
+function reachPitch(std, pc){ const o=[]; for(let m=std-12;m<=std+12;m++) if(((m%12)+12)%12===pc) o.push(m); return o; }   // pc realizations within ±12
+function permsUniq(a){                              // unique permutations of a (possibly repeated) multiset
+  const s=a.slice().sort((x,y)=>x-y), used=Array(s.length).fill(false), cur=[], res=[];
+  (function rec(){ if(cur.length===s.length){ res.push(cur.slice()); return; }
+    for(let i=0;i<s.length;i++){ if(used[i]||(i>0&&s[i]===s[i-1]&&!used[i-1])) continue; used[i]=true; cur.push(s[i]); rec(); cur.pop(); used[i]=false; } })();
+  return res;
+}
+function solveCluster(targetPcs, ascStd, prev, center){   // ascending / no-cross, covers targetPcs, min (motion|center) cost
+  let best=null;
+  for(const perm of permsUniq(targetPcs)){
+    const cand=ascStd.map((s,k)=>reachPitch(s, perm[k]));
+    (function rec(k, acc){
+      if(k===ascStd.length){ for(let i=1;i<acc.length;i++) if(acc[i]<=acc[i-1]) return;   // strictly ascending
+        let c=0; if(prev) for(let i=0;i<acc.length;i++) c+=Math.abs(acc[i]-prev[i]);
+        c+=0.25*acc.reduce((t,p)=>t+Math.abs(p-center),0);                                  // soft register anchor
+        if(!best||c<best.cost) best={cost:c, pit:acc.slice()}; return; }
+      for(const p of cand[k]) rec(k+1, acc.concat(p));
+    })(0, []);
+  }
+  return best;
+}
+function clusterTargetPcs(rootPc, formula, N){     // N chord-tone pitch classes for the cluster (Phase 2 basic drop/double; Phase 4 refines)
+  let t=formula.map(iv=>({iv:iv%12, pc:(rootPc+iv)%12}));
+  const seen=new Set(); t=t.filter(x=> seen.has(x.pc)?false:(seen.add(x.pc), true));         // distinct pcs
+  while(t.length>N){ const fi=t.findIndex(x=>x.iv===7); if(fi>=0) t.splice(fi,1); else t.pop(); }   // drop the perfect 5th first
+  const pcs=t.map(x=>x.pc), root=rootPc%12;
+  while(pcs.length<N) pcs.push(root);                                                          // double the root (always a chord tone) to fill
+  return pcs;
+}
 function voiceChordVoiced(rootPc, formula, rowKey){
-  return voiceChord(rootPc, formula);
+  if(settings.voicing!=='voiced') return voiceChord(rootPc, formula);
+  const cluster=clusterIdx(), N=cluster.length;
+  const ascIdx=cluster.slice().sort((a,b)=>VOICE_STD[a]-VOICE_STD[b]), ascStd=ascIdx.map(i=>VOICE_STD[i]);   // ascending pitch
+  const center=(Math.max(...ascStd)-12 + Math.min(...ascStd)+12)/2;
+  const sol=solveCluster(clusterTargetPcs(rootPc, formula, N), ascStd, null, center);          // Phase 2: Grip (stateless); Legato memory in Phase 3
+  if(!sol) return voiceChord(rootPc, formula);                                                 // safety fallback (never observed)
+  const off=new Array(6).fill(null);
+  ascIdx.forEach((si,k)=> off[si]=sol.pit[k]-VOICE_STD[si]);
+  // complete the chord on the non-cluster strings: below the cluster → root/5th bass, above → nearest chord tone
+  const inCl=new Set(cluster), loStd=Math.min(...ascStd);
+  const chordPcs=[...new Set(formula.map(iv=>(rootPc+iv)%12))];
+  const fifthIv=formula.find(iv=>[6,7,8].includes(((iv%12)+12)%12));                            // the chord's actual 5th (♭5/5/♯5)
+  const bass=[rootPc%12, (rootPc+(fifthIv!==undefined?fifthIv:7))%12];                          // root + real 5th (never a non-chord perfect 5th)
+  const below=[], above=[];
+  for(let si=0;si<6;si++){ if(inCl.has(si)) continue; (VOICE_STD[si]<loStd ? below : above).push(si); }
+  below.sort((a,b)=>VOICE_STD[a]-VOICE_STD[b]);                                                 // lowest pitch first = deepest root
+  const nearest=(std, pcs)=>{ let bm=null; for(const pc of pcs) for(const m of reachPitch(std,pc)) if(bm===null||Math.abs(m-std)<Math.abs(bm-std)) bm=m; return bm; };
+  below.forEach((si,k)=>{ off[si]=nearest(VOICE_STD[si], [bass[k%2]]) - VOICE_STD[si]; });      // root, 5th, root, 5th …
+  above.forEach(si=>{ off[si]=nearest(VOICE_STD[si], chordPcs) - VOICE_STD[si]; });             // double the nearest chord tone
+  if(off.some(o=>o===null||o<-12||o>12)) return voiceChord(rootPc, formula);
+  return off;
 }
 function applyChord(rootIdx, rowKey, name, formula){
   const off=voiceChordVoiced(rootIdx, formula, rowKey); if(!off) return;   // disabled cells never reach here
