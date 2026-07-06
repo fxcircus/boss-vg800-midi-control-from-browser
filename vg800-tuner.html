@@ -224,7 +224,7 @@
   .theme-menu .fam-name:not(:first-child) { margin-top: 9px; }
   .menu-tog-lbl { display: block; font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--bone-faint); text-align: center; margin-bottom: 6px; }
   /* Compact mode — hide the note names + semitone offsets on tuning cards to save vertical space */
-  html.compact .card .card-notes, html.compact .card .card-off, html.compact .card .card-capo { display: none; }   /* extra specificity beats .card.inst/.card.steel .card-notes */
+  html.compact .card .card-notes, html.compact .card .card-off, html.compact .card .card-capo, html.compact .card .card-foot { display: none; }   /* extra specificity beats .card.inst/.card.steel .card-notes */
   html.compact .card-name { margin-bottom: 0; }
   html.compact .card { padding-top: 12px; padding-bottom: 12px; }
   html.compact .grid { gap: 8px; }
@@ -361,8 +361,16 @@
   .cl-head { font-family: var(--mono); font-size: 10px; letter-spacing: 0.4px; color: var(--bone-faint); margin: 14px 2px 11px; line-height: 1.5; }
   .cl-head b { color: var(--brass); }
   .clrow { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 30px; }
-  .inst-fx { display: flex; flex-wrap: wrap; gap: 20px; margin: 16px 2px 2px; }   /* String doubler / +octave toggles for the selected ethnic instrument */
-  .inst-fx .latch-tog { margin-bottom: 0; }
+  .inst-fx { display: flex; flex-wrap: wrap; gap: 10px; margin: 2px 0 14px; }   /* String doubler / +octave voicing toggles */
+  .fx-tog { display: inline-flex; align-items: center; gap: 9px; padding: 9px 14px; border: 1px solid var(--edge); border-radius: 10px; background: color-mix(in srgb, var(--wood) 22%, transparent); font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; color: var(--bone-dim); cursor: pointer; transition: border-color .13s, color .13s, background .13s; }
+  .fx-tog:hover { border-color: var(--brass-deep); color: var(--bone); }
+  .fx-tog:has(input:checked) { border-color: var(--brass); color: var(--bone); background: var(--felt); }
+  .card-foot { display: flex; align-items: center; gap: 8px; margin-top: 9px; }   /* corner badges (left) + capo hint (right) */
+  .ibadges { display: inline-flex; gap: 5px; }
+  .ibadge { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 6px; border: 1px solid var(--edge); color: var(--bone-faint); background: color-mix(in srgb, var(--wood) 30%, transparent); cursor: help; transition: color .13s, border-color .13s, background .13s, box-shadow .13s; }
+  .ibadge svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .ibadge.lit { color: var(--brass); border-color: var(--brass-deep); background: var(--felt); box-shadow: 0 0 0 1px var(--brass-glow); }
+  .card-foot .card-capo { margin: 0 0 0 auto; }   /* push the capo hint to the right of the badges */
   .clbtn { display: flex; flex-direction: column; align-items: center; gap: 7px; background: var(--wood); border: 1px solid var(--edge); border-radius: 9px; padding: 9px 13px; cursor: pointer; transition: transform .1s, border-color .12s, background .12s; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 5px rgba(0,0,0,0.28); }
   .clbtn:hover:not(.disabled) { border-color: var(--brass-deep); background: var(--felt); transform: translateY(-1px); }
   .clbtn.on { border-color: var(--brass); background: var(--felt); box-shadow: inset 0 0 0 1px var(--brass-glow); }
@@ -708,7 +716,6 @@
 
   <fieldset class="panel" id="sec-ethnic">
     <legend class="panel-hd">Ethnic</legend>
-    <div class="panel-sub">Others stay standard</div>
     <div id="ethnicWrap"></div>
   </fieldset>
 
@@ -1024,7 +1031,7 @@ let active = 'Standard';
 let midiAccess=null, midiOut=null, lastConnMsg=null;
 let curOffsets=[0,0,0,0,0,0], glideTimer=null;
 let baseOffsets=[0,0,0,0,0,0], held=new Set(), curInfo=null, pedalStateCache={}, ctrlStateCache={};
-let ethnicInst=null, ethnicStart=0, fxDoubler=false, fxOctave=false;   // fx = INST string-doubler / +octave state for the selected ethnic instrument
+let ethnicInst=null, ethnicStart=0;
 const ETHNIC=[
   {name:'Mandolin', pitches:[55,62,69,76], notes:'G D A E', ref:'Traditional Irish / Bluegrass', courses:true},
   {name:'Irish Bouzouki', pitches:[43,50,57,62], notes:'G D A D', ref:'Irish Traditional Music', courses:true},
@@ -1056,7 +1063,7 @@ const PANMODES=[
 const STR_COLORS=['#ef5350','#f2a33d','#c6d43f','#4cc178','#4f9dea','#a563d4'];
 let dispOffsets=[0,0,0,0,0,0];   // the pitch offsets currently shown (base tuning + engaged pedal bends)
 
-function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; if(!s.ap||typeof s.ap!=='object'){ s.ap={...AP_DEFAULTS}; if(typeof s.autoPanRate==='number') s.ap.rate=s.autoPanRate; } else { for(const k in AP_DEFAULTS) if(!(k in s.ap)) s.ap[k]=AP_DEFAULTS[k]; if(s.ap.char==='none') s.ap.char='rotate'; if(!['1 bar','1 bar T','1/2 bar','1/2 bar T','1/4','1/4 T'].includes(s.ap.div)) s.ap.div='1/2 bar'; if(s.ap.bpm>170) s.ap.bpm=170; } return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, ap:{...AP_DEFAULTS}, ...AB_DEFAULTS}; }
+function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; if(typeof s.fxDoubler!=='boolean') s.fxDoubler=true; if(typeof s.fxOctave!=='boolean') s.fxOctave=true; if(!s.ap||typeof s.ap!=='object'){ s.ap={...AP_DEFAULTS}; if(typeof s.autoPanRate==='number') s.ap.rate=s.autoPanRate; } else { for(const k in AP_DEFAULTS) if(!(k in s.ap)) s.ap[k]=AP_DEFAULTS[k]; if(s.ap.char==='none') s.ap.char='rotate'; if(!['1 bar','1 bar T','1/2 bar','1/2 bar T','1/4','1/4 T'].includes(s.ap.div)) s.ap.div='1/2 bar'; if(s.ap.bpm>170) s.ap.bpm=170; } return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, fxDoubler:true, fxOctave:true, ap:{...AP_DEFAULTS}, ...AB_DEFAULTS}; }
 function saveSettingsLS(){ localStorage.setItem('vg800_settings', JSON.stringify(settings)); }
 function loadCustom(){ try{ return JSON.parse(localStorage.getItem('vg800_custom'))||[]; }catch(e){ return []; } }
 function saveCustomLS(){ localStorage.setItem('vg800_custom', JSON.stringify(customs)); }
@@ -1455,17 +1462,25 @@ function computeCluster(pitches, start){
   for(let k=0;k<N;k++){ const idx=start+N-1-k, o=base[k]+12*k12; offsets[idx]=o; if(o<-12||o>12) ok=false; }
   return {offsets, ok, delta: 12*k12};   // delta = sounded pitch − concert pitch (negative = an octave low → capo up to correct)
 }
-// The VG-800 only bends ±12 semitones, so instruments in a distant register sound an octave off; tell the player where to capo.
-function capoText(delta){
-  return delta<0 ? `*capo on ${-delta}th fret` : `no capo`;   // delta≥0: already in range, or an octave high (a capo can't lower it)
+// Physical capo the player still needs after the +octave effect (if any). '' = none (in range, or lifted to pitch).
+function capoNeed(delta){ const ed=(settings.fxOctave&&delta<0)?delta+12:delta; return ed<0 ? `*capo on ${-ed}th fret` : ''; }
+// Bottom-left card badges — doubled strings (courses) + needs-octave. Lit when the matching effect is switched on.
+const ICON_DBL='<svg viewBox="0 0 16 16"><path d="M6 2v12M10 2v12"/></svg>';               // paired strings
+const ICON_OCT='<svg viewBox="0 0 16 16"><path d="M8 13V4.2M4.4 7.6 8 4l3.6 3.6"/></svg>';  // up an octave
+function instBadges(inst, delta){
+  let h='';
+  if(inst.courses) h+=`<span class="ibadge${settings.fxDoubler?' lit':''}" title="Doubled strings (courses) — String doubler ${settings.fxDoubler?'ON':'OFF'}">${ICON_DBL}</span>`;
+  if(delta<0) h+=`<span class="ibadge${settings.fxOctave?' lit':''}" title="Sits an octave low — + Octave lifts it to pitch (${settings.fxOctave?'ON':'OFF'})">${ICON_OCT}</span>`;
+  return h;
 }
-// INST fx — 12-string "string doubler" (CC77) and "+octave" alt-tune (CC78), toggled from the ethnic section.
-function sendInstFx(){ if(!midiOut) return; const st=0xB0|((settings.channel-1)&0x0F); midiOut.send([st, STR12_CC&0x7F, fxDoubler?127:0]); midiOut.send([st, ALT_CC&0x7F, fxOctave?127:0]); }
+// INST fx — global prefs (persisted, toggled in the Ethnic section); each effect fires only for the instruments it fits:
+// "string doubler" (CC77) on courses instruments, "+octave" alt-tune (CC78) on instruments that would otherwise need a capo.
+function instFxOn(){ if(!ethnicInst) return {doubler:false, octave:false}; const delta=computeCluster(ethnicInst.pitches, ethnicStart).delta; return { doubler: !!settings.fxDoubler && !!ethnicInst.courses, octave: !!settings.fxOctave && delta<0 }; }
+function sendInstFx(){ if(!midiOut) return; const f=instFxOn(), st=0xB0|((settings.channel-1)&0x0F); midiOut.send([st, STR12_CC&0x7F, f.doubler?127:0]); midiOut.send([st, ALT_CC&0x7F, f.octave?127:0]); }
 function applyInst(inst, start){
   const N=inst.pitches.length; start=Math.max(0, Math.min(6-N, start));
   const res=computeCluster(inst.pitches, start);
   if(!res.ok){ toast(inst.name+' can’t fit those strings', true); return; }
-  if(ethnicInst!==inst){ fxDoubler=!!inst.courses; fxOctave=res.delta<0; }   // new instrument → sensible fx defaults (doubler for courses, +octave to cancel a capo); override with the checkboxes
   active=inst.name; baseOffsets=[...res.offsets]; held.clear(); ethnicInst=inst; ethnicStart=start; clearSteel();
   const n=document.getElementById('nowName'); n.textContent=inst.name; n.classList.remove('std');
   renderStrings(res.offsets); renderGrid(); renderPedals(); renderEthnic(); renderSteel();
@@ -1475,9 +1490,9 @@ function ethnicCardHTML(inst){
   const on = ethnicInst && ethnicInst.name===inst.name;
   const notes=inst.notes.split(' ').map(x=>`<span>${x}</span>`).join('');
   const d=computeCluster(inst.pitches, 0).delta;   // default placement (what a click applies)
-  const ed=d<0?d+12:d;                             // a capo-instrument defaults to +octave on click, which cancels the octave
-  const capo=`<div class="card-capo${ed<0?'':' zero'}">${capoText(ed)}</div>`;
-  return `<div class="card inst${on?' active':''}" data-name="${inst.name}" data-ref="${inst.ref}"><div class="card-name">${inst.name}</div><div class="card-notes">${notes}</div>${capo}</div>`;
+  const badges=instBadges(inst, d), capo=capoNeed(d);
+  const foot=(badges||capo)?`<div class="card-foot"><span class="ibadges">${badges}</span>${capo?`<span class="card-capo">${capo}</span>`:''}</div>`:'';
+  return `<div class="card inst${on?' active':''}" data-name="${inst.name}" data-ref="${inst.ref}"><div class="card-name">${inst.name}</div><div class="card-notes">${notes}</div>${foot}</div>`;
 }
 function clusterRowHTML(inst, start){
   const N=inst.pitches.length, opts=[];
@@ -1486,19 +1501,23 @@ function clusterRowHTML(inst, start){
     const dots=[0,1,2,3,4,5].map(i=>`<i class="${i>=s&&i<s+N?'on':''}"></i>`).join('');
     opts.push(`<button class="clbtn${res.ok?'':' disabled'}${s===start?' on':''}" data-start="${s}"${res.ok?'':' aria-disabled="true"'}><span class="cldots">${dots}</span><span class="cllbl">${s+1}–${s+N}</span></button>`);
   }
-  const d=computeCluster(inst.pitches, start).delta, ed=fxOctave?d+12:d;   // reflect the live +octave toggle
-  return `<div class="cl-head">String placement for <b>${inst.name}</b> — leftmost = high E (1st string); the rest stay standard.<br>For the real instrument's octave: <b>${capoText(ed)}</b>.</div><div class="clrow">${opts.join('')}</div>`;
+  const d=computeCluster(inst.pitches, start).delta, capo=capoNeed(d);
+  const capoLine=capo?`<br>For the real instrument's octave: <b>${capo}</b>.`:'';
+  return `<div class="cl-head">String placement for <b>${inst.name}</b> — leftmost = high E (1st string); the rest stay standard.${capoLine}</div><div class="clrow">${opts.join('')}</div>`;
 }
 function renderEthnic(){
   const wrap=document.getElementById('ethnicWrap'); if(!wrap) return;
   const cards=ETHNIC.map(ethnicCardHTML).join('');
-  const fx=ethnicInst?`<div class="inst-fx"><label class="latch-tog"><input type="checkbox" id="fxDoubler"${fxDoubler?' checked':''}><span>String doubler</span></label><label class="latch-tog"><input type="checkbox" id="fxOctave"${fxOctave?' checked':''}><span>+ Octave</span></label></div>`:'';
+  const fx=`<div class="inst-fx">`
+    +`<label class="fx-tog"><input type="checkbox" id="fxDoubler"${settings.fxDoubler?' checked':''}><span>String doubler</span></label>`
+    +`<label class="fx-tog"><input type="checkbox" id="fxOctave"${settings.fxOctave?' checked':''}><span>+ Octave</span></label>`
+    +`</div>`;
   const cluster=ethnicInst?clusterRowHTML(ethnicInst, ethnicStart):'';
-  wrap.innerHTML=`<div class="grid">${cards}</div>${fx}${cluster}`;
+  wrap.innerHTML=`${fx}<div class="grid">${cards}</div>${cluster}`;
   wrap.querySelectorAll('.card.inst').forEach(c=> c.addEventListener('click',()=>{ const inst=ETHNIC.find(x=>x.name===c.dataset.name); if(inst) applyInst(inst, inst===ethnicInst?ethnicStart:0); }));
   wrap.querySelectorAll('.clbtn').forEach(b=> b.addEventListener('click',()=>{ if(!b.classList.contains('disabled')&&ethnicInst) applyInst(ethnicInst, +b.dataset.start); }));
-  const fd=wrap.querySelector('#fxDoubler'); if(fd) fd.addEventListener('change',()=>{ fxDoubler=fd.checked; sendInstFx(); });
-  const fo=wrap.querySelector('#fxOctave'); if(fo) fo.addEventListener('change',()=>{ fxOctave=fo.checked; sendInstFx(); renderEthnic(); });   // re-render for the capo hint
+  const fd=wrap.querySelector('#fxDoubler'); if(fd) fd.addEventListener('change',()=>{ settings.fxDoubler=fd.checked; saveSettingsLS(); sendInstFx(); renderEthnic(); });
+  const fo=wrap.querySelector('#fxOctave'); if(fo) fo.addEventListener('change',()=>{ settings.fxOctave=fo.checked; saveSettingsLS(); sendInstFx(); renderEthnic(); });   // re-render updates the capo hints
 }
 /* ===== Pedal Steel section (3 tunings + 6-of-10 window) ===== */
 function steelCardHTML(t){
@@ -1528,7 +1547,7 @@ function applySteel(t, win){
   win=Math.max(0, Math.min(WINDOWS.length-1, win));
   const res=computeCluster(t.midi.slice(WINDOWS[win].i0, WINDOWS[win].i0+6), 0);
   if(!res.ok){ toast(t.name+' — that window won’t fit', true); return; }
-  active=t.name; baseOffsets=[...res.offsets]; held.clear(); fxDoubler=false; fxOctave=false;   // steel is not ethnic → INST fx off
+  active=t.name; baseOffsets=[...res.offsets]; held.clear();   // steel is not ethnic → sendInstFx() sends both off
   ethnicInst=null; steelInst=t; steelWin=win; steelRoot=t.root; copedent=COPEDENTS[t.copedent]||COPEDENTS.generic;
   const n=document.getElementById('nowName'); n.textContent=t.name; n.classList.remove('std');
   renderStrings(res.offsets); renderGrid(); renderEthnic(); renderSteel(); renderPedals();
@@ -1733,7 +1752,7 @@ function updateOverview(posOverride){
 function notesOf(offsets){ return offsets.map((s,i)=>nameOf(STD_MIDI[i]+s).name).reverse().join(' '); }
 function apply(t){
   active=t.name;
-  baseOffsets=[...t.offsets]; held.clear(); ethnicInst=null; clearSteel(); fxDoubler=false; fxOctave=false;   // leaving ethnic mode → INST fx off
+  baseOffsets=[...t.offsets]; held.clear(); ethnicInst=null; clearSteel();   // not ethnic → sendInstFx() sends both off
   if(t.bends&&t.bends.keys){ settings.keys={...DEFAULT_KEYS, ...t.bends.keys}; rebuildKeymap(); saveSettingsLS(); }   // user preset carries its own pedal key mapping
   const n=document.getElementById('nowName'); n.textContent=t.name; n.classList.toggle('std',t.name==='Standard');
   renderStrings(t.offsets); renderGrid(); renderPedals(); renderEthnic(); renderSteel();
@@ -1979,11 +1998,11 @@ document.getElementById('saveSettings').addEventListener('click',()=>{
   const num=(id,lo,hi,d)=>{ const v=+document.getElementById(id).value; return isNaN(v)?d:Math.max(lo,Math.min(hi,v)); };
   const ab={ autoBend:document.getElementById('autoBendChk').checked, bendCC:num('bendCCInput',0,127,69), levelCC:num('levelCCInput',0,127,70), bendDepth:num('bendDepthInput',0,50,25), levelDip:num('levelDipInput',0,50,15), bendMs:num('bendMsInput',40,400,120) };
   const panCCs=[]; document.querySelectorAll('#panCcRows select').forEach(x=>panCCs[+x.dataset.pcc]=Math.max(1,Math.min(127,+x.value||1)));
-  settings={channel:ch,ccs,gap:settings.gap??20,glide:0,keys:settings.keys,latch:settings.latch,panCCs,panMs:settings.panMs,ap:settings.ap, ...ab}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
+  settings={channel:ch,ccs,gap:settings.gap??20,glide:0,keys:settings.keys,latch:settings.latch,panCCs,panMs:settings.panMs,fxDoubler:settings.fxDoubler,fxOctave:settings.fxOctave,ap:settings.ap, ...ab}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
 });
 
 function applyTest(v){
-  active=''; baseOffsets=[v,v,v,v,v,v]; held.clear(); ethnicInst=null; clearSteel(); fxDoubler=false; fxOctave=false;   // transpose is not ethnic → INST fx off
+  active=''; baseOffsets=[v,v,v,v,v,v]; held.clear(); ethnicInst=null; clearSteel();   // transpose is not ethnic → sendInstFx() sends both off
   const n=document.getElementById('nowName'); n.textContent='TEST '+(v>0?'+'+v:''+v); n.classList.remove('std');
   renderStrings([v,v,v,v,v,v]); renderGrid(); renderPedals(); renderEthnic(); renderSteel();
   sendInstFx(); tuningSend([v,v,v,v,v,v]);   // display always updates; push INST fx (off) + MIDI when connected
