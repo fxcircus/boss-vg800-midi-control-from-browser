@@ -384,6 +384,19 @@
   .ibadge svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
   .ibadge.lit { color: var(--brass); border-color: var(--brass-deep); background: var(--felt); box-shadow: 0 0 0 1px var(--brass-glow); }
   .card-foot .card-capo { margin: 0 0 0 auto; }   /* push the capo hint to the right of the badges */
+  /* Chords — omnichord matrix (12 roots × maj/min/7 + one dynamic extension row) */
+  .chord-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 2px; margin: 2px 0 14px; }
+  .chord-matrix { display: grid; grid-template-columns: auto repeat(12, minmax(44px, 1fr)); gap: 6px; min-width: 620px; }
+  .chord-colhd { font-family: var(--mono); font-size: 10px; letter-spacing: 0.5px; color: var(--bone-faint); text-align: center; align-self: end; padding-bottom: 3px; }
+  .chord-rowhd { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 1px; color: var(--bone-faint); display: flex; align-items: center; justify-content: flex-end; padding-right: 9px; white-space: nowrap; }
+  .chord-rowhd.ext { color: var(--brass); }
+  .chord-cell { font-family: var(--cond); font-weight: 700; font-size: 14px; color: var(--bone); background: var(--wood); border: 1px solid var(--edge-soft); border-radius: 8px; padding: 9px 3px; cursor: pointer; text-align: center; user-select: none; -webkit-user-select: none; box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 5px rgba(0,0,0,0.28); transition: border-color .12s, background .12s, box-shadow .12s, color .12s; }
+  .chord-cell:hover:not(.disabled) { border-color: var(--brass-deep); background: var(--felt); }
+  .chord-cell.on { border-color: var(--brass); background: var(--felt); color: var(--brass); box-shadow: inset 0 0 0 1px var(--brass), 0 0 18px var(--brass-glow); }
+  .chord-cell.disabled { opacity: 0.3; cursor: not-allowed; filter: grayscale(0.5); box-shadow: none; }
+  .chord-ext { display: flex; justify-content: center; }
+  .chord-ext .seg { display: inline-flex; }
+  .chord-ext .seg button { flex: 0 0 auto; padding: 7px 15px; }
   .clbtn { display: flex; flex-direction: column; align-items: center; gap: 7px; background: var(--wood); border: 1px solid var(--edge); border-radius: 9px; padding: 9px 13px; cursor: pointer; transition: transform .1s, border-color .12s, background .12s; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 5px rgba(0,0,0,0.28); }
   .clbtn:hover:not(.disabled) { border-color: var(--brass-deep); background: var(--felt); transform: translateY(-1px); }
   .clbtn.on { border-color: var(--brass); background: var(--felt); box-shadow: inset 0 0 0 1px var(--brass-glow); }
@@ -737,6 +750,11 @@
     <div id="testBtns"></div>
   </fieldset>
 
+  <fieldset class="panel" id="sec-chords">
+    <legend class="panel-hd">Chords</legend>
+    <div id="chordWrap"></div>
+  </fieldset>
+
   <fieldset class="panel" id="sec-user">
     <legend class="panel-hd">User</legend>
     <div class="panel-sub">Your own tunings · saved on this device</div>
@@ -1040,7 +1058,7 @@ let settings = loadSettings();
 try{ if(!localStorage.getItem('vg800_pgShort')){ settings.panMs=500; localStorage.setItem('vg800_pgShort','1'); localStorage.setItem('vg800_settings', JSON.stringify(settings)); } }catch(e){}   // Pan glide defaults to Short (one-time reset for existing users)
 let customs = loadCustom();
 let edOff = [0,0,0,0,0,0];
-let active = 'Standard';
+let active = 'Standard', activeChord = null;
 let midiAccess=null, midiOut=null, lastConnMsg=null;
 let curOffsets=[0,0,0,0,0,0], glideTimer=null;
 let baseOffsets=[0,0,0,0,0,0], held=new Set(), curInfo=null, pedalStateCache={}, ctrlStateCache={};
@@ -1076,7 +1094,7 @@ const PANMODES=[
 const STR_COLORS=['#ef5350','#f2a33d','#c6d43f','#4cc178','#4f9dea','#a563d4'];
 let dispOffsets=[0,0,0,0,0,0];   // the pitch offsets currently shown (base tuning + engaged pedal bends)
 
-function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; if(typeof s.fxDoubler!=='boolean') s.fxDoubler=true; if(typeof s.fxOctave!=='boolean') s.fxOctave=true; if(typeof s.swellMs!=='number') s.swellMs=0; if(typeof s.swellLatch!=='boolean') s.swellLatch=true; if(!s.ap||typeof s.ap!=='object'){ s.ap={...AP_DEFAULTS}; if(typeof s.autoPanRate==='number') s.ap.rate=s.autoPanRate; } else { for(const k in AP_DEFAULTS) if(!(k in s.ap)) s.ap[k]=AP_DEFAULTS[k]; if(s.ap.char==='none') s.ap.char='rotate'; if(!['1 bar','1 bar T','1/2 bar','1/2 bar T','1/4','1/4 T'].includes(s.ap.div)) s.ap.div='1/2 bar'; if(s.ap.bpm>170) s.ap.bpm=170; } return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, fxDoubler:true, fxOctave:true, swellMs:0, swellLatch:true, ap:{...AP_DEFAULTS}, ...AB_DEFAULTS}; }
+function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; if(typeof s.fxDoubler!=='boolean') s.fxDoubler=true; if(typeof s.fxOctave!=='boolean') s.fxOctave=true; if(typeof s.swellMs!=='number') s.swellMs=0; if(typeof s.swellLatch!=='boolean') s.swellLatch=true; if(typeof s.chordExt!=='string') s.chordExt='maj7'; if(!s.ap||typeof s.ap!=='object'){ s.ap={...AP_DEFAULTS}; if(typeof s.autoPanRate==='number') s.ap.rate=s.autoPanRate; } else { for(const k in AP_DEFAULTS) if(!(k in s.ap)) s.ap[k]=AP_DEFAULTS[k]; if(s.ap.char==='none') s.ap.char='rotate'; if(!['1 bar','1 bar T','1/2 bar','1/2 bar T','1/4','1/4 T'].includes(s.ap.div)) s.ap.div='1/2 bar'; if(s.ap.bpm>170) s.ap.bpm=170; } return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, fxDoubler:true, fxOctave:true, swellMs:0, swellLatch:true, chordExt:'maj7', ap:{...AP_DEFAULTS}, ...AB_DEFAULTS}; }
 function saveSettingsLS(){ localStorage.setItem('vg800_settings', JSON.stringify(settings)); }
 function loadCustom(){ try{ return JSON.parse(localStorage.getItem('vg800_custom'))||[]; }catch(e){ return []; } }
 function saveCustomLS(){ localStorage.setItem('vg800_custom', JSON.stringify(customs)); }
@@ -1489,6 +1507,7 @@ function renderNav(){
   box.innerHTML='<a class="group" href="#sec-tunings">'+I.tunings+'Tunings</a>'+links
     +'<a class="sub" href="#sec-ethnic">Ethnic</a>'
     +'<a class="sub" href="#sec-strings">Transpose</a>'
+    +'<a class="sub" href="#sec-chords">Chords</a>'
     +'<a class="sub" href="#sec-user">User</a>'
     + sections                                       // Lap Steel
     +'<a class="sub" href="#sec-steel">Pedal Steel</a>'
@@ -1544,9 +1563,9 @@ function applyInst(inst, start){
   const N=inst.pitches.length; start=Math.max(0, Math.min(6-N, start));
   const res=computeCluster(inst.pitches, start);
   if(!res.ok){ toast(inst.name+' can’t fit those strings', true); return; }
-  active=inst.name; baseOffsets=[...res.offsets]; held.clear(); ethnicInst=inst; ethnicStart=start; clearSteel();
+  active=inst.name; activeChord=null; baseOffsets=[...res.offsets]; held.clear(); ethnicInst=inst; ethnicStart=start; clearSteel();
   const n=document.getElementById('nowName'); n.textContent=inst.name; n.classList.remove('std');
-  renderStrings(res.offsets); renderGrid(); renderPedals(); renderEthnic(); renderSteel();
+  renderStrings(res.offsets); renderGrid(); renderPedals(); renderEthnic(); renderSteel(); renderChords();
   sendInstFx(); tuningSend(res.offsets);   // display always updates; push INST fx + MIDI when connected
 }
 function ethnicCardHTML(inst){
@@ -1610,13 +1629,64 @@ function applySteel(t, win){
   win=Math.max(0, Math.min(WINDOWS.length-1, win));
   const res=computeCluster(t.midi.slice(WINDOWS[win].i0, WINDOWS[win].i0+6), 0);
   if(!res.ok){ toast(t.name+' — that window won’t fit', true); return; }
-  active=t.name; baseOffsets=[...res.offsets]; held.clear();   // steel is not ethnic → sendInstFx() sends both off
+  active=t.name; activeChord=null; baseOffsets=[...res.offsets]; held.clear();   // steel is not ethnic → sendInstFx() sends both off
   ethnicInst=null; steelInst=t; steelWin=win; steelRoot=t.root; copedent=COPEDENTS[t.copedent]||COPEDENTS.generic;
   const n=document.getElementById('nowName'); n.textContent=t.name; n.classList.remove('std');
-  renderStrings(res.offsets); renderGrid(); renderEthnic(); renderSteel(); renderPedals();
+  renderStrings(res.offsets); renderGrid(); renderEthnic(); renderSteel(); renderPedals(); renderChords();
   sendInstFx(); tuningSend(res.offsets);   // display always updates; push INST fx (off) + MIDI when connected
 }
 function clearSteel(){ steelInst=null; steelRoot=null; steelWin=0; copedent=COPEDENTS.generic; }
+/* ===== Chords — omnichord: tap a chord, retune all 6 strings to a musical voicing ===== */
+const CHORD_ROOTS=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const CHORD_FIXED=[
+  {key:'maj',label:'MAJ',suffix:'',  formula:[0,4,7]},
+  {key:'min',label:'MIN',suffix:'m', formula:[0,3,7]},
+  {key:'sev',label:'7',  suffix:'7', formula:[0,4,7,10]},
+];
+const CHORD_EXT=[
+  {key:'maj7',label:'maj7',suffix:'maj7',formula:[0,4,7,11]},
+  {key:'add9',label:'add9',suffix:'add9',formula:[0,4,7,14]},
+  {key:'sus4',label:'sus4',suffix:'sus4',formula:[0,5,7]},
+  {key:'dim', label:'dim', suffix:'dim', formula:[0,3,6]},
+  {key:'aug', label:'aug', suffix:'aug', formula:[0,4,8]},
+];
+const CHORD_STR_LO=[40,45,50,55,59,64];   // string 6 (low E) … string 1 (high E)
+// Voice a chord as a musical spread: root in the bass, tones stacked ascending low→high (R-5-[color]-3-5-R),
+// each placed at the octave that keeps the stack rising. Returns offsets[str1..6] or null if any string exceeds ±12.
+function voiceChord(rootPc, f){
+  let d=rootPc-4; while(d>6)d-=12; while(d<-6)d+=12;               // bass root = nearest root to the low E string
+  const bass=40+d;
+  const tmpl = f.length>=4 ? [f[0],f[2],f[3],f[1],f[2],f[0]]       // R,5,color(7th/9th),3rd,5,R
+                           : [f[0],f[2],f[0],f[1],f[2],f[0]];       // R,5,R,3rd/quality,5,R
+  const v=[]; let prev=-Infinity;
+  for(const iv of tmpl){ const pc=(rootPc+iv)%12; let p; if(prev===-Infinity){ p=bass; } else { p=prev+1; while((((p%12)+12)%12)!==pc) p++; } v.push(p); prev=p; }
+  const off=v.map((p,i)=>p-CHORD_STR_LO[i]);                       // low→high
+  if(off.some(o=>o<-12||o>12)) return null;                        // out of ±12 → cell greys out
+  return off.slice().reverse();                                   // app offsets: index 0 = string 1 (high)
+}
+function chordExtDef(){ return CHORD_EXT.find(e=>e.key===settings.chordExt) || CHORD_EXT[0]; }
+function chordRows(){ const e=chordExtDef(); return [...CHORD_FIXED, {key:e.key, label:e.label.toUpperCase(), suffix:e.suffix, formula:e.formula, ext:true}]; }
+function applyChord(rootIdx, rowKey, name, formula){
+  const off=voiceChord(rootIdx, formula); if(!off) return;         // disabled cells never reach here
+  apply({name, offsets:off, chord:{r:rootIdx, row:rowKey}});       // reuse the tuning pipeline (baseOffsets, display, MIDI)
+}
+function renderChords(){
+  const wrap=document.getElementById('chordWrap'); if(!wrap) return;
+  const rows=chordRows();
+  const colhd=CHORD_ROOTS.map(r=>`<div class="chord-colhd">${r}</div>`).join('');
+  let cells='';
+  rows.forEach(row=>{
+    cells+=`<div class="chord-rowhd${row.ext?' ext':''}">${row.label}</div>`;
+    CHORD_ROOTS.forEach((rn,ri)=>{
+      const name=rn+row.suffix, dis=!voiceChord(ri, row.formula), on=activeChord&&activeChord.r===ri&&activeChord.row===row.key;
+      cells+=`<button class="chord-cell${on?' on':''}${dis?' disabled':''}" data-r="${ri}" data-row="${row.key}"${dis?' aria-disabled="true"':''}>${name}</button>`;
+    });
+  });
+  const seg=CHORD_EXT.map(e=>`<button class="${e.key===settings.chordExt?'on':''}" data-ext="${e.key}">${e.label}</button>`).join('');
+  wrap.innerHTML=`<div class="chord-scroll"><div class="chord-matrix"><div class="chord-corner"></div>${colhd}${cells}</div></div><div class="chord-ext"><div class="seg">${seg}</div></div>`;
+  wrap.querySelectorAll('.chord-cell').forEach(b=> b.addEventListener('click',()=>{ if(b.classList.contains('disabled')) return; const ri=+b.dataset.r, row=chordRows().find(x=>x.key===b.dataset.row); if(row) applyChord(ri, row.key, CHORD_ROOTS[ri]+row.suffix, row.formula); }));
+  wrap.querySelectorAll('.chord-ext [data-ext]').forEach(b=> b.addEventListener('click',()=>{ settings.chordExt=b.dataset.ext; saveSettingsLS(); renderChords(); }));   // repopulate the special row + recompute range
+}
 /* ===== Panning — per-string pan modes, glided so the sweep is felt ===== */
 function panToCC(p){ return Math.round((Math.max(-1,Math.min(1,p))+1)/2*127); }   // −1→L50(0), +1→R50(127)
 let panTimer=null, panCur=[0,0,0,0,0,0];   // live sounded pan per string, so glides start from where we are
@@ -1814,11 +1884,11 @@ function updateOverview(posOverride){
 }
 function notesOf(offsets){ return offsets.map((s,i)=>nameOf(STD_MIDI[i]+s).name).reverse().join(' '); }
 function apply(t){
-  active=t.name;
+  active=t.name; activeChord=t.chord||null;
   baseOffsets=[...t.offsets]; held.clear(); ethnicInst=null; clearSteel();   // not ethnic → sendInstFx() sends both off
   if(t.bends&&t.bends.keys){ settings.keys={...DEFAULT_KEYS, ...t.bends.keys}; rebuildKeymap(); saveSettingsLS(); }   // user preset carries its own pedal key mapping
   const n=document.getElementById('nowName'); n.textContent=t.name; n.classList.toggle('std',t.name==='Standard');
-  renderStrings(t.offsets); renderGrid(); renderPedals(); renderEthnic(); renderSteel();
+  renderStrings(t.offsets); renderGrid(); renderPedals(); renderEthnic(); renderSteel(); renderChords();
   sendInstFx(); tuningSend(t.offsets);   // display always updates; push INST fx (off) + MIDI when connected (shows the existing error toast if not)
 }
 
@@ -2061,13 +2131,13 @@ document.getElementById('saveSettings').addEventListener('click',()=>{
   const num=(id,lo,hi,d)=>{ const v=+document.getElementById(id).value; return isNaN(v)?d:Math.max(lo,Math.min(hi,v)); };
   const ab={ autoBend:document.getElementById('autoBendChk').checked, bendCC:num('bendCCInput',0,127,69), levelCC:num('levelCCInput',0,127,70), bendDepth:num('bendDepthInput',0,50,25), levelDip:num('levelDipInput',0,50,15), bendMs:num('bendMsInput',40,400,120) };
   const panCCs=[]; document.querySelectorAll('#panCcRows select').forEach(x=>panCCs[+x.dataset.pcc]=Math.max(1,Math.min(127,+x.value||1)));
-  settings={channel:ch,ccs,gap:settings.gap??20,glide:0,keys:settings.keys,latch:settings.latch,panCCs,panMs:settings.panMs,fxDoubler:settings.fxDoubler,fxOctave:settings.fxOctave,swellMs:settings.swellMs,swellLatch:settings.swellLatch,ap:settings.ap, ...ab}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
+  settings={channel:ch,ccs,gap:settings.gap??20,glide:0,keys:settings.keys,latch:settings.latch,panCCs,panMs:settings.panMs,fxDoubler:settings.fxDoubler,fxOctave:settings.fxOctave,swellMs:settings.swellMs,swellLatch:settings.swellLatch,chordExt:settings.chordExt,ap:settings.ap, ...ab}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
 });
 
 function applyTest(v){
-  active=''; baseOffsets=[v,v,v,v,v,v]; held.clear(); ethnicInst=null; clearSteel();   // transpose is not ethnic → sendInstFx() sends both off
+  active=''; activeChord=null; baseOffsets=[v,v,v,v,v,v]; held.clear(); ethnicInst=null; clearSteel();   // transpose is not ethnic → sendInstFx() sends both off
   const n=document.getElementById('nowName'); n.textContent='TEST '+(v>0?'+'+v:''+v); n.classList.remove('std');
-  renderStrings([v,v,v,v,v,v]); renderGrid(); renderPedals(); renderEthnic(); renderSteel();
+  renderStrings([v,v,v,v,v,v]); renderGrid(); renderPedals(); renderEthnic(); renderSteel(); renderChords();
   sendInstFx(); tuningSend([v,v,v,v,v,v]);   // display always updates; push INST fx (off) + MIDI when connected
 }
 function renderTestBtns(){
@@ -2101,6 +2171,7 @@ renderTestBtns();
 renderPedals();
 renderEthnic();
 renderSteel();
+renderChords();
 renderPan();
 placeBench();
 updatePedalHint();
