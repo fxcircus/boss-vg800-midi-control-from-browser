@@ -1638,17 +1638,17 @@ function applySteel(t, win){
 function clearSteel(){ steelInst=null; steelRoot=null; steelWin=0; copedent=COPEDENTS.generic; }
 /* ===== Chords — omnichord: tap a chord, retune all 6 strings to a musical voicing ===== */
 const CHORD_ROOTS=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-const CHORD_FIXED=[
-  {key:'maj', label:'MAJ', suffix:'',    formula:[0,4,7]},
-  {key:'min', label:'MIN', suffix:'m',   formula:[0,3,7]},
-  {key:'sev', label:'7',   suffix:'7',   formula:[0,4,7,10]},
-  {key:'maj7',label:'MAJ7',suffix:'maj7',formula:[0,4,7,11]},
+const CHORD_FIXED=[   // suffix = full name (workbench / current-tuning); sym = compact button symbol
+  {key:'maj', label:'MAJ', suffix:'',    sym:'',     formula:[0,4,7]},
+  {key:'min', label:'MIN', suffix:'m',   sym:'m',    formula:[0,3,7]},
+  {key:'sev', label:'7',   suffix:'7',   sym:'7',    formula:[0,4,7,10]},
+  {key:'maj7',label:'MAJ7',suffix:'maj7',sym:'Δ',    formula:[0,4,7,11]},
 ];
 const CHORD_EXT=[
-  {key:'add9',label:'add9',suffix:'add9',formula:[0,4,7,14]},
-  {key:'sus4',label:'sus4',suffix:'sus4',formula:[0,5,7]},
-  {key:'dim', label:'dim', suffix:'dim', formula:[0,3,6]},
-  {key:'aug', label:'aug', suffix:'aug', formula:[0,4,8]},
+  {key:'add9',label:'add9',suffix:'add9',sym:'add9', formula:[0,4,7,14]},
+  {key:'sus4',label:'sus4',suffix:'sus4',sym:'sus',  formula:[0,5,7]},
+  {key:'dim', label:'dim', suffix:'dim', sym:'°',    formula:[0,3,6]},
+  {key:'aug', label:'aug', suffix:'aug', sym:'+',    formula:[0,4,8]},
 ];
 const CHORD_STR_LO=[40,45,50,55,59,64];   // string 6 (low E) … string 1 (high E)
 // Voice a chord as a musical spread: root in the bass, tones stacked ascending low→high (R-5-[color]-3-5-R),
@@ -1665,7 +1665,7 @@ function voiceChord(rootPc, f){
   return off.slice().reverse();                                   // app offsets: index 0 = string 1 (high)
 }
 function chordExtDef(){ return CHORD_EXT.find(e=>e.key===settings.chordExt) || CHORD_EXT[0]; }
-function chordRows(){ const e=chordExtDef(); return [...CHORD_FIXED, {key:e.key, label:e.label.toUpperCase(), suffix:e.suffix, formula:e.formula, ext:true}]; }
+function chordRows(){ const e=chordExtDef(); return [...CHORD_FIXED, {key:e.key, label:e.label.toUpperCase(), suffix:e.suffix, sym:e.sym, formula:e.formula, ext:true}]; }
 function applyChord(rootIdx, rowKey, name, formula){
   const off=voiceChord(rootIdx, formula); if(!off) return;         // disabled cells never reach here
   apply({name, offsets:off, chord:{r:rootIdx, row:rowKey}});       // reuse the tuning pipeline (baseOffsets, display, MIDI)
@@ -1678,7 +1678,7 @@ function renderChords(){
   rows.forEach(row=>{
     cells+=`<div class="chord-rowhd${row.ext?' ext':''}">${row.label}</div>`;
     CHORD_ROOTS.forEach((rn,ri)=>{
-      const name=rn+row.suffix, dis=!voiceChord(ri, row.formula), on=activeChord&&activeChord.r===ri&&activeChord.row===row.key;
+      const name=rn+row.sym, dis=!voiceChord(ri, row.formula), on=activeChord&&activeChord.r===ri&&activeChord.row===row.key;
       cells+=`<button class="chord-cell${on?' on':''}${dis?' disabled':''}" data-r="${ri}" data-row="${row.key}"${dis?' aria-disabled="true"':''}>${name}</button>`;
     });
   });
