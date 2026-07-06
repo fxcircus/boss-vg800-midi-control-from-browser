@@ -157,7 +157,7 @@ every note within its string's ±12 window; `center` = midpoint of the cluster's
 
 ## 5. Phases
 
-> Progress: **[✅] Phase 1** · [✅] Phase 2 · [✅] Phase 3 · [ ] Phase 4 · [ ] Phase 5 · [ ] Phase 6
+> Progress: **[✅] Phase 1** · [✅] Phase 2 · [✅] Phase 3 · [✅] Phase 4 · [ ] Phase 5 · [ ] Phase 6
 
 ### Phase 1 — Scaffolding: mode + settings + controls (no behavior change yet) · S · ✅ DONE
 **Goal:** all the plumbing and UI exist; Voiced mode currently just calls `voiceChord`
@@ -210,7 +210,7 @@ chord. Deterministic, the first real payoff.
 - **Test:** harness asserts avg motion ≈ research numbers and always in range; manual
   A/B Grip vs Legato.
 
-### Phase 4 — 7th chords & all qualities · M
+### Phase 4 — 7th chords & all qualities · M · ✅ DONE
 **Goal:** extend from triads to all 14 chord types with correct drop/double rules.
 - Step A full rules: guide-tone drop on 3-string clusters (drop 5th, keep altered 5th),
   full 7ths on 4-string clusters, triad-doubling on 4-string clusters, **dim7

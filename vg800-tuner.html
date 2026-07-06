@@ -1733,7 +1733,8 @@ function solveCluster(targetPcs, ascStd, prev, center){   // ascending / no-cros
 function clusterTargetPcs(rootPc, formula, N){     // N chord-tone pitch classes for the cluster (Phase 2 basic drop/double; Phase 4 refines)
   let t=formula.map(iv=>({iv:iv%12, pc:(rootPc+iv)%12}));
   const seen=new Set(); t=t.filter(x=> seen.has(x.pc)?false:(seen.add(x.pc), true));         // distinct pcs
-  while(t.length>N){ const fi=t.findIndex(x=>x.iv===7); if(fi>=0) t.splice(fi,1); else t.pop(); }   // drop the perfect 5th first
+  while(t.length>N){ let fi=t.findIndex(x=>x.iv===7); if(fi<0) fi=t.findIndex(x=>x.iv===0); if(fi<0) fi=t.length-1;   // drop perfect 5th, then root (bass re-supplies both) — keeps 3rd, 7th/6th/9th, and any altered 5th (♭5/♯5)
+    t.splice(fi,1); }
   const pcs=t.map(x=>x.pc), root=rootPc%12;
   while(pcs.length<N) pcs.push(root);                                                          // double the root (always a chord tone) to fill
   return pcs;
