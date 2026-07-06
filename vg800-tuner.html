@@ -278,6 +278,17 @@
   .pedal.on .ap-plate { transform: rotate(22deg); }
   .pedal[data-ctrl="LKL"].on .ap-lever { transform: rotate(-26deg); }
   .pedal[data-ctrl="LKR"].on .ap-lever { transform: rotate(26deg); }
+  /* Volume swell — 4-way speed segment + a hold/latch arm button */
+  .swell-row { display: flex; flex-wrap: wrap; align-items: stretch; gap: 10px; margin-bottom: 18px; }
+  .swell-seg { flex: 1 1 250px; }
+  .swell-btn { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 9px; padding: 8px 16px; border: 1px solid var(--edge-soft); border-radius: 10px; background: var(--wood); color: var(--bone-dim); cursor: pointer; font-family: var(--cond); font-weight: 700; font-size: 15px; text-transform: uppercase; letter-spacing: 0.4px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 3px 8px rgba(0,0,0,0.32); transition: transform .1s, border-color .12s, background .12s, box-shadow .12s, color .12s, opacity .12s; user-select: none; -webkit-user-select: none; touch-action: none; }
+  .swell-btn:hover:not(.disabled) { border-color: var(--brass-deep); background: var(--felt); color: var(--bone); }
+  .swell-btn.on { border-color: var(--brass); background: var(--felt); color: var(--brass); box-shadow: inset 0 0 0 1px var(--brass), 0 0 22px var(--brass-glow); transform: translateY(2px) scale(0.985); }
+  .swell-btn.disabled { opacity: 0.42; cursor: not-allowed; filter: grayscale(0.45); box-shadow: none; }
+  .swell-ico { width: 20px; height: 18px; flex-shrink: 0; color: var(--amber); }
+  .swell-btn.on .swell-ico { color: var(--brass); }
+  .swell-btn.disabled .swell-ico { color: currentColor; }
+  .swell-lbl { display: inline-flex; align-items: center; gap: 8px; }
 
   /* Pedal key mapping + latch */
   .latch-tog { display: inline-flex; align-items: center; gap: 9px; font-family: var(--mono); font-size: 11px; color: var(--bone-dim); cursor: pointer; margin-bottom: 11px; }
@@ -967,7 +978,7 @@ const SLBL = ['1','2','3','4','5','6'];
 const STR12_CC=77, ALT_CC=78;   // INST fx assigns: "string doubler" (12-string, CC77) + "+octave" (alt-tune, CC78) — both MOMENT (127=on, 0=off)
 function nameOf(m){ const pc=((m%12)+12)%12; return {name:NOTE[pc], oct:Math.floor(m/12)-1}; }
 function toCC(s){ const c=Math.max(-12,Math.min(12,s)); return Math.round((c+12)/24*127); }
-const DEFAULT_KEYS={A:'a',B:'s',LKL:'d',LKR:'f',AB:'g',ABR:'h'};  // ergonomic left-hand cluster
+const DEFAULT_KEYS={A:'a',B:'s',LKL:'d',LKR:'f',AB:'g',ABR:'h',SWELL:'v'};  // ergonomic left-hand cluster (+ V = volume swell)
 const AB_DEFAULTS={autoBend:true, bendCC:69, levelCC:70, bendDepth:25, levelDip:15, bendMs:120};  // auto-bend scoop (on by default)
 const AP_DEFAULTS={mode:'free', rate:15, bpm:120, div:'1/2 bar', width:0.65, shape:'sine', spread:1, char:'rotate', lTopSpread:1, lTopSpeed:1.12, lBotSpread:0.5, lBotSpeed:0.86};  // auto-pan engine (gentle defaults; l* = Leslie per-rotor spread/speed)
 
@@ -1063,7 +1074,7 @@ const PANMODES=[
 const STR_COLORS=['#ef5350','#f2a33d','#c6d43f','#4cc178','#4f9dea','#a563d4'];
 let dispOffsets=[0,0,0,0,0,0];   // the pitch offsets currently shown (base tuning + engaged pedal bends)
 
-function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; if(typeof s.fxDoubler!=='boolean') s.fxDoubler=true; if(typeof s.fxOctave!=='boolean') s.fxOctave=true; if(!s.ap||typeof s.ap!=='object'){ s.ap={...AP_DEFAULTS}; if(typeof s.autoPanRate==='number') s.ap.rate=s.autoPanRate; } else { for(const k in AP_DEFAULTS) if(!(k in s.ap)) s.ap[k]=AP_DEFAULTS[k]; if(s.ap.char==='none') s.ap.char='rotate'; if(!['1 bar','1 bar T','1/2 bar','1/2 bar T','1/4','1/4 T'].includes(s.ap.div)) s.ap.div='1/2 bar'; if(s.ap.bpm>170) s.ap.bpm=170; } return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, fxDoubler:true, fxOctave:true, ap:{...AP_DEFAULTS}, ...AB_DEFAULTS}; }
+function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; if(typeof s.fxDoubler!=='boolean') s.fxDoubler=true; if(typeof s.fxOctave!=='boolean') s.fxOctave=true; if(typeof s.swellMs!=='number') s.swellMs=0; if(!s.ap||typeof s.ap!=='object'){ s.ap={...AP_DEFAULTS}; if(typeof s.autoPanRate==='number') s.ap.rate=s.autoPanRate; } else { for(const k in AP_DEFAULTS) if(!(k in s.ap)) s.ap[k]=AP_DEFAULTS[k]; if(s.ap.char==='none') s.ap.char='rotate'; if(!['1 bar','1 bar T','1/2 bar','1/2 bar T','1/4','1/4 T'].includes(s.ap.div)) s.ap.div='1/2 bar'; if(s.ap.bpm>170) s.ap.bpm=170; } return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, fxDoubler:true, fxOctave:true, swellMs:0, ap:{...AP_DEFAULTS}, ...AB_DEFAULTS}; }
 function saveSettingsLS(){ localStorage.setItem('vg800_settings', JSON.stringify(settings)); }
 function loadCustom(){ try{ return JSON.parse(localStorage.getItem('vg800_custom'))||[]; }catch(e){ return []; } }
 function saveCustomLS(){ localStorage.setItem('vg800_custom', JSON.stringify(customs)); }
@@ -1132,12 +1143,13 @@ function bendScoop(offsets){
   if(!midiOut) return;
   if(bendTimer){ clearInterval(bendTimer); bendTimer=null; }
   if(bendHold){ clearTimeout(bendHold); bendHold=null; }
+  if(swellTimer){ clearInterval(swellTimer); swellTimer=null; }   // scoop takes sole ownership of CC70 from any in-flight swell
   const st=0xB0|((settings.channel-1)&0x0F);
-  const bcc=settings.bendCC&0x7F, lcc=settings.levelCC&0x7F;
+  const bcc=settings.bendCC&0x7F;
   const depth=settings.bendDepth||0, ldip=settings.levelDip||0, ms=Math.max(30, settings.bendMs||90);
   const cc=p=>Math.round(Math.max(0,Math.min(100,p))/100*127);
   midiOut.send([st, bcc, cc(100-depth)]);                       // dip now (pull toward standard)
-  if(ldip>0) midiOut.send([st, lcc, cc(100-ldip)]);
+  if(ldip>0) sendLevel(cc(100-ldip), true);                     // dip level via sendLevel so swellLevel tracks CC70
   const hold=Math.round(ms*0.35), rise=ms-hold, step=15, steps=Math.max(2, Math.round(rise/step));
   bendHold=setTimeout(()=>{
     bendHold=null; if(!midiOut) return;
@@ -1145,8 +1157,8 @@ function bendScoop(offsets){
     let n=0;
     bendTimer=setInterval(()=>{
       n++; const t=Math.min(1, n/steps);
-      if(midiOut){ midiOut.send([st, bcc, cc(100-depth*(1-t))]); if(ldip>0) midiOut.send([st, lcc, cc(100-ldip*(1-t))]); }
-      if(n>=steps){ clearInterval(bendTimer); bendTimer=null; if(midiOut){ midiOut.send([st, bcc, 127]); if(ldip>0) midiOut.send([st, lcc, 127]); } }
+      if(midiOut) midiOut.send([st, bcc, cc(100-depth*(1-t))]); if(ldip>0) sendLevel(cc(100-ldip*(1-t)));
+      if(n>=steps){ clearInterval(bendTimer); bendTimer=null; if(midiOut) midiOut.send([st, bcc, 127]); if(ldip>0) sendLevel(127, true); }
     }, step);
   }, hold);
 }
@@ -1229,7 +1241,7 @@ let copedent=COPEDENTS.generic, steelInst=null, steelWin=0, steelRoot=null;
 let KEYMAP={}, bindingCtrl=null;
 function ctrlById(id){ return copedent.controls.find(c=>c.id===id); }
 function keyFor(id){ const c=ctrlById(id), ov=settings.keys[id]; return (ov!==undefined?ov:(c?c.key:'')); }
-function rebuildKeymap(){ KEYMAP={}; copedent.controls.forEach(c=>{ const k=keyFor(c.id); if(k) KEYMAP[k]=c.id; }); }
+function rebuildKeymap(){ KEYMAP={}; copedent.controls.forEach(c=>{ const k=keyFor(c.id); if(k) KEYMAP[k]=c.id; }); const sk=keyFor('SWELL'); if(sk && !KEYMAP[sk]) KEYMAP[sk]='SWELL'; }   // don't shadow a copedent pedal that already claimed this key
 rebuildKeymap();
 
 function pcOf(base){ return base.map((o,i)=> (((STD_MIDI[i]+o)%12)+12)%12 ); }
@@ -1296,11 +1308,13 @@ let keysOpen = !document.documentElement.classList.contains('compact');   // Key
 function keymapHTML(){
   const chips=copedent.controls.map(c=>{ const k=(keyFor(c.id)||'').toUpperCase(), L=bindingCtrl===c.id;
     return `<button class="kb-chip${L?' listening':''}" data-bind="${c.id}"><span class="kb-cname">${c.name}</span><span class="kb-key">${L?'press…':(k||'—')}</span></button>`; }).join('');
+  const sk=(keyFor('SWELL')||'').toUpperCase(), SL=bindingCtrl==='SWELL';
+  const swellChip=`<button class="kb-chip${SL?' listening':''}" data-bind="SWELL"><span class="kb-cname">Swell</span><span class="kb-key">${SL?'press…':(sk||'—')}</span></button>`;
   return `<details class="kdraw"${keysOpen?' open':''}>
     <summary class="fam-name kdraw-sum"><span>Key Mapping<i class="kchev"></i></span></summary>
     <div class="kdraw-body">
     <label class="latch-tog"><input type="checkbox" id="latchChk"${settings.latch?' checked':''}><span>Latch — tap on/off instead of holding</span></label>
-    <div class="kb-chips">${chips}<button class="kb-chip kb-reset" data-reset="1"><span class="kb-cname">Reset</span><span class="kb-key">↺</span></button></div>
+    <div class="kb-chips">${chips}${swellChip}<button class="kb-chip kb-reset" data-reset="1"><span class="kb-cname">Reset</span><span class="kb-key">↺</span></button></div>
     </div></details>`;
 }
 function renderPedals(){
@@ -1318,6 +1332,7 @@ function renderPedals(){
   if(foot)  html+=`<div class="fam-name">Foot Pedals</div><div class="pedals">${foot}</div>`;
   if(knee)  html+=`<div class="fam-name">Knee Levers</div><div class="pedals">${knee}</div>`;
   if(combo) html+=`<div class="fam-name">Combos</div><div class="pedals">${combo}</div>`;
+  html+=swellHTML();
   html+=keymapHTML();
   wrap.innerHTML=html;
   const kd=wrap.querySelector('.kdraw'); if(kd) kd.addEventListener('toggle',()=>{ keysOpen=kd.open; });
@@ -1333,22 +1348,64 @@ function renderPedals(){
   const latchEl=wrap.querySelector('#latchChk');
   if(latchEl) latchEl.addEventListener('change', e=>{ settings.latch=e.target.checked; saveSettingsLS(); updatePedalHint(); });
   wrap.querySelectorAll('.kb-chip[data-bind]').forEach(b=> b.addEventListener('click', ()=>{ bindingCtrl=b.dataset.bind; renderPedals(); }));
-  const rb=wrap.querySelector('.kb-chip[data-reset]'); if(rb) rb.addEventListener('click', ()=>{ copedent.controls.forEach(c=> settings.keys[c.id]=c.key); rebuildKeymap(); saveSettingsLS(); bindingCtrl=null; renderPedals(); });
+  const rb=wrap.querySelector('.kb-chip[data-reset]'); if(rb) rb.addEventListener('click', ()=>{ copedent.controls.forEach(c=> settings.keys[c.id]=c.key); settings.keys.SWELL=DEFAULT_KEYS.SWELL; rebuildKeymap(); saveSettingsLS(); bindingCtrl=null; renderPedals(); });
+  wrap.querySelectorAll('.swell-seg button').forEach(b=> b.addEventListener('click', ()=> setSwellSpeed(+b.dataset.swell)));
+  const sb=wrap.querySelector('#swellBtn');
+  if(sb && !sb.classList.contains('disabled')){
+    sb.addEventListener('pointerdown', e=>{ e.preventDefault(); try{ sb.setPointerCapture(e.pointerId); }catch(_){}; swellPress(); });
+    sb.addEventListener('pointerup', ()=> swellRelease());
+    sb.addEventListener('pointercancel', ()=> swellRelease());
+    sb.addEventListener('lostpointercapture', ()=> swellRelease());
+  }
 }
 // a control shows engaged (highlighted + animated) if it's held directly OR it's a part of a held combo
 function ctrlEngaged(ctrl){ if(held.has(ctrl)) return true; for(const h of held){ const c=ctrlById(h); if(c&&c.parts&&c.parts.includes(ctrl)) return true; } return false; }
 function setCtrl(ctrl,on){
   const st=ctrlStateCache[ctrl];
+  const wasActive=held.size>0;
   if(on){ if(!st||!st.avail) return; held.add(ctrl); } else held.delete(ctrl);
   document.querySelectorAll('#pedalWrap .pedal').forEach(b=> b.classList.toggle('on', ctrlEngaged(b.dataset.ctrl)));
   const bends=bendsFromEngaged();
   const eff=baseOffsets.map((o,i)=> o+bends[i]);
+  if(on && !wasActive) swellTrigger();   // a bend just started (no pedal was held) → CC70 volume swell / de-click
   if(midiOut) send(eff);
   renderStrings(eff);
 }
 function pressCtrl(ctrl){ if(settings.latch) setCtrl(ctrl, !held.has(ctrl)); else setCtrl(ctrl, true); }
 function releaseCtrl(ctrl){ if(!settings.latch) setCtrl(ctrl, false); }
 function updatePedalHint(){ const el=document.getElementById('pedalHint'); if(el) el.textContent=settings.latch?'TAP TO LATCH':'HOLD TO BEND'; }
+/* ===== Volume swell — CC70 (INST LEVEL) fades up on each bend, pedal-steel style ===== */
+let swellHeld=false, swellTimer=null, swellLevel=127;   // swellLevel = last CC70 value we sent (0–127), for send-on-change
+const swellEase = t => t*t;                             // quadratic ease-in — a quiet start (log-taper-like) hides the pick attack
+function sendLevel(v, force){ v=Math.max(0,Math.min(127,Math.round(v))); if(!force && v===swellLevel) return; swellLevel=v; if(midiOut) midiOut.send([0xB0|((settings.channel-1)&0x0F), (settings.levelCC||70)&0x7F, v]); }
+function cancelScoop(){ if(bendTimer){ clearInterval(bendTimer); bendTimer=null; } if(bendHold){ clearTimeout(bendHold); bendHold=null; } if(midiOut) midiOut.send([0xB0|((settings.channel-1)&0x0F), (settings.bendCC||69)&0x7F, 127]); }   // stop any in-flight tuning-scoop so the swell solely owns CC70; restore bend control to full
+function rampLevel(from, to, ms, ease){                  // one-shot CC70 ramp, deduped; tick caps at AUTOPAN_MS (~25/sec) for slow swells, finer for short ramps + de-click
+  if(swellTimer){ clearInterval(swellTimer); swellTimer=null; }
+  cancelScoop();
+  from=Math.max(0,Math.min(127,from)); to=Math.max(0,Math.min(127,to));
+  sendLevel(from, true);
+  const tick=Math.max(6, Math.min(AUTOPAN_MS, Math.round(ms/8)));
+  const steps=Math.max(1, Math.round(ms/tick)); let n=0;
+  swellTimer=setInterval(()=>{ n++; const t=Math.min(1,n/steps), e=ease?ease(t):t; sendLevel(from+(to-from)*e); if(n>=steps){ clearInterval(swellTimer); swellTimer=null; sendLevel(to, true); } }, tick);
+}
+function swellTrigger(){                                  // called when a bend starts
+  if(!settings.swellMs) return;                          // OFF → never touch CC70
+  if(swellHeld) rampLevel(0, 127, settings.swellMs, swellEase);   // armed → full musical swell 0→127 over the selected time
+  else rampLevel(swellLevel, 127, 22, null);             // not armed → quick de-click ramp up to full (no pop)
+}
+function setSwell(on){ swellHeld=on; const b=document.getElementById('swellBtn'); if(b) b.classList.toggle('on', on); }
+function swellPress(){ if(!settings.swellMs) return; if(settings.latch) setSwell(!swellHeld); else setSwell(true); }   // momentary or latch, matching the pedals
+function swellRelease(){ if(!settings.latch) setSwell(false); }
+function setSwellSpeed(ms){ settings.swellMs=ms; saveSettingsLS(); if(swellTimer){ clearInterval(swellTimer); swellTimer=null; } if(!ms) setSwell(false); sendLevel(127, true); renderPedals(); }   // toggle change → clean full level
+const SWELL_OPTS=[[0,'Off'],[1200,'Slow'],[400,'Moderate'],[120,'Fast']];
+function swellHTML(){
+  const ms=settings.swellMs||0, dis=ms===0, key=(keyFor('SWELL')||'').toUpperCase();
+  const seg=SWELL_OPTS.map(([v,nm])=>`<button class="${ms===v?'on':''}" data-swell="${v}">${nm}</button>`).join('');
+  return `<div class="fam-name">Swell</div><div class="swell-row"><div class="seg swell-seg">${seg}</div>`
+    +`<button class="swell-btn${swellHeld?' on':''}${dis?' disabled':''}" id="swellBtn"${dis?' aria-disabled="true"':''} title="Hold or latch to arm the full volume swell on the next bend">`
+    +`<svg class="swell-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17 L21 6 L21 17 Z" fill="currentColor"/></svg>`
+    +`<span class="swell-lbl">Swell${key?`<span class="pedal-key">${key}</span>`:''}</span></button></div>`;
+}
 document.addEventListener('keydown', e=>{                 // rebind capture
   if(!bindingCtrl) return;
   e.preventDefault();
@@ -1356,6 +1413,7 @@ document.addEventListener('keydown', e=>{                 // rebind capture
   if((e.key||'').length!==1) return;                      // wait for a printable key
   const k=e.key.toLowerCase();
   copedent.controls.forEach(c=>{ if(c.id!==bindingCtrl && keyFor(c.id)===k) settings.keys[c.id]=''; });  // no dupes
+  if(bindingCtrl!=='SWELL' && keyFor('SWELL')===k) settings.keys.SWELL='';   // …incl. the swell key
   settings.keys[bindingCtrl]=k; bindingCtrl=null; rebuildKeymap(); saveSettingsLS(); renderPedals();
 });
 document.addEventListener('keydown', e=>{                 // pedal engage
@@ -1363,9 +1421,9 @@ document.addEventListener('keydown', e=>{                 // pedal engage
   if(document.querySelector('.scrim.open')) return;
   const tag=e.target.tagName||''; if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT') return;
   const ctrl=KEYMAP[(e.key||'').toLowerCase()]; if(!ctrl) return;
-  e.preventDefault(); pressCtrl(ctrl);
+  e.preventDefault(); if(ctrl==='SWELL') swellPress(); else pressCtrl(ctrl);
 });
-document.addEventListener('keyup', e=>{ if(bindingCtrl) return; const ctrl=KEYMAP[(e.key||'').toLowerCase()]; if(ctrl) releaseCtrl(ctrl); });
+document.addEventListener('keyup', e=>{ if(bindingCtrl) return; const ctrl=KEYMAP[(e.key||'').toLowerCase()]; if(ctrl==='SWELL') swellRelease(); else if(ctrl) releaseCtrl(ctrl); });
 
 function makeCard(t,isC){
   const c=document.createElement('div');
@@ -1998,7 +2056,7 @@ document.getElementById('saveSettings').addEventListener('click',()=>{
   const num=(id,lo,hi,d)=>{ const v=+document.getElementById(id).value; return isNaN(v)?d:Math.max(lo,Math.min(hi,v)); };
   const ab={ autoBend:document.getElementById('autoBendChk').checked, bendCC:num('bendCCInput',0,127,69), levelCC:num('levelCCInput',0,127,70), bendDepth:num('bendDepthInput',0,50,25), levelDip:num('levelDipInput',0,50,15), bendMs:num('bendMsInput',40,400,120) };
   const panCCs=[]; document.querySelectorAll('#panCcRows select').forEach(x=>panCCs[+x.dataset.pcc]=Math.max(1,Math.min(127,+x.value||1)));
-  settings={channel:ch,ccs,gap:settings.gap??20,glide:0,keys:settings.keys,latch:settings.latch,panCCs,panMs:settings.panMs,fxDoubler:settings.fxDoubler,fxOctave:settings.fxOctave,ap:settings.ap, ...ab}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
+  settings={channel:ch,ccs,gap:settings.gap??20,glide:0,keys:settings.keys,latch:settings.latch,panCCs,panMs:settings.panMs,fxDoubler:settings.fxDoubler,fxOctave:settings.fxOctave,swellMs:settings.swellMs,ap:settings.ap, ...ab}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
 });
 
 function applyTest(v){
