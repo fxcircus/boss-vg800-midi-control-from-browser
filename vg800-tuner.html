@@ -169,6 +169,7 @@
     transition: left 0.35s cubic-bezier(.34,1.35,.5,1), background 0.25s; z-index: 2;
   }
   .str .slide .oct { font-family: var(--mono); font-weight: 400; font-size: 8px; color: var(--chrome-dim); margin-left: 1px; }
+  .str .slide .oct.deg { font-weight: 700; color: var(--ink); }   /* chord role tag: bold + dark so it reads next to the note */
   .str.shifted.sharp .slide { background: linear-gradient(180deg, #ffdca6, #e8913c); }
   .str.shifted.flat .slide { background: linear-gradient(180deg, #cfe3f2, #7fa8c9); }
   html[data-theme="dd500"] .str .slide { color: #2e2820; }   /* dark note text so it's readable on the light pill in the cream theme */
@@ -1222,6 +1223,7 @@ function renderStrings(offsets){
       wrap.appendChild(row);
     }
   }
+  const degMap=chordDegrees();             // per-string role tags when a chord is active, else null
   for(let i=0;i<6;i++){                    // …then update in place so the slide animates (the "bend")
     const s=offsets[i]; const {name,oct}=nameOf(STD_MIDI[i]+s);
     const dir=s<0?'flat':s>0?'sharp':''; const sign=s>0?'+':'';
@@ -1229,7 +1231,12 @@ function renderStrings(offsets){
     row.className='str'+(s!==0?' shifted '+dir:'');
     row.querySelector('.slide').style.left=(50+(s/12)*44)+'%';
     row.querySelector('.sl-name').textContent=name;
-    row.querySelector('.oct').textContent=oct;
+    let deg=null;
+    if(degMap){ const iv=((((STD_MIDI[i]+s)%12)+12)%12 - activeChord.r + 12)%12; deg=degMap[iv]; }
+    const octEl=row.querySelector('.oct');
+    octEl.textContent = deg ? deg.label : oct;               // chord role tag (R/3/5/♭7/9…) replaces the octave superscript
+    octEl.classList.toggle('deg', !!deg);
+    row.querySelector('.str-sw').style.background = deg ? deg.color : STR_COLORS[i];   // left dot recoloured by role
     const off=row.querySelector('.str-off'); off.className='str-off '+dir; off.textContent=s===0?'·':sign+s;
   }
   dispOffsets=offsets.slice(); updateOverview(); fitBenchName();   // sync overview + fit the tuning name
@@ -1693,6 +1700,30 @@ function chordRows(){ const e=chordExtDef(); return [...CHORD_FIXED, {key:e.key,
 function applyChord(rootIdx, rowKey, name, formula){
   const off=voiceChord(rootIdx, formula); if(!off) return;         // disabled cells never reach here
   apply({name, offsets:off, chord:{r:rootIdx, row:rowKey}});       // reuse the tuning pipeline (baseOffsets, display, MIDI)
+}
+/* ===== Chord degree tags — colour each workbench string by its role in the active chord ===== */
+// Reuses the 6 string colours as a *role* palette: root=red, 3rd=orange, 5th=yellow, 7th=green, 2nd/9th=blue, 6th/4th=purple.
+function degLabel(fv, rowKey){          // formula value → degree name (keeps 9th≠2nd, dim7≠6th distinct)
+  if(fv===14) return '9';
+  if(fv===2)  return '2';
+  if(fv===9)  return rowKey==='dim7' ? '°7' : '6';
+  return {0:'R',3:'♭3',4:'3',5:'4',6:'♭5',7:'5',8:'♯5',10:'♭7',11:'7'}[fv] || '?';
+}
+function degColor(lbl){
+  if(lbl==='R') return STR_COLORS[0];                           // root — red
+  if(lbl==='♭3'||lbl==='3') return STR_COLORS[1];               // 3rd  — orange
+  if(lbl==='♭5'||lbl==='5'||lbl==='♯5') return STR_COLORS[2];   // 5th  — yellow
+  if(lbl==='♭7'||lbl==='7'||lbl==='°7') return STR_COLORS[3];   // 7th  — green
+  if(lbl==='2'||lbl==='9') return STR_COLORS[4];                // 2/9  — blue
+  return STR_COLORS[5];                                         // 4/6  — purple
+}
+function chordDegrees(){                // {pcInterval(0-11): {label,color}} for the active chord, else null
+  if(!activeChord) return null;
+  const def=[...CHORD_FIXED, ...CHORD_EXT].find(x=>x.key===activeChord.row);
+  if(!def) return null;
+  const map={};
+  def.formula.forEach(fv=>{ const lbl=degLabel(fv, activeChord.row); map[((fv%12)+12)%12]={label:lbl, color:degColor(lbl)}; });
+  return map;
 }
 /* ===== Key mode — highlight the seven diatonic chords of a chosen root+scale ===== */
 const SCALES={   // intervals = semitones from root; quals = diatonic chord quality per degree; special = Extend auto-set
