@@ -157,7 +157,7 @@ every note within its string's ±12 window; `center` = midpoint of the cluster's
 
 ## 5. Phases
 
-> Progress: **[✅] Phase 1** · [✅] Phase 2 · [ ] Phase 3 · [ ] Phase 4 · [ ] Phase 5 · [ ] Phase 6
+> Progress: **[✅] Phase 1** · [✅] Phase 2 · [✅] Phase 3 · [ ] Phase 4 · [ ] Phase 5 · [ ] Phase 6
 
 ### Phase 1 — Scaffolding: mode + settings + controls (no behavior change yet) · S · ✅ DONE
 **Goal:** all the plumbing and UI exist; Voiced mode currently just calls `voiceChord`
@@ -191,7 +191,7 @@ chord. Deterministic, the first real payoff.
 - **Test:** node harness (§8) asserts all 12 keys × 7 diatonic triads × all 4 three-
   clusters are in range with correct tones; spot-check the workbench role-tags.
 
-### Phase 3 — Legato: stateful voice leading + memory + re-center · M
+### Phase 3 — Legato: stateful voice leading + memory + re-center · M · ✅ DONE
 **Goal:** the "hold common tones, glide one voice" feel; Feel toggle goes live.
 - Add `lastVoiced` state (a separate module var, **not** `baseOffsets`). In
   `applyChord`: read `prev` from `lastVoiced` → compute the voiced array → call `apply`

@@ -1082,7 +1082,7 @@ let settings = loadSettings();
 try{ if(!localStorage.getItem('vg800_pgShort')){ settings.panMs=500; localStorage.setItem('vg800_pgShort','1'); localStorage.setItem('vg800_settings', JSON.stringify(settings)); } }catch(e){}   // Pan glide defaults to Short (one-time reset for existing users)
 let customs = loadCustom();
 let edOff = [0,0,0,0,0,0];
-let active = 'Standard', activeChord = null;
+let active = 'Standard', activeChord = null, lastVoiced = null;   // lastVoiced = previous voiced-cluster pitches, for Legato voice leading (not persisted)
 let midiAccess=null, midiOut=null, lastConnMsg=null;
 let curOffsets=[0,0,0,0,0,0], glideTimer=null;
 let baseOffsets=[0,0,0,0,0,0], held=new Set(), curInfo=null, pedalStateCache={}, ctrlStateCache={};
@@ -1593,7 +1593,7 @@ function applyInst(inst, start){
   const N=inst.pitches.length; start=Math.max(0, Math.min(6-N, start));
   const res=computeCluster(inst.pitches, start);
   if(!res.ok){ toast(inst.name+' can’t fit those strings', true); return; }
-  active=inst.name; activeChord=null; baseOffsets=[...res.offsets]; held.clear(); ethnicInst=inst; ethnicStart=start; clearSteel();
+  active=inst.name; activeChord=null; lastVoiced=null; baseOffsets=[...res.offsets]; held.clear(); ethnicInst=inst; ethnicStart=start; clearSteel();
   const n=document.getElementById('nowName'); n.textContent=inst.name; n.classList.remove('std');
   renderStrings(res.offsets); renderGrid(); renderPedals(); renderEthnic(); renderSteel(); renderChords();
   sendInstFx(); tuningSend(res.offsets);   // display always updates; push INST fx + MIDI when connected
@@ -1659,7 +1659,7 @@ function applySteel(t, win){
   win=Math.max(0, Math.min(WINDOWS.length-1, win));
   const res=computeCluster(t.midi.slice(WINDOWS[win].i0, WINDOWS[win].i0+6), 0);
   if(!res.ok){ toast(t.name+' — that window won’t fit', true); return; }
-  active=t.name; activeChord=null; baseOffsets=[...res.offsets]; held.clear();   // steel is not ethnic → sendInstFx() sends both off
+  active=t.name; activeChord=null; lastVoiced=null; baseOffsets=[...res.offsets]; held.clear();   // steel is not ethnic → sendInstFx() sends both off
   ethnicInst=null; steelInst=t; steelWin=win; steelRoot=t.root; copedent=COPEDENTS[t.copedent]||COPEDENTS.generic;
   const n=document.getElementById('nowName'); n.textContent=t.name; n.classList.remove('std');
   renderStrings(res.offsets); renderGrid(); renderEthnic(); renderSteel(); renderPedals(); renderChords();
@@ -1739,11 +1739,12 @@ function clusterTargetPcs(rootPc, formula, N){     // N chord-tone pitch classes
   return pcs;
 }
 function voiceChordVoiced(rootPc, formula, rowKey){
-  if(settings.voicing!=='voiced') return voiceChord(rootPc, formula);
-  const cluster=clusterIdx(), N=cluster.length;
+  if(settings.voicing!=='voiced'){ lastVoiced=null; return voiceChord(rootPc, formula); }
+  const cluster=clusterIdx(), N=cluster.length, clKey=cluster.join(',');
   const ascIdx=cluster.slice().sort((a,b)=>VOICE_STD[a]-VOICE_STD[b]), ascStd=ascIdx.map(i=>VOICE_STD[i]);   // ascending pitch
   const center=(Math.max(...ascStd)-12 + Math.min(...ascStd)+12)/2;
-  const sol=solveCluster(clusterTargetPcs(rootPc, formula, N), ascStd, null, center);          // Phase 2: Grip (stateless); Legato memory in Phase 3
+  const prev=(settings.voiceFeel==='legato' && lastVoiced && lastVoiced.cluster===clKey) ? lastVoiced.pitches : null;   // Legato: voice-lead from the last cluster voicing; seed Grip on first tap / cluster change
+  const sol=solveCluster(clusterTargetPcs(rootPc, formula, N), ascStd, prev, center);          // Grip when prev=null; Legato when prev set (center pull is the register guard)
   if(!sol) return voiceChord(rootPc, formula);                                                 // safety fallback (never observed)
   const off=new Array(6).fill(null);
   ascIdx.forEach((si,k)=> off[si]=sol.pit[k]-VOICE_STD[si]);
@@ -1759,6 +1760,7 @@ function voiceChordVoiced(rootPc, formula, rowKey){
   below.forEach((si,k)=>{ off[si]=nearest(VOICE_STD[si], [bass[k%2]]) - VOICE_STD[si]; });      // root, 5th, root, 5th …
   above.forEach(si=>{ off[si]=nearest(VOICE_STD[si], chordPcs) - VOICE_STD[si]; });             // double the nearest chord tone
   if(off.some(o=>o===null||o<-12||o>12)) return voiceChord(rootPc, formula);
+  lastVoiced={cluster:clKey, pitches:sol.pit.slice()};                                          // remember for the next Legato step
   return off;
 }
 function applyChord(rootIdx, rowKey, name, formula){
@@ -1849,7 +1851,8 @@ function renderChords(){
     for(let s=0;s<=6-N;s++){ const dots=[0,1,2,3,4,5].map(i=>`<i class="${i>=s&&i<s+N?'on':''}"></i>`).join(''); cbtn+=`<button class="clbtn${s===settings.voiceStart?' on':''}" data-vstart="${s}"><span class="cldots">${dots}</span><span class="cllbl">${s+1}–${s+N}</span></button>`; }
     const vSize=`<div class="seg" id="voiceSize"><button class="${N===3?'on':''}" data-vsize="3">3</button><button class="${N===4?'on':''}" data-vsize="4">4</button></div>`;
     const vFeel=`<div class="seg" id="voiceFeel"><button class="${settings.voiceFeel==='legato'?'on':''}" data-vfeel="legato">Legato</button><button class="${settings.voiceFeel==='grip'?'on':''}" data-vfeel="grip">Grip</button></div>`;
-    vSub=`${vSize}<div class="clrow vcl">${cbtn}</div>${vFeel}`;
+    const vRC = settings.voiceFeel==='legato' ? `<div class="seg"><button id="voiceRecenter" title="Re-center — discard voice-leading history">⟲ Center</button></div>` : '';
+    vSub=`${vSize}<div class="clrow vcl">${cbtn}</div>${vFeel}${vRC}`;
   }
   const voiceBar=`<div class="chord-key chord-voice"><label class="chord-key-lbl">Voicing</label>${vMode}${vSub}</div>`;
   const seg=CHORD_EXT.map(e=>`<button class="${e.key===settings.chordExt?'on':''}" data-ext="${e.key}">${e.label}</button>`).join('');
@@ -1862,6 +1865,7 @@ function renderChords(){
   wrap.querySelectorAll('#voiceSize [data-vsize]').forEach(b=> b.addEventListener('click',()=>{ settings.voiceSize=+b.dataset.vsize; if(settings.voiceStart>6-settings.voiceSize) settings.voiceStart=6-settings.voiceSize; saveSettingsLS(); if(!reapplyActiveChord()) renderChords(); }));
   wrap.querySelectorAll('.vcl [data-vstart]').forEach(b=> b.addEventListener('click',()=>{ settings.voiceStart=+b.dataset.vstart; saveSettingsLS(); if(!reapplyActiveChord()) renderChords(); }));
   wrap.querySelectorAll('#voiceFeel [data-vfeel]').forEach(b=> b.addEventListener('click',()=>{ settings.voiceFeel=b.dataset.vfeel; saveSettingsLS(); if(!reapplyActiveChord()) renderChords(); }));
+  const vrc=wrap.querySelector('#voiceRecenter'); if(vrc) vrc.addEventListener('click',()=>{ lastVoiced=null; if(!reapplyActiveChord()) renderChords(); });   // discard Legato history → next chord re-seeds centered
 }
 /* ===== Panning — per-string pan modes, glided so the sweep is felt ===== */
 function panToCC(p){ return Math.round((Math.max(-1,Math.min(1,p))+1)/2*127); }   // −1→L50(0), +1→R50(127)
@@ -2060,7 +2064,7 @@ function updateOverview(posOverride){
 }
 function notesOf(offsets){ return offsets.map((s,i)=>nameOf(STD_MIDI[i]+s).name).reverse().join(' '); }
 function apply(t){
-  active=t.name; activeChord=t.chord||null;
+  active=t.name; activeChord=t.chord||null; if(!t.chord) lastVoiced=null;   // clear Legato memory on any non-chord tuning (guarded: chord taps route through here with t.chord set)
   baseOffsets=[...t.offsets]; held.clear(); ethnicInst=null; clearSteel();   // not ethnic → sendInstFx() sends both off
   if(t.bends&&t.bends.keys){ settings.keys={...DEFAULT_KEYS, ...t.bends.keys}; rebuildKeymap(); saveSettingsLS(); }   // user preset carries its own pedal key mapping
   const n=document.getElementById('nowName'); n.textContent=t.name; n.classList.toggle('std',t.name==='Standard');
@@ -2311,7 +2315,7 @@ document.getElementById('saveSettings').addEventListener('click',()=>{
 });
 
 function applyTest(v){
-  active=''; activeChord=null; baseOffsets=[v,v,v,v,v,v]; held.clear(); ethnicInst=null; clearSteel();   // transpose is not ethnic → sendInstFx() sends both off
+  active=''; activeChord=null; lastVoiced=null; baseOffsets=[v,v,v,v,v,v]; held.clear(); ethnicInst=null; clearSteel();   // transpose is not ethnic → sendInstFx() sends both off
   const n=document.getElementById('nowName'); n.textContent='TEST '+(v>0?'+'+v:''+v); n.classList.remove('std');
   renderStrings([v,v,v,v,v,v]); renderGrid(); renderPedals(); renderEthnic(); renderSteel(); renderChords();
   sendInstFx(); tuningSend([v,v,v,v,v,v]);   // display always updates; push INST fx (off) + MIDI when connected
