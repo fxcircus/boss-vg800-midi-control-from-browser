@@ -289,6 +289,8 @@
   .swell-btn.on .swell-ico { color: var(--brass); }
   .swell-btn.disabled .swell-ico { color: currentColor; }
   .swell-lbl { display: inline-flex; align-items: center; gap: 8px; }
+  .swell-latch { margin-bottom: 0; align-self: center; }
+  .swell-latch.off { opacity: 0.42; }
 
   /* Pedal key mapping + latch */
   .latch-tog { display: inline-flex; align-items: center; gap: 9px; font-family: var(--mono); font-size: 11px; color: var(--bone-dim); cursor: pointer; margin-bottom: 11px; }
@@ -1074,7 +1076,7 @@ const PANMODES=[
 const STR_COLORS=['#ef5350','#f2a33d','#c6d43f','#4cc178','#4f9dea','#a563d4'];
 let dispOffsets=[0,0,0,0,0,0];   // the pitch offsets currently shown (base tuning + engaged pedal bends)
 
-function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; if(typeof s.fxDoubler!=='boolean') s.fxDoubler=true; if(typeof s.fxOctave!=='boolean') s.fxOctave=true; if(typeof s.swellMs!=='number') s.swellMs=0; if(!s.ap||typeof s.ap!=='object'){ s.ap={...AP_DEFAULTS}; if(typeof s.autoPanRate==='number') s.ap.rate=s.autoPanRate; } else { for(const k in AP_DEFAULTS) if(!(k in s.ap)) s.ap[k]=AP_DEFAULTS[k]; if(s.ap.char==='none') s.ap.char='rotate'; if(!['1 bar','1 bar T','1/2 bar','1/2 bar T','1/4','1/4 T'].includes(s.ap.div)) s.ap.div='1/2 bar'; if(s.ap.bpm>170) s.ap.bpm=170; } return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, fxDoubler:true, fxOctave:true, swellMs:0, ap:{...AP_DEFAULTS}, ...AB_DEFAULTS}; }
+function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; if(typeof s.fxDoubler!=='boolean') s.fxDoubler=true; if(typeof s.fxOctave!=='boolean') s.fxOctave=true; if(typeof s.swellMs!=='number') s.swellMs=0; if(typeof s.swellLatch!=='boolean') s.swellLatch=true; if(!s.ap||typeof s.ap!=='object'){ s.ap={...AP_DEFAULTS}; if(typeof s.autoPanRate==='number') s.ap.rate=s.autoPanRate; } else { for(const k in AP_DEFAULTS) if(!(k in s.ap)) s.ap[k]=AP_DEFAULTS[k]; if(s.ap.char==='none') s.ap.char='rotate'; if(!['1 bar','1 bar T','1/2 bar','1/2 bar T','1/4','1/4 T'].includes(s.ap.div)) s.ap.div='1/2 bar'; if(s.ap.bpm>170) s.ap.bpm=170; } return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, fxDoubler:true, fxOctave:true, swellMs:0, swellLatch:true, ap:{...AP_DEFAULTS}, ...AB_DEFAULTS}; }
 function saveSettingsLS(){ localStorage.setItem('vg800_settings', JSON.stringify(settings)); }
 function loadCustom(){ try{ return JSON.parse(localStorage.getItem('vg800_custom'))||[]; }catch(e){ return []; } }
 function saveCustomLS(){ localStorage.setItem('vg800_custom', JSON.stringify(customs)); }
@@ -1350,6 +1352,7 @@ function renderPedals(){
   wrap.querySelectorAll('.kb-chip[data-bind]').forEach(b=> b.addEventListener('click', ()=>{ bindingCtrl=b.dataset.bind; renderPedals(); }));
   const rb=wrap.querySelector('.kb-chip[data-reset]'); if(rb) rb.addEventListener('click', ()=>{ copedent.controls.forEach(c=> settings.keys[c.id]=c.key); settings.keys.SWELL=DEFAULT_KEYS.SWELL; rebuildKeymap(); saveSettingsLS(); bindingCtrl=null; renderPedals(); });
   wrap.querySelectorAll('.swell-seg button').forEach(b=> b.addEventListener('click', ()=> setSwellSpeed(+b.dataset.swell)));
+  const slc=wrap.querySelector('#swellLatchChk'); if(slc) slc.addEventListener('change', ()=>{ settings.swellLatch=slc.checked; saveSettingsLS(); if(!settings.swellLatch) setSwell(false); });   // leaving latch mode disarms a latched swell
   const sb=wrap.querySelector('#swellBtn');
   if(sb && !sb.classList.contains('disabled')){
     sb.addEventListener('pointerdown', e=>{ e.preventDefault(); try{ sb.setPointerCapture(e.pointerId); }catch(_){}; swellPress(); });
@@ -1394,8 +1397,8 @@ function swellTrigger(){                                  // called when a bend 
   else rampLevel(swellLevel, 127, 22, null);             // not armed → quick de-click ramp up to full (no pop)
 }
 function setSwell(on){ swellHeld=on; const b=document.getElementById('swellBtn'); if(b) b.classList.toggle('on', on); }
-function swellPress(){ if(!settings.swellMs) return; if(settings.latch) setSwell(!swellHeld); else setSwell(true); }   // momentary or latch, matching the pedals
-function swellRelease(){ if(!settings.latch) setSwell(false); }
+function swellPress(){ if(!settings.swellMs) return; if(settings.swellLatch) setSwell(!swellHeld); else setSwell(true); }   // swell has its OWN latch, independent of the pedals'
+function swellRelease(){ if(!settings.swellLatch) setSwell(false); }
 function setSwellSpeed(ms){ settings.swellMs=ms; saveSettingsLS(); if(swellTimer){ clearInterval(swellTimer); swellTimer=null; } if(!ms) setSwell(false); sendLevel(127, true); renderPedals(); }   // toggle change → clean full level
 const SWELL_OPTS=[[0,'Off'],[1200,'Slow'],[400,'Moderate'],[120,'Fast']];
 function swellHTML(){
@@ -1404,7 +1407,8 @@ function swellHTML(){
   return `<div class="fam-name">Swell</div><div class="swell-row"><div class="seg swell-seg">${seg}</div>`
     +`<button class="swell-btn${swellHeld?' on':''}${dis?' disabled':''}" id="swellBtn"${dis?' aria-disabled="true"':''} title="Hold or latch to arm the full volume swell on the next bend">`
     +`<svg class="swell-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17 L21 6 L21 17 Z" fill="currentColor"/></svg>`
-    +`<span class="swell-lbl">Swell${key?`<span class="pedal-key">${key}</span>`:''}</span></button></div>`;
+    +`<span class="swell-lbl">Swell${key?`<span class="pedal-key">${key}</span>`:''}</span></button>`
+    +`<label class="latch-tog swell-latch${dis?' off':''}" title="Latch: tap to arm/disarm. Off: hold to swell."><input type="checkbox" id="swellLatchChk"${settings.swellLatch?' checked':''}${dis?' disabled':''}><span>Latch</span></label></div>`;
 }
 document.addEventListener('keydown', e=>{                 // rebind capture
   if(!bindingCtrl) return;
@@ -2056,7 +2060,7 @@ document.getElementById('saveSettings').addEventListener('click',()=>{
   const num=(id,lo,hi,d)=>{ const v=+document.getElementById(id).value; return isNaN(v)?d:Math.max(lo,Math.min(hi,v)); };
   const ab={ autoBend:document.getElementById('autoBendChk').checked, bendCC:num('bendCCInput',0,127,69), levelCC:num('levelCCInput',0,127,70), bendDepth:num('bendDepthInput',0,50,25), levelDip:num('levelDipInput',0,50,15), bendMs:num('bendMsInput',40,400,120) };
   const panCCs=[]; document.querySelectorAll('#panCcRows select').forEach(x=>panCCs[+x.dataset.pcc]=Math.max(1,Math.min(127,+x.value||1)));
-  settings={channel:ch,ccs,gap:settings.gap??20,glide:0,keys:settings.keys,latch:settings.latch,panCCs,panMs:settings.panMs,fxDoubler:settings.fxDoubler,fxOctave:settings.fxOctave,swellMs:settings.swellMs,ap:settings.ap, ...ab}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
+  settings={channel:ch,ccs,gap:settings.gap??20,glide:0,keys:settings.keys,latch:settings.latch,panCCs,panMs:settings.panMs,fxDoubler:settings.fxDoubler,fxOctave:settings.fxOctave,swellMs:settings.swellMs,swellLatch:settings.swellLatch,ap:settings.ap, ...ab}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
 });
 
 function applyTest(v){
