@@ -16,9 +16,10 @@ numbers drift):
 - **Engine:** `voiceChord(rootPc, formula)` — formula → per-string offsets.
 - **Helpers:** `chordExtDef()`, `chordRows()`, `applyChord()`.
 - **Key mode:** `SCALES`, `CHORD_FUNC`, `RN_BASE`, `QUAL_ROW`, `romanNumeral()`, `diatonicMap()` — see §Key mode.
+- **Workbench role tags:** `degLabel()`, `degColor()`, `chordDegrees()` — consumed by `renderStrings()` to colour each string by its chord role. See §Role tags.
 - **Render:** `renderChords()` — builds the key bar + matrix + Extend selector, wires taps.
 - **State:** `activeChord` (`{r, row}` or null); persisted `settings.chordExt`, `settings.keyRoot`, `settings.keyScale`.
-- **CSS:** `.chord-matrix`, `.chord-cell` (+ `.tonic/.subdom/.dominant/.offkey/.on`), `.chord-rn`, `.chord-rowhd(.ext)`, `.chord-ext`, `.chord-key`, `.chord-legend`.
+- **CSS:** `.chord-matrix`, `.chord-cell` (+ `.tonic/.subdom/.dominant/.offkey/.on`), `.chord-rn`, `.chord-rowhd(.ext)`, `.chord-ext`, `.chord-key`, `.chord-legend`; `.str .slide .oct.deg` (workbench role tag).
 - **Integration:** `apply({name, offsets, chord})` sets `activeChord` and reuses
   the normal tuning pipeline. `applyInst`/`applySteel`/`applyTest` clear
   `activeChord`. All of them call `renderChords()` so the highlight stays in sync.
@@ -172,6 +173,41 @@ plus the independent third-stacking check used to validate these.
 Independent derivation (stacking thirds on the raw scale intervals) matches every
 declared quality across all 7 scales × 7 degrees; all **588** diatonic chords
 (7 × 12 × 7) voice within ±12 with exactly their own tones.
+
+## Role tags (workbench string colouring)
+
+When a chord is active, the **Current Tuning** workbench labels each of the six
+strings with its role in the chord — without resizing the component. Two cues:
+
+1. **Left dot recoloured by role.** The six string colours are reused as a *role*
+   palette (`degColor()`): root = red, 3rd = orange, 5th = yellow, 7th = green,
+   2nd/9th = blue, 4th/6th = purple. Because a voicing doubles tones, several
+   dots share a colour — you can see the roots/3rds/5ths group at a glance.
+2. **Degree tag in the note pill.** The octave superscript is replaced by the
+   degree name (`.oct.deg`, bold + `--ink`): `R 2 ♭3 3 4 ♭5 5 ♯5 6 ♭7 7 °7 9`.
+   Minor vs major 3rd/7th are distinct (`♭3`/`3`, `♭7`/`7`), as is `°7` (dim7)
+   vs `6`, and `9` (add9) vs `2` (sus2).
+
+### How it's computed
+
+- `chordDegrees()` builds `{pcInterval → {label, color}}` from the active chord's
+  formula (looked up in `CHORD_FIXED`+`CHORD_EXT` by `activeChord.row`).
+- In `renderStrings()`, each string's sounded pitch class minus the chord root
+  gives a 0–11 interval; that keys into the map for the tag + dot colour.
+- `degLabel(formulaValue, rowKey)` turns a formula value into a name, keeping the
+  ambiguous cases apart: `14 → 9`, `2 → 2`, `9 → °7` for dim7 else `6`.
+
+### Notes
+
+- **Layout is never touched.** The pill is `position:absolute` (floats on the
+  wire, centred), so a wider tag grows within the wire instead of reflowing the
+  row. Dots only change colour. Works at both the sidebar and below-content sizes.
+- **Only the tuning rows are recoloured.** The pan strip keeps fixed per-string
+  colours — it needs each dot distinguishable by *string*, not role.
+- **Reverts cleanly.** Non-chord tunings (and any string bent off a chord tone)
+  fall back to the string-index colour + octave superscript.
+- **Verified** across all 14 chord types × 12 roots (168 voiced instances): every
+  string resolves to a real chord tone with the matching tag and colour family.
 
 ## 5. Reference voicings (root C)
 
