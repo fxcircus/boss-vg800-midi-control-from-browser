@@ -245,6 +245,11 @@
   .jump-menu a.group .nav-ico { width: 15px; height: 15px; flex-shrink: 0; }
   .jump-menu a.sub { padding-left: 22px; font-size: 12px; }
   .jump-menu a.sub2 { padding-left: 32px; }
+  /* Random-tuning action item — a button in the jump menu / sidebar (brass accent to read as an action, not a nav link) */
+  .jump-rand { display: flex; align-items: center; gap: 9px; width: 100%; margin-bottom: 4px; font-family: var(--mono); font-size: 12.5px; font-weight: 700; letter-spacing: 0.3px; color: var(--brass); background: transparent; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; text-align: left; transition: color .12s, background .12s; }
+  .jump-rand:hover { background: var(--felt); }
+  .jump-rand .dice-ico { width: 16px; height: 16px; flex-shrink: 0; }
+  #sideNav .jump-rand { font-size: 11px; padding: 6px 10px; }
   [id^="sec-"], [id^="fam-"] { scroll-margin-top: calc(var(--hdr-h, 92px) + 16px); }
   @media (min-width: 1280px) { .jump-wrap { display: none; } }
 
@@ -441,6 +446,10 @@
   .chord-key { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 2px 0 14px; }
   .chord-key-lbl { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--bone-faint); }
   .chord-key .num { width: auto; font-size: 12px; padding: 8px 30px 8px 11px; }
+  .key-rand { display: inline-flex; align-items: center; justify-content: center; padding: 7px; border: 1px solid var(--edge); border-radius: 8px; background: var(--wood); color: var(--bone-dim); cursor: pointer; transition: color .12s, border-color .12s, background .12s, transform .12s; }
+  .key-rand:hover { color: var(--brass); border-color: var(--brass-deep); background: var(--felt); }
+  .key-rand:active { transform: rotate(-12deg); }
+  .key-rand .dice-ico { width: 16px; height: 16px; }
   .chord-voice { margin: -6px 0 14px; gap: 7px; }                        /* Voicing row sits just under the Key row */
   .chord-voice .chord-key-lbl { font-size: 9px; letter-spacing: 1px; }
   .chord-voice .clrow { margin: 0; gap: 5px; }                           /* compact cluster picker: dots + label inline */
@@ -968,7 +977,7 @@
       <summary>Keyboard Mapping</summary>
       <div class="settgrp-body">
         <div id="keymapSettings"></div>
-        <p class="note-hint">Tap a <b>Bends</b> chip, then press a key to rebind it (Esc cancels). Pedals fire while held (or tap-to-latch). <b>Chords</b> number keys are fixed and follow the Key &amp; Scale you pick in the Chords panel. Each section’s <b>⌨ Map</b> button jumps here.</p>
+        <p class="note-hint">Tap any chip, then press a key to rebind it (Esc cancels). Pedals fire while held (or tap-to-latch). <b>Chords</b> degree keys follow the Key &amp; Scale you pick in the Chords panel; hold Shift with a degree for its 7th. Each section’s <b>⌨ Map</b> button jumps here.</p>
       </div>
     </details>
 
@@ -1034,7 +1043,7 @@
           <li><b>Borrowed</b> — modal-interchange chords, shown as <b>dashed violet</b> cells.</li>
           <li><b>Resolve →</b> — hover a dominant chord to ring where it wants to resolve (V7 → I).</li>
         </ul>
-        <p><b>Number keys</b> <kbd>1</kbd>–<kbd>7</kbd> play the diatonic degree chords in your current voicing (same latch as the on-screen cells). Modifiers: <kbd>⇧</kbd>+<kbd>1</kbd>–<kbd>7</kbd> = that degree's 7th; <kbd>−</kbd> / <kbd>=</kbd> = 3- / 4-note voicing; <kbd>[</kbd> <kbd>]</kbd> = move the cluster window; <kbd>0</kbd> = re-center voice leading. The full reference and pedal rebinding live in <em>Settings → Keyboard Mapping</em> (or hit any section's <b>⌨ Map</b> button).</p>
+        <p><b>Number keys</b> <kbd>1</kbd>–<kbd>7</kbd> play the diatonic degree chords in your current voicing (same latch as the on-screen cells). Modifiers: <kbd>⇧</kbd>+<kbd>1</kbd>–<kbd>7</kbd> = that degree's 7th; <kbd>−</kbd> / <kbd>=</kbd> = 3- / 4-note voicing; <kbd>[</kbd> <kbd>]</kbd> = move the cluster window; <kbd>0</kbd> = re-center voice leading. Every key here — pedals and chords alike — is rebindable in <em>Settings → Keyboard Mapping</em> (or hit any section's <b>⌨ Map</b> button).</p>
         <p><b>Scale-tone bends</b>: while a chord is held in key mode, the <b>Bends</b> section becomes six string-pedals (keys <kbd>A</kbd>–<kbd>H</kbd>). Each <b>raises one string to the next scale tone</b> and springs back on release — a live pedal-steel voice-leading move under a sustained chord (hold String&nbsp;3 for a 4→3 suspension; hold all six to walk the whole chord up a step).</p>
 
         <p style="margin-top:14px"><b>Diatonic 7th chords by mode</b> — the four-note chord built on each degree. The brass <em>7</em> marks the dominant seventh (the leading-tone chord). <span style="color:var(--bone-faint)">mM7 = minor-major 7, +M7 = augmented-major 7 — no grid row yet.</span></p>
@@ -1142,6 +1151,13 @@ const STR12_CC=77, ALT_CC=78;   // INST fx assigns: "string doubler" (12-string,
 function nameOf(m){ const pc=((m%12)+12)%12; return {name:NOTE[pc], oct:Math.floor(m/12)-1}; }
 function toCC(s){ const c=Math.max(-12,Math.min(12,s)); return Math.round((c+12)/24*127); }
 const DEFAULT_KEYS={A:'a',B:'s',LKL:'d',LKR:'f',AB:'g',ABR:'h'};  // ergonomic left-hand cluster
+// Chords keyboard — rebindable, stored as KeyboardEvent.code (layout-independent, so Shift+degree stays robust)
+const CHORD_KEYS_DEFAULT={deg1:'Digit1',deg2:'Digit2',deg3:'Digit3',deg4:'Digit4',deg5:'Digit5',deg6:'Digit6',deg7:'Digit7',voice3:'Minus',voice4:'Equal',clusterDown:'BracketLeft',clusterUp:'BracketRight',recenter:'Digit0'};
+function codeLabel(code){ if(!code) return '—';
+  let m=/^Digit(\d)$/.exec(code); if(m) return m[1];
+  m=/^Key([A-Z])$/.exec(code); if(m) return m[1];
+  m=/^Numpad(\d)$/.exec(code); if(m) return 'Num'+m[1];
+  return {Minus:'−',Equal:'=',BracketLeft:'[',BracketRight:']',Backquote:'`',Semicolon:';',Quote:'’',Comma:',',Period:'.',Slash:'/',Backslash:'\\',Space:'␣',Enter:'⏎',Tab:'⇥',ArrowLeft:'←',ArrowRight:'→',ArrowUp:'↑',ArrowDown:'↓'}[code] || code; }
 const AB_DEFAULTS={autoBend:true, bendCC:69, levelCC:70, bendDepth:25, levelDip:15, bendMs:120};  // auto-bend scoop (on by default)
 const AP_DEFAULTS={mode:'free', rate:15, bpm:120, div:'1/2 bar', width:0.65, shape:'sine', spread:1, char:'rotate', lTopSpread:1, lTopSpeed:1.12, lBotSpread:0.5, lBotSpeed:0.86};  // auto-pan engine (gentle defaults; l* = Leslie per-rotor spread/speed)
 
@@ -1301,7 +1317,7 @@ const PANMODES=[
 const STR_COLORS=['#ef5350','#f2a33d','#c6d43f','#4cc178','#4f9dea','#a563d4'];
 let dispOffsets=[0,0,0,0,0,0];   // the pitch offsets currently shown (base tuning + engaged pedal bends)
 
-function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; if(typeof s.fxDoubler!=='boolean') s.fxDoubler=true; if(typeof s.fxOctave!=='boolean') s.fxOctave=true; if(typeof s.swellMs!=='number') s.swellMs=0; if(typeof s.swellLatch!=='boolean') s.swellLatch=true; if(typeof s.chordExt!=='string' || !['add9','6','m6','sus2','sus4','dim7','m7b5'].includes(s.chordExt)) s.chordExt='add9'; if(typeof s.keyRoot!=='string') s.keyRoot='C'; if(typeof s.keyScale!=='string') s.keyScale='off'; if(s.voicing!=='voiced') s.voicing='spread'; if(s.voiceSize!==4) s.voiceSize=3; if(typeof s.voiceStart!=='number'||s.voiceStart<0||s.voiceStart>6-s.voiceSize) s.voiceStart=0; if(s.voiceFeel!=='grip') s.voiceFeel='legato'; if(!s.chordLayers||typeof s.chordLayers!=='object') s.chordLayers={sevenths:false,borrowed:false,resolutions:false}; else for(const k of ['sevenths','borrowed','resolutions']) if(typeof s.chordLayers[k]!=='boolean') s.chordLayers[k]=false; if(!s.ap||typeof s.ap!=='object'){ s.ap={...AP_DEFAULTS}; if(typeof s.autoPanRate==='number') s.ap.rate=s.autoPanRate; } else { for(const k in AP_DEFAULTS) if(!(k in s.ap)) s.ap[k]=AP_DEFAULTS[k]; if(s.ap.char==='none') s.ap.char='rotate'; if(!['1 bar','1 bar T','1/2 bar','1/2 bar T','1/4','1/4 T'].includes(s.ap.div)) s.ap.div='1/2 bar'; if(s.ap.bpm>170) s.ap.bpm=170; } return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, fxDoubler:true, fxOctave:true, swellMs:0, swellLatch:true, chordExt:'add9', keyRoot:'C', keyScale:'off', voicing:'spread', voiceSize:3, voiceStart:0, voiceFeel:'legato', chordLayers:{sevenths:false,borrowed:false,resolutions:false}, ap:{...AP_DEFAULTS}, ...AB_DEFAULTS}; }
+function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; if(typeof s.fxDoubler!=='boolean') s.fxDoubler=true; if(typeof s.fxOctave!=='boolean') s.fxOctave=true; if(typeof s.swellMs!=='number') s.swellMs=0; if(typeof s.swellLatch!=='boolean') s.swellLatch=true; if(typeof s.chordExt!=='string' || !['add9','6','m6','sus2','sus4','dim7','m7b5'].includes(s.chordExt)) s.chordExt='add9'; if(typeof s.keyRoot!=='string') s.keyRoot='C'; if(typeof s.keyScale!=='string') s.keyScale='off'; if(s.voicing!=='voiced') s.voicing='spread'; if(s.voiceSize!==4) s.voiceSize=3; if(typeof s.voiceStart!=='number'||s.voiceStart<0||s.voiceStart>6-s.voiceSize) s.voiceStart=0; if(s.voiceFeel!=='grip') s.voiceFeel='legato'; if(!s.chordLayers||typeof s.chordLayers!=='object') s.chordLayers={sevenths:false,borrowed:false,resolutions:false}; else for(const k of ['sevenths','borrowed','resolutions']) if(typeof s.chordLayers[k]!=='boolean') s.chordLayers[k]=false; if(!s.chordKeys||typeof s.chordKeys!=='object') s.chordKeys={...CHORD_KEYS_DEFAULT}; else for(const k in CHORD_KEYS_DEFAULT) if(typeof s.chordKeys[k]!=='string') s.chordKeys[k]=CHORD_KEYS_DEFAULT[k]; if(!s.ap||typeof s.ap!=='object'){ s.ap={...AP_DEFAULTS}; if(typeof s.autoPanRate==='number') s.ap.rate=s.autoPanRate; } else { for(const k in AP_DEFAULTS) if(!(k in s.ap)) s.ap[k]=AP_DEFAULTS[k]; if(s.ap.char==='none') s.ap.char='rotate'; if(!['1 bar','1 bar T','1/2 bar','1/2 bar T','1/4','1/4 T'].includes(s.ap.div)) s.ap.div='1/2 bar'; if(s.ap.bpm>170) s.ap.bpm=170; } return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, fxDoubler:true, fxOctave:true, swellMs:0, swellLatch:true, chordExt:'add9', keyRoot:'C', keyScale:'off', voicing:'spread', voiceSize:3, voiceStart:0, voiceFeel:'legato', chordLayers:{sevenths:false,borrowed:false,resolutions:false}, chordKeys:{...CHORD_KEYS_DEFAULT}, ap:{...AP_DEFAULTS}, ...AB_DEFAULTS}; }
 function saveSettingsLS(){ localStorage.setItem('vg800_settings', JSON.stringify(settings)); }
 function loadCustom(){ try{ return JSON.parse(localStorage.getItem('vg800_custom'))||[]; }catch(e){ return []; } }
 function saveCustomLS(){ localStorage.setItem('vg800_custom', JSON.stringify(customs)); }
@@ -1571,28 +1587,28 @@ function pedalBtnHTML(ctrl, label, sub, st){
 }
 // Keyboard icon (used on the per-section "Map" buttons and could label the Settings group)
 const KBD_ICO='<svg class="km-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h.01M18 14h.01M9 14h6"/></svg>';
+// Dice icon (Random buttons — a tuning in the menu, a key+scale in Chords)
+const DICE_ICO='<svg class="dice-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.3" fill="currentColor" stroke="none"/><circle cx="15.5" cy="8.5" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="8.5" cy="15.5" r="1.3" fill="currentColor" stroke="none"/><circle cx="15.5" cy="15.5" r="1.3" fill="currentColor" stroke="none"/></svg>';
 // Key mapping now lives in Settings (moved out of the Bends panel). Bends = rebindable pedal/swell chips; Chords = fixed number-key reference.
 function renderKeymap(){
   const box=document.getElementById('keymapSettings'); if(!box) return;
   const chips=copedent.controls.map(c=>{ const k=(keyFor(c.id)||'').toUpperCase(), L=bindingCtrl===c.id;
     return `<button class="kb-chip${L?' listening':''}" data-bind="${c.id}"><span class="kb-cname">${c.name}</span><span class="kb-key">${L?'press…':(k||'—')}</span></button>`; }).join('');
-  const kb=chordKeyOn();
+  const kb=chordKeyOn(), CK=settings.chordKeys||{};
   const degRN=i=> kb ? romanNumeral(i, SCALES[settings.keyScale].quals[i]) : RN_BASE[i];
-  const degChips=[0,1,2,3,4,5,6].map(i=>`<div class="kb-chip static"><span class="kb-cname">${degRN(i)}</span><span class="kb-key">${i+1}</span></div>`).join('');
+  const ckChip=(act,label)=>{ const L=bindingCtrl==='chord:'+act; return `<button class="kb-chip${L?' listening':''}" data-bind="chord:${act}"><span class="kb-cname">${label}</span><span class="kb-key">${L?'press…':codeLabel(CK[act])}</span></button>`; };
+  const degChips=[0,1,2,3,4,5,6].map(i=>ckChip('deg'+(i+1), degRN(i))).join('');
+  const voiceChips=[['voice3','3-note'],['voice4','4-note'],['clusterDown','Cluster ◀'],['clusterUp','Cluster ▶'],['recenter','Re-center']].map(([a,l])=>ckChip(a,l)).join('');
   box.innerHTML=`
     <div class="subhd" data-kmsec="bends" style="margin-top:2px">Bends · pedals</div>
     <div class="kb-chips">${chips}<button class="kb-chip kb-reset" data-reset="1"><span class="kb-cname">Reset</span><span class="kb-key">↺</span></button></div>
     <div class="subhd" data-kmsec="chords">Chords · degrees</div>
-    <p class="km-hint">Number keys play the diatonic chords of the current key${kb?` (<b>${settings.keyRoot} ${settings.keyScale}</b>)`:' — set a Key &amp; Scale in the Chords panel to enable them'}, in your current voicing.</p>
+    <p class="km-hint">These play the diatonic chords of the current key${kb?` (<b>${settings.keyRoot} ${settings.keyScale}</b>)`:' — set a Key &amp; Scale in the Chords panel to enable them'}. Hold <kbd>⇧</kbd> with a degree for its <b>7th</b>. Tap a chip, then press a key to rebind.</p>
     <div class="kb-chips">${degChips}</div>
-    <div class="km-mods">
-      <div class="km-mod"><span class="km-keys"><kbd>⇧</kbd><span class="km-plus">+</span><kbd>1</kbd><span class="km-dash">–</span><kbd>7</kbd></span><span>Diatonic <b>7th</b> chord of that degree</span></div>
-      <div class="km-mod"><span class="km-keys"><kbd>−</kbd><kbd>=</kbd></span><span>Switch <b>3</b>- / <b>4</b>-note voicing</span></div>
-      <div class="km-mod"><span class="km-keys"><kbd>[</kbd><kbd>]</kbd></span><span>Move the voicing <b>cluster window</b> (Voiced)</span></div>
-      <div class="km-mod"><span class="km-keys"><kbd>0</kbd><kbd>\`</kbd></span><span><b>Re-center</b> voice leading</span></div>
-    </div>`;
+    <div class="subhd">Chords · voicing</div>
+    <div class="kb-chips">${voiceChips}</div>`;
   box.querySelectorAll('.kb-chip[data-bind]').forEach(b=> b.addEventListener('click', ()=>{ bindingCtrl=b.dataset.bind; renderKeymap(); }));
-  const rb=box.querySelector('.kb-chip[data-reset]'); if(rb) rb.addEventListener('click', ()=>{ copedent.controls.forEach(c=> settings.keys[c.id]=c.key); rebuildKeymap(); saveSettingsLS(); bindingCtrl=null; renderKeymap(); renderPedals(); });
+  const rb=box.querySelector('.kb-chip[data-reset]'); if(rb) rb.addEventListener('click', ()=>{ copedent.controls.forEach(c=> settings.keys[c.id]=c.key); settings.chordKeys={...CHORD_KEYS_DEFAULT}; rebuildKeymap(); saveSettingsLS(); bindingCtrl=null; renderKeymap(); renderPedals(); });
 }
 function renderPedals(){
   const wrap=document.getElementById('pedalWrap'); if(!wrap) return;
@@ -1679,7 +1695,13 @@ document.addEventListener('keydown', e=>{                 // rebind capture (chi
   if(!bindingCtrl) return;
   e.preventDefault();
   if(e.key==='Escape'){ bindingCtrl=null; renderKeymap(); return; }
-  if((e.key||'').length!==1) return;                      // wait for a printable key
+  if(bindingCtrl.indexOf('chord:')===0){                  // Chords keys → capture e.code (layout-independent)
+    if(!e.code || /^(Shift|Control|Alt|Meta|OS)/.test(e.code)) return;   // ignore bare modifier keys
+    const act=bindingCtrl.slice(6);
+    for(const a in settings.chordKeys) if(a!==act && settings.chordKeys[a]===e.code) settings.chordKeys[a]='';   // no dupes
+    settings.chordKeys[act]=e.code; bindingCtrl=null; saveSettingsLS(); renderKeymap(); return;
+  }
+  if((e.key||'').length!==1) return;                      // pedal: wait for a printable key
   const k=e.key.toLowerCase();
   copedent.controls.forEach(c=>{ if(c.id!==bindingCtrl && keyFor(c.id)===k) settings.keys[c.id]=''; });  // no dupes
   settings.keys[bindingCtrl]=k; bindingCtrl=null; rebuildKeymap(); saveSettingsLS(); renderKeymap(); renderPedals();   // chips (Settings) + key badges (Bends)
@@ -1699,14 +1721,14 @@ document.addEventListener('keydown', e=>{
   if(document.querySelector('.scrim.open')) return;
   const tag=e.target.tagName||''; if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT') return;
   if(KEYMAP[(e.key||'').toLowerCase()]) return;            // a pedal owns this key
-  const code=e.code||'', md=/^Digit([1-7])$/.exec(code);
-  if(md){ if(!chordKeyOn()) return; e.preventDefault(); const deg=+md[1]-1;
-    const nc=e.shiftKey ? diatonic7ChordAt(settings.keyRoot,settings.keyScale,deg) : diatonicChordAt(settings.keyRoot,settings.keyScale,deg);
-    if(nc) applyChord(nc.r, nc.row, CHORD_ROOTS[nc.r]+nc.suffix, nc.formula); return; }
+  const code=e.code||'', CK=settings.chordKeys||{};
+  for(let d=0; d<7; d++){ if(code && code===CK['deg'+(d+1)]){ if(!chordKeyOn()) return; e.preventDefault();
+    const nc=e.shiftKey ? diatonic7ChordAt(settings.keyRoot,settings.keyScale,d) : diatonicChordAt(settings.keyRoot,settings.keyScale,d);
+    if(nc) applyChord(nc.r, nc.row, CHORD_ROOTS[nc.r]+nc.suffix, nc.formula); return; } }
   if(!chordKeyOn() && !activeChord) return;                 // the voicing modifiers only act once you're engaged with chords
-  if(code==='Digit0' || code==='Backquote'){ e.preventDefault(); lastVoiced=null; if(!reapplyActiveChord()) renderChords(); return; }         // re-center voice leading
-  if(code==='Minus' || code==='Equal'){ e.preventDefault(); settings.voiceSize=code==='Equal'?4:3; if(settings.voiceStart>6-settings.voiceSize) settings.voiceStart=6-settings.voiceSize; saveSettingsLS(); if(!reapplyActiveChord()) renderChords(); return; }   // 3/4-note
-  if(code==='BracketLeft' || code==='BracketRight'){ e.preventDefault(); if(settings.voicing==='voiced'){ const d=code==='BracketRight'?1:-1; settings.voiceStart=Math.max(0,Math.min(6-settings.voiceSize,(settings.voiceStart||0)+d)); saveSettingsLS(); if(!reapplyActiveChord()) renderChords(); } return; }   // nudge cluster window
+  if(code && code===CK.recenter){ e.preventDefault(); lastVoiced=null; if(!reapplyActiveChord()) renderChords(); return; }         // re-center voice leading
+  if(code && (code===CK.voice3 || code===CK.voice4)){ e.preventDefault(); settings.voiceSize=code===CK.voice4?4:3; if(settings.voiceStart>6-settings.voiceSize) settings.voiceStart=6-settings.voiceSize; saveSettingsLS(); if(!reapplyActiveChord()) renderChords(); return; }   // 3/4-note
+  if(code && (code===CK.clusterDown || code===CK.clusterUp)){ e.preventDefault(); if(settings.voicing==='voiced'){ const dir=code===CK.clusterUp?1:-1; settings.voiceStart=Math.max(0,Math.min(6-settings.voiceSize,(settings.voiceStart||0)+dir)); saveSettingsLS(); if(!reapplyActiveChord()) renderChords(); } return; }   // nudge cluster window
 });
 // "Map" buttons (Bends / Chords section headers) → open Settings at the Keyboard Mapping group and flash the relevant sub-block.
 function jumpToKeymap(section){
@@ -1774,7 +1796,8 @@ function renderNav(){
     tunings:'<svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v6M16 3v6M8 9a4 4 0 0 0 8 0M12 13v8"/></svg>',
     pedals:'<svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/><path d="M9 12H4M7.5 8.5 4 12l3.5 3.5"/><path d="M15 12h5M16.5 8.5 20 12l-3.5 3.5"/></svg>',
     pan:'<svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8.5a6.5 6.5 0 1 1 13 0c0 6-6 6-6 10a3.5 3.5 0 1 1-7 0"/><path d="M15 8.5a2.5 2.5 0 0 0-5 0v1a2 2 0 1 1 0 4"/></svg>' };
-  box.innerHTML='<a class="group" href="#sec-tunings">'+I.tunings+'Tunings</a>'+links
+  box.innerHTML='<button class="jump-rand" data-rand-tuning title="Apply a random tuning">'+DICE_ICO+'Random tuning</button>'
+    +'<a class="group" href="#sec-tunings">'+I.tunings+'Tunings</a>'+links
     +'<a class="sub" href="#sec-ethnic">Ethnic</a>'
     +'<a class="sub" href="#sec-strings">Transpose</a>'
     +'<a class="sub" href="#sec-chords">Chords</a>'
@@ -1930,6 +1953,28 @@ function applySteel(t, win){
   const n=document.getElementById('nowName'); n.textContent=t.name; n.classList.remove('std');
   renderStrings(res.offsets); renderGrid(); renderEthnic(); renderSteel(); renderPedals(); renderChords();
   sendInstFx(); tuningSend(res.offsets);   // display always updates; push INST fx (off) + MIDI when connected
+}
+// Random tuning — pick from every real tuning (guitar, lap steel, ethnic, pedal steel, user), excluding chords and the current one.
+function randomTuning(){
+  const pool=[];
+  BUILTIN.forEach(t=>{ if(t.name!=='Standard' && t.name!==active) pool.push({name:t.name, go:()=>apply(t)}); });
+  customs.forEach(t=>{ if(t.name!==active) pool.push({name:t.name, go:()=>apply(t)}); });
+  ETHNIC.forEach(i=>{ if(i.name!==active) pool.push({name:i.name, go:()=>applyInst(i,0)}); });
+  STEEL.forEach(t=>{ if(t.name!==active) pool.push({name:t.name, go:()=>applySteel(t,0)}); });
+  if(!pool.length) return;
+  const pick=pool[Math.floor(Math.random()*pool.length)];
+  pick.go(); toast('🎲 '+pick.name);
+}
+// Random key & scale for Chords mode — a random root + a random (non-off) scale, mirroring the scale selector's behaviour.
+function randomKey(){
+  const oR=settings.keyRoot, oS=settings.keyScale, scales=Object.keys(SCALES);
+  settings.keyRoot=CHORD_ROOTS[Math.floor(Math.random()*CHORD_ROOTS.length)];
+  settings.keyScale=scales[Math.floor(Math.random()*scales.length)];
+  settings.chordExt=SCALES[settings.keyScale].special;                 // scale auto-sets its special Extend row, as the dropdown does
+  saveSettingsLS();
+  if(!moveChordToKey(oR,oS)) renderChords();                           // move the active chord to the same degree in the new key, else just re-render
+  renderPedals();                                                      // scale-bend targets track the key
+  toast('🎲 '+settings.keyRoot+' '+settings.keyScale);
 }
 function clearSteel(){ steelInst=null; steelRoot=null; steelWin=0; copedent=COPEDENTS.generic; }
 /* ===== Chords — omnichord: tap a chord, retune all 6 strings to a musical voicing ===== */
@@ -2181,7 +2226,7 @@ function renderChords(){
   const rootOpts=CHORD_ROOTS.map(r=>`<option value="${r}"${r===settings.keyRoot?' selected':''}>${r}</option>`).join('');
   const scaleOpts=`<option value="off"${!keyOn?' selected':''}>Off · all chords</option>`+Object.keys(SCALES).map(s=>{ const a=SCALES[s].alt; return `<option value="${s}"${settings.keyScale===s?' selected':''}>${a?s+' / '+a:s}</option>`; }).join('');
   const legend = keyOn ? `<div class="chord-legend"><span><i class="lg-dot tonic"></i>Tonic</span><span><i class="lg-dot subdom"></i>Subdominant</span><span><i class="lg-dot dominant"></i>Dominant</span></div>` : '';
-  const keyBar=`<div class="chord-key"><label class="chord-key-lbl">Key</label><select id="keyRoot" class="num">${rootOpts}</select><select id="keyScale" class="num">${scaleOpts}</select>${legend}</div>`;
+  const keyBar=`<div class="chord-key"><label class="chord-key-lbl">Key</label><select id="keyRoot" class="num">${rootOpts}</select><select id="keyScale" class="num">${scaleOpts}</select><button class="key-rand" id="keyRandom" title="Random key & scale" aria-label="Random key and scale">${DICE_ICO}</button>${legend}</div>`;
   const voiced = settings.voicing==='voiced';
   const vMode=`<div class="seg" id="voiceMode"><button class="${!voiced?'on':''}" data-vmode="spread" title="Spread — the chord fanned across all six strings, low → high.">Spread</button><button class="${voiced?'on':''}" data-vmode="voiced" title="Voiced — a close 3- or 4-string cluster you choose; the other strings fill in the bass (root &amp; 5th).">Voiced</button></div>`;
   const voiceBar=`<div class="chord-key chord-voice"><label class="chord-key-lbl">Voicing</label>${vMode}</div>`;
@@ -2220,6 +2265,7 @@ function renderChords(){
   wrap.querySelectorAll('.chord-ext [data-ext]').forEach(b=> b.addEventListener('click',()=>{ settings.chordExt=b.dataset.ext; saveSettingsLS(); renderChords(); }));   // manual override of the special row
   const kr=wrap.querySelector('#keyRoot'); if(kr) kr.addEventListener('change',()=>{ const oR=settings.keyRoot, oS=settings.keyScale; settings.keyRoot=kr.value; saveSettingsLS(); if(!moveChordToKey(oR, oS)) renderChords(); renderPedals(); });   // changing the key transposes the active chord to the same degree + retargets scale bends
   const ks=wrap.querySelector('#keyScale'); if(ks) ks.addEventListener('change',()=>{ const oR=settings.keyRoot, oS=settings.keyScale; settings.keyScale=ks.value; if(ks.value!=='off' && SCALES[ks.value]) settings.chordExt=SCALES[ks.value].special; saveSettingsLS(); if(!moveChordToKey(oR, oS)) renderChords(); renderPedals(); });   // scale auto-sets the special row + moves the active chord + retargets scale bends
+  const krnd=wrap.querySelector('#keyRandom'); if(krnd) krnd.addEventListener('click', randomKey);
   wrap.querySelectorAll('#voiceMode [data-vmode]').forEach(b=> b.addEventListener('click',()=>{ settings.voicing=b.dataset.vmode; saveSettingsLS(); if(!reapplyActiveChord()) renderChords(); }));
   wrap.querySelectorAll('#voiceSize [data-vsize]').forEach(b=> b.addEventListener('click',()=>{ settings.voiceSize=+b.dataset.vsize; if(settings.voiceStart>6-settings.voiceSize) settings.voiceStart=6-settings.voiceSize; saveSettingsLS(); if(!reapplyActiveChord()) renderChords(); }));
   wrap.querySelectorAll('.vcl [data-vstart]').forEach(b=> b.addEventListener('click',()=>{ settings.voiceStart=+b.dataset.vstart; saveSettingsLS(); if(!reapplyActiveChord()) renderChords(); }));
@@ -2668,6 +2714,7 @@ const jumpBtn=document.getElementById('jumpBtn'), jumpMenu=document.getElementBy
 function setJumpMenu(open){ jumpMenu.classList.toggle('open',open); jumpBtn.classList.toggle('open',open); jumpBtn.setAttribute('aria-expanded',open?'true':'false'); }
 jumpBtn.addEventListener('click',e=>{ e.stopPropagation(); const willOpen=!jumpMenu.classList.contains('open'); if(willOpen) setThemeMenu(false); setJumpMenu(willOpen); });
 jumpMenu.addEventListener('click',e=>{ if(e.target.closest('a')) setJumpMenu(false); });   // tapping a link scrolls (native) then closes
+document.addEventListener('click',e=>{ if(e.target.closest('[data-rand-tuning]')){ randomTuning(); setJumpMenu(false); } });   // "Random tuning" in the menu / sidebar
 document.addEventListener('click',e=>{ if(jumpMenu.classList.contains('open') && !jumpMenu.contains(e.target) && !jumpBtn.contains(e.target)) setJumpMenu(false); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') setJumpMenu(false); });
 markThemeBtns();
@@ -2678,7 +2725,7 @@ document.getElementById('saveSettings').addEventListener('click',()=>{
   const num=(id,lo,hi,d)=>{ const v=+document.getElementById(id).value; return isNaN(v)?d:Math.max(lo,Math.min(hi,v)); };
   const ab={ autoBend:document.getElementById('autoBendChk').checked, bendCC:num('bendCCInput',0,127,69), levelCC:num('levelCCInput',0,127,70), bendDepth:num('bendDepthInput',0,50,25), levelDip:num('levelDipInput',0,50,15), bendMs:num('bendMsInput',40,400,120) };
   const panCCs=[]; document.querySelectorAll('#panCcRows select').forEach(x=>panCCs[+x.dataset.pcc]=Math.max(1,Math.min(127,+x.value||1)));
-  settings={channel:ch,ccs,gap:settings.gap??20,glide:0,keys:settings.keys,latch:settings.latch,panCCs,panMs:settings.panMs,fxDoubler:settings.fxDoubler,fxOctave:settings.fxOctave,swellMs:settings.swellMs,swellLatch:settings.swellLatch,chordExt:settings.chordExt,keyRoot:settings.keyRoot,keyScale:settings.keyScale,voicing:settings.voicing,voiceSize:settings.voiceSize,voiceStart:settings.voiceStart,voiceFeel:settings.voiceFeel,chordLayers:settings.chordLayers,ap:settings.ap, ...ab}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
+  settings={channel:ch,ccs,gap:settings.gap??20,glide:0,keys:settings.keys,latch:settings.latch,panCCs,panMs:settings.panMs,fxDoubler:settings.fxDoubler,fxOctave:settings.fxOctave,swellMs:settings.swellMs,swellLatch:settings.swellLatch,chordExt:settings.chordExt,keyRoot:settings.keyRoot,keyScale:settings.keyScale,voicing:settings.voicing,voiceSize:settings.voiceSize,voiceStart:settings.voiceStart,voiceFeel:settings.voiceFeel,chordLayers:settings.chordLayers,chordKeys:settings.chordKeys,ap:settings.ap, ...ab}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
 });
 
 function applyTest(v){
