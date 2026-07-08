@@ -251,7 +251,11 @@
   /* Steel pedals */
   .pedal-info { font-family: var(--mono); font-size: 11px; color: var(--bone-dim); margin: 0 2px 15px; letter-spacing: 0.3px; text-align: center; }
   .pedal-info b { color: var(--brass); font-weight: 700; }
-  .pedals { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; margin-bottom: 8px; }
+  .pedals { display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 240px)); justify-content: center; gap: 10px; margin-bottom: 8px; }
+  /* Bends captions — explain pedal Latch vs the Swell's own Latch, in the app's small-caption voice */
+  .bend-cap { font-family: var(--mono); font-size: 10px; line-height: 1.55; color: var(--bone-faint); letter-spacing: 0.2px; text-align: center; margin: -6px auto 14px; max-width: 580px; }
+  .bend-cap b { color: var(--brass); font-weight: 700; }
+  .bend-cap kbd { font-family: var(--mono); font-size: 9.5px; background: var(--ink); border: 1px solid var(--edge); border-radius: 4px; padding: 1px 5px; color: var(--bone); white-space: nowrap; }
   .pedal { position: relative; text-align: left; background: var(--wood); border: 1px solid var(--edge-soft); border-radius: 10px; padding: 12px 13px; cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 3px 8px rgba(0,0,0,0.32); transition: transform .1s, border-color .12s, background .12s, box-shadow .12s; user-select: none; -webkit-user-select: none; touch-action: none; }
   .pedal:hover:not(.disabled) { border-color: var(--brass-deep); background: var(--felt); }
   .pedal.on { border-color: var(--brass); background: var(--felt); box-shadow: inset 0 0 0 1px var(--brass), 0 0 22px var(--brass-glow); transform: translateY(2px) scale(0.985); }
@@ -272,6 +276,10 @@
   .pedal:hover:not(.disabled) .pedal-badge { color: var(--bone-dim); }
   .pedal.on .pedal-badge { color: var(--brass); opacity: 1; }
   .pedal.disabled .pedal-badge { opacity: 0.5; }
+  /* Scale-bend string pedal — a string-coloured dot instead of a foot/knee icon */
+  .pedal-badge.sb-dot { width: 13px; height: 13px; right: 14px; bottom: 13px; border-radius: 50%; opacity: 0.95; box-shadow: 0 0 8px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.25); }
+  .pedal.sb.on .sb-dot { opacity: 1; box-shadow: 0 0 12px currentColor, inset 0 0 0 1px rgba(255,255,255,0.4); }
+  .pedal.sb .pedal-moves .to { color: var(--amber); font-weight: 700; letter-spacing: 0.5px; }
   /* Press animation: foot plate tilts down; knee lever swings left (LKL) / right (LKR) about its pivot */
   .pedal-badge .ap-plate, .pedal-badge .ap-lever { transform-box: view-box; transition: transform .2s cubic-bezier(.34,1.3,.5,1); }
   .pedal-badge .ap-plate { transform-origin: 9px 30px; }
@@ -282,16 +290,6 @@
   /* Volume swell — 4-way speed segment + a hold/latch arm button */
   .swell-row { display: flex; flex-wrap: wrap; align-items: stretch; gap: 10px; margin-bottom: 18px; }
   .swell-seg { flex: 1 1 250px; }
-  .swell-btn { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 9px; padding: 8px 16px; border: 1px solid var(--edge-soft); border-radius: 10px; background: var(--wood); color: var(--bone-dim); cursor: pointer; font-family: var(--cond); font-weight: 700; font-size: 15px; text-transform: uppercase; letter-spacing: 0.4px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 3px 8px rgba(0,0,0,0.32); transition: transform .1s, border-color .12s, background .12s, box-shadow .12s, color .12s, opacity .12s; user-select: none; -webkit-user-select: none; touch-action: none; }
-  .swell-btn:hover:not(.disabled) { border-color: var(--brass-deep); background: var(--felt); color: var(--bone); }
-  .swell-btn.on { border-color: var(--brass); background: var(--felt); color: var(--brass); box-shadow: inset 0 0 0 1px var(--brass), 0 0 22px var(--brass-glow); transform: translateY(2px) scale(0.985); }
-  .swell-btn.disabled { opacity: 0.42; cursor: not-allowed; filter: grayscale(0.45); box-shadow: none; }
-  .swell-ico { width: 20px; height: 18px; flex-shrink: 0; color: var(--amber); }
-  .swell-btn.on .swell-ico { color: var(--brass); }
-  .swell-btn.disabled .swell-ico { color: currentColor; }
-  .swell-lbl { display: inline-flex; align-items: center; gap: 8px; }
-  .swell-latch { margin-bottom: 0; align-self: center; }
-  .swell-latch.off { opacity: 0.42; }
 
   /* Pedal key mapping + latch */
   .latch-tog { display: inline-flex; align-items: center; gap: 9px; font-family: var(--mono); font-size: 11px; color: var(--bone-dim); cursor: pointer; margin-bottom: 11px; }
@@ -310,6 +308,29 @@
   .kb-key { font-family: var(--cond); font-weight: 700; font-size: 15px; color: var(--bone); text-transform: uppercase; line-height: 1; }
   .kb-chip.listening .kb-key { color: var(--brass); font-size: 10px; font-family: var(--mono); text-transform: none; }
   .kb-reset .kb-key { color: var(--brass); font-family: var(--sans); }
+  .kb-chip.static { cursor: default; }
+  .kb-chip.static:hover { border-color: var(--edge); background: var(--wood); }
+  /* Per-section "Map ⌨" header button (Bends + Chords) */
+  .sec-tools { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; }
+  .sec-tools .map-btn { margin-left: auto; }
+  /* Pedal Latch — a centered Latch | Off segmented toggle, same style as the app's other .seg switches */
+  .latch-row { display: flex; justify-content: center; margin: 2px 0 12px; }
+  .latch-seg { flex: 0 0 auto; }
+  .latch-seg button { padding: 7px 22px; letter-spacing: 1px; }
+  .map-btn { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10.5px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--bone-dim); background: transparent; border: 1px solid var(--edge); border-radius: 8px; padding: 6px 11px; cursor: pointer; transition: color .12s, border-color .12s, background .12s; }
+  .map-btn:hover { color: var(--brass); border-color: var(--brass-deep); background: var(--felt); }
+  .map-btn .km-ico { width: 15px; height: 15px; }
+  /* Keyboard-mapping — Chords modifier reference (in Settings) */
+  .km-hint { font-family: var(--mono); font-size: 10.5px; line-height: 1.55; color: var(--bone-faint); margin: 0 2px 11px; letter-spacing: 0.2px; }
+  .km-hint b { color: var(--brass); font-weight: 700; }
+  .km-mods { display: grid; gap: 7px; margin: 4px 2px 30px; }
+  .km-mod { display: flex; align-items: center; gap: 12px; font-family: var(--mono); font-size: 11px; color: var(--bone-dim); }
+  .km-mod b { color: var(--bone); font-weight: 700; }
+  .km-keys { display: inline-flex; align-items: center; gap: 3px; flex: 0 0 92px; }
+  .km-mod kbd { font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--bone); background: var(--wood); border: 1px solid var(--edge); border-bottom-width: 2px; border-radius: 5px; padding: 1px 6px; min-width: 18px; text-align: center; }
+  .km-plus, .km-dash { color: var(--bone-faint); }
+  .km-flash { animation: kmFlash 1.5s ease; }
+  @keyframes kmFlash { 0%,100% { color: var(--brass-deep); } 30% { color: var(--brass); text-shadow: 0 0 12px var(--brass-glow); } }
 
   /* Chunky scrollbar (always on) — easier to grab on touch */
   html[data-scroll="fat"]::-webkit-scrollbar { width: 18px; height: 18px; }
@@ -324,20 +345,20 @@
   .trow.zero { grid-template-columns: 1fr; margin: 8px 0; }
   .trow.zero .tbtn { padding-left: 18px; padding-right: 18px; }
 
-  /* Artist song tooltip */
-  .card[data-ref]:hover::after {
-    content: attr(data-ref);
-    position: absolute; left: 50%; bottom: calc(100% + 9px); transform: translateX(-50%);
-    width: max-content; max-width: 220px; text-align: center;
+  /* Tuning tile tooltip — one shared popover (hover / focus / touch), positioned by JS. Description + song, styled apart. */
+  .tuning-tip {
+    position: fixed; z-index: 200; max-width: 264px; pointer-events: none;
     background: var(--ink); color: var(--bone); border: 1px solid var(--brass-deep);
-    padding: 7px 11px; border-radius: 8px;
-    font-family: var(--sans); font-size: 11.5px; font-weight: 600; line-height: 1.35; letter-spacing: 0.2px;
-    z-index: 60; pointer-events: none; box-shadow: 0 10px 26px rgba(0,0,0,0.55);
+    padding: 9px 12px; border-radius: 9px; box-shadow: 0 12px 30px rgba(0,0,0,0.55);
+    font-family: var(--sans); opacity: 0; transform: translateY(3px); transition: opacity .13s, transform .13s;
   }
-  .card[data-ref]:hover::before {
-    content: ''; position: absolute; left: 50%; bottom: calc(100% + 3px); transform: translateX(-50%);
-    border: 6px solid transparent; border-top-color: var(--brass-deep); z-index: 60; pointer-events: none;
-  }
+  .tuning-tip.on { opacity: 1; transform: none; }
+  .tuning-tip .tt-desc { font-size: 11.5px; font-weight: 600; line-height: 1.42; letter-spacing: 0.1px; }
+  .tuning-tip .tt-song { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--edge); font-size: 11px; font-style: italic; color: var(--bone-dim); line-height: 1.35; }
+  .tuning-tip .tt-ico { font-style: normal; color: var(--brass); margin-right: 4px; }
+  .tuning-tip::after { content: ''; position: absolute; top: 100%; left: var(--tt-ax, 50%); transform: translateX(-50%); border: 6px solid transparent; border-top-color: var(--brass-deep); }
+  .tuning-tip.below::after { top: auto; bottom: 100%; border-top-color: transparent; border-bottom-color: var(--brass-deep); }
+  .card:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
 
   /* Left "jump to" nav — desktop only (needs room beside the centered content) */
   #sideNav { display: none; }
@@ -371,27 +392,27 @@
   .sec, .bench, .fam { scroll-margin-top: 24px; }
 
   /* Ethnic instruments + string-cluster picker */
-  .card.inst .card-notes { display: flex; justify-content: flex-start; gap: 8px; padding-left: 2px; }
+  .card.inst .card-notes { display: flex; justify-content: center; gap: 8px; }
   .cl-head { font-family: var(--mono); font-size: 10px; letter-spacing: 0.4px; color: var(--bone-faint); margin: 14px 2px 11px; line-height: 1.5; }
   .cl-head b { color: var(--brass); }
   .clrow { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 30px; }
-  .inst-fx { display: flex; flex-wrap: wrap; gap: 10px; margin: 2px 0 14px; }   /* String doubler / +octave voicing toggles */
+  .inst-fx { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 2px 0 14px; }   /* String doubler / +octave voicing toggles */
   .fx-tog { display: inline-flex; align-items: center; gap: 9px; padding: 9px 14px; border: 1px solid var(--edge); border-radius: 10px; background: color-mix(in srgb, var(--wood) 22%, transparent); font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; color: var(--bone-dim); cursor: pointer; transition: border-color .13s, color .13s, background .13s; }
   .fx-tog:hover { border-color: var(--brass-deep); color: var(--bone); }
   .fx-tog:has(input:checked) { border-color: var(--brass); color: var(--bone); background: var(--felt); }
-  .card-foot { display: flex; align-items: center; gap: 8px; margin-top: 9px; }   /* corner badges (left) + capo hint (right) */
+  .card-foot { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px 8px; margin-top: 11px; }   /* badges + capo hint grouped and centered under the card */
   .ibadges { display: inline-flex; gap: 5px; }
-  .ibadge { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 6px; border: 1px solid var(--edge); color: var(--bone-faint); background: color-mix(in srgb, var(--wood) 30%, transparent); cursor: help; transition: color .13s, border-color .13s, background .13s, box-shadow .13s; }
-  .ibadge svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .ibadge { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 5px; border: 1px solid var(--edge); color: var(--bone-faint); background: color-mix(in srgb, var(--wood) 30%, transparent); cursor: help; transition: color .13s, border-color .13s, background .13s, box-shadow .13s; }
+  .ibadge svg { width: 11px; height: 11px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
   .ibadge.lit { color: var(--brass); border-color: var(--brass-deep); background: var(--felt); box-shadow: 0 0 0 1px var(--brass-glow); }
-  .card-foot .card-capo { margin: 0 0 0 auto; }   /* push the capo hint to the right of the badges */
+  .card-foot .card-capo { margin: 0; text-align: center; }   /* sits inline with the badges, vertically centered */
   /* Chords — omnichord matrix (12 roots × maj/min/7 + one dynamic extension row) */
   .chord-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 2px; margin: 2px 0 14px; }
   .chord-matrix { display: grid; grid-template-columns: auto repeat(12, minmax(44px, 1fr)); gap: 6px; min-width: 620px; }
   .chord-colhd { font-family: var(--mono); font-size: 10px; letter-spacing: 0.5px; color: var(--bone-faint); text-align: center; align-self: end; padding-bottom: 3px; }
   .chord-rowhd { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 1px; color: var(--bone-faint); display: flex; align-items: center; justify-content: flex-end; padding-right: 9px; white-space: nowrap; }
   .chord-rowhd.ext { color: var(--brass); }
-  .chord-cell { font-family: var(--cond); font-weight: 700; font-size: 14px; color: var(--bone); background: var(--wood); border: 1px solid var(--edge-soft); border-radius: 8px; padding: 8px 3px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; user-select: none; -webkit-user-select: none; box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 5px rgba(0,0,0,0.28); transition: border-color .12s, background .12s, box-shadow .12s, color .12s, opacity .12s; }
+  .chord-cell { position: relative; font-family: var(--cond); font-weight: 700; font-size: 14px; color: var(--bone); background: var(--wood); border: 1px solid var(--edge-soft); border-radius: 8px; padding: 8px 3px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; user-select: none; -webkit-user-select: none; box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 5px rgba(0,0,0,0.28); transition: border-color .12s, background .12s, box-shadow .12s, color .12s, opacity .12s; }
   .chord-cell:hover:not(.disabled) { border-color: var(--brass-deep); background: var(--felt); }
   .chord-rn { font-family: var(--mono); font-size: 8.5px; font-weight: 700; line-height: 1; letter-spacing: 0.3px; min-height: 9px; }   /* min-height reserves the slot even when empty (off-key cells) */
   .chord-cell.tonic    { border-color: #45c07a; background: color-mix(in srgb, #45c07a 15%, var(--wood)); }   /* diatonic — tonic (home) */
@@ -400,27 +421,57 @@
   .chord-cell.tonic .chord-rn    { color: #74e0a3; }
   .chord-cell.subdom .chord-rn   { color: #93c6ff; }
   .chord-cell.dominant .chord-rn { color: #ff9c72; }
+  /* Chord layers (Area 2) — encode extra harmonic info on badge / border-style / glow, keeping fill for function */
+  .chord-cell.lyr-seventh { opacity: 1; }
+  .chord-cell.lyr-seventh::after { content: "7"; position: absolute; top: 2px; right: 3px; width: 13px; height: 13px; border-radius: 50%; background: var(--brass); color: var(--ink); font-family: var(--mono); font-size: 8px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.35); }
+  .chord-cell.lyr-borrow { opacity: 1; border-style: dashed; border-color: #a563d4; background: color-mix(in srgb, #a563d4 13%, var(--wood)); }
+  .chord-cell.lyr-borrow .chord-rn { color: #c58ee6; }
+  .chord-cell.lyr-borrow:hover { border-color: #bd82e8; background: color-mix(in srgb, #a563d4 22%, var(--wood)); }
+  .chord-cell.resolve { border-color: #45c07a; box-shadow: inset 0 0 0 2px #45c07a, 0 0 15px color-mix(in srgb, #45c07a 60%, transparent); }
+  .chord-cell.resolve-src::before { content: "→"; position: absolute; top: 1px; left: 4px; font-family: var(--mono); font-size: 11px; font-weight: 700; color: #ea6a3c; }
   .chord-cell.offkey { opacity: 0.36; }                       /* non-diatonic in key mode — dimmed but still tappable (borrowed chords) */
   .chord-cell.offkey:hover { opacity: 0.75; }
   .chord-cell.on { border-color: var(--brass); background: var(--felt); color: var(--brass); opacity: 1; box-shadow: inset 0 0 0 1px var(--brass), 0 0 18px var(--brass-glow); }
   .chord-cell.offkey.on { opacity: 1; }   /* active borrowed chord stays fully lit even on hover (beats .offkey:hover) */
   .chord-cell.disabled { opacity: 0.3; cursor: not-allowed; filter: grayscale(0.5); box-shadow: none; }
   .chord-ext { display: flex; justify-content: center; }
-  .chord-ext .seg { display: inline-flex; flex-wrap: wrap; justify-content: center; }   /* 9 options → wrap on narrow screens */
+  .chord-ext .seg { display: inline-flex; flex-wrap: wrap; justify-content: center; }   /* several options → wrap on narrow screens */
   .chord-ext .seg button { flex: 0 0 auto; padding: 7px 13px; }
   /* Key mode — root/scale selectors + function legend */
   .chord-key { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 2px 0 14px; }
   .chord-key-lbl { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--bone-faint); }
   .chord-key .num { width: auto; font-size: 12px; padding: 8px 30px 8px 11px; }
-  .chord-voice { margin: -6px 0 14px; }                                  /* Voicing row sits just under the Key row */
-  .chord-voice .clrow { margin: 0; gap: 6px; }                           /* tighten the cluster picker for the header */
-  .chord-voice .clbtn { padding: 5px 9px; gap: 5px; border-radius: 8px; }
-  .chord-voice .cldots i { height: 12px; width: 4px; }
+  .chord-voice { margin: -6px 0 14px; gap: 7px; }                        /* Voicing row sits just under the Key row */
+  .chord-voice .chord-key-lbl { font-size: 9px; letter-spacing: 1px; }
+  .chord-voice .clrow { margin: 0; gap: 5px; }                           /* compact cluster picker: dots + label inline */
+  .chord-voice .clbtn { flex-direction: row; padding: 4px 7px; gap: 5px; border-radius: 7px; }
+  .chord-voice .cldots i { height: 9px; width: 3px; }
   .chord-voice .cllbl { font-size: 10px; }
+  .chord-voice .seg { padding: 2px; gap: 2px; }
+  .chord-voice .seg button { padding: 5px 8px; font-size: 10px; }
+  /* Voiced-only options — indented under the Voicing row (rule = "these belong to Voiced"), each group captioned */
+  .voice-sub { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: -8px 0 14px; padding-left: 12px; border-left: 2px solid var(--edge-soft); }
+  .vsub-lbl { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--bone-faint); }
+  .vsub-lbl:not(:first-child) { margin-left: 5px; }
+  .voice-sub .seg { padding: 2px; gap: 2px; }
+  .voice-sub .seg button { padding: 5px 8px; font-size: 10px; }
+  .voice-sub .clrow { margin: 0; gap: 5px; flex-wrap: wrap; }
+  .voice-sub .clbtn { flex-direction: row; padding: 4px 7px; gap: 5px; border-radius: 7px; }
+  .voice-sub .cldots i { height: 9px; width: 3px; }
+  .voice-sub .cllbl { font-size: 10px; }
   .chord-legend { display: flex; flex-wrap: wrap; gap: 14px; margin-left: auto; font-family: var(--mono); font-size: 10px; letter-spacing: 0.4px; color: var(--bone-dim); }
   .chord-legend span { display: inline-flex; align-items: center; gap: 6px; }
   .lg-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
   .lg-dot.tonic { background: #45c07a; } .lg-dot.subdom { background: #5aa2ea; } .lg-dot.dominant { background: #ea6a3c; }
+  /* Chord-layer toggle chips — sit under the Voicing row; compact toggles matching the app's chip language */
+  .chord-layers { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin: -6px 0 14px; }
+  .chord-layers .chord-key-lbl { font-size: 9px; letter-spacing: 1px; }
+  .layer-tog { font-family: var(--mono); font-size: 10.5px; font-weight: 700; letter-spacing: 0.3px; padding: 5px 10px; border-radius: 7px; border: 1px solid var(--edge); background: var(--wood); color: var(--bone-dim); cursor: pointer; transition: color .13s, border-color .13s, background .13s; }
+  .layer-tog:hover:not(.locked) { border-color: var(--brass-deep); color: var(--bone); }
+  .layer-tog.on { border-color: var(--brass); color: var(--brass); background: var(--felt); }
+  .layer-tog.locked { opacity: 0.6; cursor: default; }
+  .layer-clear { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.3px; color: var(--bone-faint); background: transparent; border: 1px solid transparent; border-radius: 7px; padding: 5px 9px; cursor: pointer; transition: color .12s, background .12s; margin-left: 2px; }
+  .layer-clear:hover { color: var(--brass); background: var(--felt); }
   .clbtn { display: flex; flex-direction: column; align-items: center; gap: 7px; background: var(--wood); border: 1px solid var(--edge); border-radius: 9px; padding: 9px 13px; cursor: pointer; transition: transform .1s, border-color .12s, background .12s; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 5px rgba(0,0,0,0.28); }
   .clbtn:hover:not(.disabled) { border-color: var(--brass-deep); background: var(--felt); transform: translateY(-1px); }
   .clbtn.on { border-color: var(--brass); background: var(--felt); box-shadow: inset 0 0 0 1px var(--brass-glow); }
@@ -438,16 +489,31 @@
   .panmode { font-family: var(--mono); font-size: 11px; font-weight: 700; padding: 10px 8px; border-radius: 8px; cursor: pointer; border: 1px solid var(--edge); background: var(--wood); color: var(--bone-dim); transition: all .12s; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 5px rgba(0,0,0,0.28); }
   .panmode:hover { border-color: var(--brass); color: var(--bone); background: var(--felt); transform: translateY(-1px); }
   .panmode.on { border-color: var(--brass); color: var(--brass); background: var(--felt); box-shadow: inset 0 0 0 1px var(--brass-glow); }
-  /* Auto-pan toggle — a distinct dashed chip in the pan-modes grid (not a static placement) */
+  /* Pan modes — one segmented toggle switch (matches the app's other .seg switches); wraps since there are 9 options */
+  .panmode-seg { flex-wrap: wrap; justify-content: center; margin-bottom: 12px; }
+  .panmode-seg button { flex: 0 0 auto; padding: 7px 12px; }
+  /* Mode group — Stereo Spread presets (+ glide) OR Auto-pan, framed as one mutually-exclusive choice */
+  .pan-mode-group { border: 1px solid var(--edge); border-radius: 12px; padding: 13px 13px 15px; background: var(--wood); box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 6px rgba(0,0,0,0.22); margin-bottom: 14px; transition: border-color .16s; }
+  .pan-mode-group.auto-on { border-color: var(--brass-deep); }   /* auto-pan is the active mode → tint the frame */
+  .pan-spread { transition: opacity .18s; }
+  .pan-dim { opacity: 0.38; }   /* inactive mode → dim (still clickable: tapping a preset switches back to Spread mode) */
+  /* "or" — a lighter cut-line than fam-name, signalling the two choices are alternatives inside the group */
+  .pan-mode-or { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 13px 4px; font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--bone-faint); }
+  .pan-mode-or::before, .pan-mode-or::after { content: ""; flex: 1; height: 1px; background: var(--edge-soft); }
+  /* Auto-pan — a distinct dashed chip so it stands out as the alternative to the spreads */
+  .autopan-row { margin-bottom: 0; }
+  .autopan-row .panmode.autopan { width: 100%; }
+  /* Auto-pan toggle — a distinct dashed chip (not a static placement) */
   .panmode.autopan { border-style: dashed; border-color: var(--brass-deep); color: var(--brass); background: transparent; }
   .panmode.autopan:hover { border-color: var(--brass); background: var(--felt); transform: translateY(-1px); }
   .panmode.autopan.on { color: var(--ink); background: linear-gradient(180deg, var(--brass), var(--brass-deep)); border-color: var(--brass-deep); box-shadow: 0 0 0 1px var(--brass-glow), 0 3px 12px var(--brass-glow); }
   .apsub { font-family: var(--mono); font-size: 10px; color: var(--bone-faint); letter-spacing: 0.4px; margin: 2px 2px 0; }
-  /* Pan-glide duration slider — lives in the Panning section itself */
-  .glide-row { margin: 12px 2px 4px; }                 /* Pan glide — bare, grouped with the manual placement controls */
+  /* Pan-glide duration — a subordinate setting of Spread mode (indented + rule), not a co-equal strip */
+  .glide-row { margin: 12px 0 2px; padding-left: 12px; border-left: 2px solid var(--edge-soft); }
+  .glide-cap { margin: 0 2px 7px; }                    /* small-caps label, tighter than a standalone apcap */
   .pg-lbl { display: flex; justify-content: space-between; align-items: baseline; font-family: var(--mono); font-size: 11px; color: var(--bone-dim); letter-spacing: 0.3px; margin-bottom: 9px; }
   .pg-lbl b { color: var(--brass); font-size: 12px; }
-  .pan-auto { margin-top: 14px; padding: 13px 14px; background: var(--wood); border: 1px solid var(--edge); border-radius: 10px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
+  .pan-auto { margin-top: 0; padding: 13px 14px; background: var(--wood); border: 1px solid var(--edge); border-radius: 10px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
   #apBody .panmodes { margin-bottom: 4px; }
   .apcap { font-family: var(--mono); font-size: 9.5px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--bone-faint); margin: 14px 2px 8px; }
   .apdivs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 4px; }
@@ -510,7 +576,7 @@
   }
   .card:hover { border-color: var(--brass-deep); background: var(--felt); transform: translateY(-2px); z-index: 5; box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 7px 18px rgba(0,0,0,0.42); }
   .card.active { border-color: var(--brass); background: var(--felt); box-shadow: inset 3px 0 0 var(--brass), inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 18px var(--brass-glow); }
-  .card-name { font-family: var(--cond); font-weight: 700; font-size: 19px; letter-spacing: 0.3px; color: var(--bone); text-transform: uppercase; line-height: 1; margin-bottom: 9px; }
+  .card-name { font-family: var(--cond); font-weight: 700; font-size: 19px; letter-spacing: 0.3px; color: var(--bone); text-transform: uppercase; line-height: 1; margin-bottom: 9px; text-align: center; }
   .card.active .card-name { color: var(--brass); }
   .card-notes { font-family: var(--mono); font-size: 11px; color: var(--bone-dim); display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; text-align: center; }
   .card-notes span { white-space: nowrap; }
@@ -642,6 +708,12 @@
   .docgrp-body li { margin-bottom: 8px; }
   .docgrp-body kbd { font-family: var(--mono); font-size: 10.5px; background: var(--ink); border: 1px solid var(--edge); border-radius: 4px; padding: 1px 5px; color: var(--bone); white-space: nowrap; }
   .docgrp-body a { color: var(--brass); }
+  .docgrp-body .doc-tbl { border-collapse: collapse; width: 100%; margin: 4px 0 12px; font-family: var(--mono); font-size: 10.5px; }
+  .docgrp-body .doc-tbl th, .docgrp-body .doc-tbl td { border: 1px solid var(--edge-soft); padding: 4px 5px; text-align: center; }
+  .docgrp-body .doc-tbl th { color: var(--brass-deep); font-weight: 700; letter-spacing: 0.5px; background: rgba(255,255,255,0.02); }
+  .docgrp-body .doc-tbl td:first-child, .docgrp-body .doc-tbl th:first-child { text-align: left; color: var(--bone); white-space: nowrap; }
+  .docgrp-body .doc-tbl td.d7 { color: var(--brass); font-weight: 700; }
+  .docgrp-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
   /* User tunings section */
   .user-tools { display: flex; flex-wrap: wrap; gap: 8px; margin: 2px 0 14px; }
@@ -807,7 +879,6 @@
 
   <fieldset class="panel" id="sec-pan">
     <legend class="panel-hd">Panning</legend>
-    <div class="panel-sub">Per-string stereo</div>
     <div id="panWrap"></div>
   </fieldset>
 
@@ -893,6 +964,14 @@
       </div>
     </details>
 
+    <details class="settgrp" data-grp="keys">
+      <summary>Keyboard Mapping</summary>
+      <div class="settgrp-body">
+        <div id="keymapSettings"></div>
+        <p class="note-hint">Tap a <b>Bends</b> chip, then press a key to rebind it (Esc cancels). Pedals fire while held (or tap-to-latch). <b>Chords</b> number keys are fixed and follow the Key &amp; Scale you pick in the Chords panel. Each section’s <b>⌨ Map</b> button jumps here.</p>
+      </div>
+    </details>
+
     <div class="foot">
       <button class="btn" id="closeSettings">Cancel</button>
       <button class="btn go" id="saveSettings">Save settings</button>
@@ -945,12 +1024,52 @@
     </details>
 
     <details class="docgrp">
+      <summary>Chords — key mode, layers &amp; keys</summary>
+      <div class="docgrp-body">
+        <p>The <b>Chords</b> matrix retunes all six strings to a voiced chord in one tap — it <b>latches</b>, so tap another to change. Pick a <b>Key &amp; Scale</b> and the seven diatonic chords light up, coloured by harmonic function: <em>tonic</em> (green, home), <em>subdominant</em> (blue, departure) and <em>dominant</em> (orange, tension), each with its Roman numeral.</p>
+        <p><b>Voicing</b>: <em>Spread</em> spans the neck; <em>Voiced</em> carries a close 3- or 4-string cluster with a bass, played <em>Legato</em> (smooth voice leading between chords) or <em>Grip</em> (identical block shapes).</p>
+        <p><b>Layers</b> (the toggle chips under the Voicing row) add harmony without a rainbow — function stays on the fill, extra info rides on badges and borders:</p>
+        <ul>
+          <li><b>7ths</b> — the diatonic 7th of each degree, marked with a small <b>7</b> badge in its function colour.</li>
+          <li><b>Borrowed</b> — modal-interchange chords, shown as <b>dashed violet</b> cells.</li>
+          <li><b>Resolve →</b> — hover a dominant chord to ring where it wants to resolve (V7 → I).</li>
+        </ul>
+        <p><b>Number keys</b> <kbd>1</kbd>–<kbd>7</kbd> play the diatonic degree chords in your current voicing (same latch as the on-screen cells). Modifiers: <kbd>⇧</kbd>+<kbd>1</kbd>–<kbd>7</kbd> = that degree's 7th; <kbd>−</kbd> / <kbd>=</kbd> = 3- / 4-note voicing; <kbd>[</kbd> <kbd>]</kbd> = move the cluster window; <kbd>0</kbd> = re-center voice leading. The full reference and pedal rebinding live in <em>Settings → Keyboard Mapping</em> (or hit any section's <b>⌨ Map</b> button).</p>
+        <p><b>Scale-tone bends</b>: while a chord is held in key mode, the <b>Bends</b> section becomes six string-pedals (keys <kbd>A</kbd>–<kbd>H</kbd>). Each <b>raises one string to the next scale tone</b> and springs back on release — a live pedal-steel voice-leading move under a sustained chord (hold String&nbsp;3 for a 4→3 suspension; hold all six to walk the whole chord up a step).</p>
+
+        <p style="margin-top:14px"><b>Diatonic 7th chords by mode</b> — the four-note chord built on each degree. The brass <em>7</em> marks the dominant seventh (the leading-tone chord). <span style="color:var(--bone-faint)">mM7 = minor-major 7, +M7 = augmented-major 7 — no grid row yet.</span></p>
+        <div class="docgrp-scroll"><table class="doc-tbl">
+          <thead><tr><th>Mode</th><th>I</th><th>II</th><th>III</th><th>IV</th><th>V</th><th>VI</th><th>VII</th></tr></thead>
+          <tbody>
+            <tr><td>Major / Ionian</td><td>maj7</td><td>m7</td><td>m7</td><td>maj7</td><td class="d7">7</td><td>m7</td><td>ø7</td></tr>
+            <tr><td>Minor / Aeolian</td><td>m7</td><td>ø7</td><td>maj7</td><td>m7</td><td>m7</td><td>maj7</td><td class="d7">7</td></tr>
+            <tr><td>Dorian</td><td>m7</td><td>m7</td><td>maj7</td><td class="d7">7</td><td>m7</td><td>ø7</td><td>maj7</td></tr>
+            <tr><td>Phrygian</td><td>m7</td><td>maj7</td><td class="d7">7</td><td>m7</td><td>ø7</td><td>maj7</td><td>m7</td></tr>
+            <tr><td>Lydian</td><td>maj7</td><td class="d7">7</td><td>m7</td><td>ø7</td><td>maj7</td><td>m7</td><td>m7</td></tr>
+            <tr><td>Mixolydian</td><td class="d7">7</td><td>m7</td><td>ø7</td><td>maj7</td><td>m7</td><td>m7</td><td>maj7</td></tr>
+            <tr><td>Harm. Minor</td><td>mM7</td><td>ø7</td><td>+M7</td><td>m7</td><td class="d7">7</td><td>maj7</td><td>°7</td></tr>
+          </tbody>
+        </table></div>
+
+        <p style="margin-top:12px"><b>Borrowed chords / modal interchange</b> — chords pulled from the <em>parallel</em> mode (same root, opposite major/minor). Flip on the <b>Borrowed</b> layer to surface them. The high-value borrowings in a major key:</p>
+        <ul>
+          <li><b>iv</b> — minor subdominant, the plagal “sigh” (iv → I).</li>
+          <li><b>♭VII</b> — the modal / rock cadence ♭VII → I.</li>
+          <li><b>♭VI</b> — ♭VI–♭VII–I, the anthem climb.</li>
+          <li><b>♭III</b> — a bluesy mediant.</li>
+          <li><b>ii°</b> — a darker pre-dominant.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="docgrp">
       <summary>Bends — pedals &amp; knee levers</summary>
       <div class="docgrp-body"><ul>
         <li>Hold the on-screen <b>Pedal&nbsp;A / B</b> and knee levers <b>LKL / LKR</b> (or keys <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> <kbd>F</kbd>) to bend the root / 3rd / 5th of the current tuning, pedal-steel style. They stack, and the icons animate as they move.</li>
         <li><b>Combos</b> (A+B…) engage a whole grip at once and light up the pedals they include.</li>
-        <li><b>Latch</b> — tick the checkbox to tap on/off instead of holding.</li>
-        <li><b>Key Mapping</b> — expand the drawer to rebind any control: click a chip, then press a key. <em>Reset</em> restores the defaults.</li>
+        <li><b>Latch</b> — the toggle in the <b>Bends</b> header switches pedals to tap on/off instead of holding.</li>
+        <li><b>Rebind</b> any control in <em>Settings → Keyboard Mapping</em> (or the <b>⌨ Map</b> button in the header): click a chip, press a key. <em>Reset</em> restores defaults.</li>
+        <li>In <b>Chords</b> key mode the pedals switch to <b>scale-tone bends</b> — see the Chords help above.</li>
         <li>Any bend that would exceed ±12 semitones greys out.</li>
       </ul></div>
     </details>
@@ -1022,7 +1141,7 @@ const SLBL = ['1','2','3','4','5','6'];
 const STR12_CC=77, ALT_CC=78;   // INST fx assigns: "string doubler" (12-string, CC77) + "+octave" (alt-tune, CC78) — both MOMENT (127=on, 0=off)
 function nameOf(m){ const pc=((m%12)+12)%12; return {name:NOTE[pc], oct:Math.floor(m/12)-1}; }
 function toCC(s){ const c=Math.max(-12,Math.min(12,s)); return Math.round((c+12)/24*127); }
-const DEFAULT_KEYS={A:'a',B:'s',LKL:'d',LKR:'f',AB:'g',ABR:'h',SWELL:'v'};  // ergonomic left-hand cluster (+ V = volume swell)
+const DEFAULT_KEYS={A:'a',B:'s',LKL:'d',LKR:'f',AB:'g',ABR:'h'};  // ergonomic left-hand cluster
 const AB_DEFAULTS={autoBend:true, bendCC:69, levelCC:70, bendDepth:25, levelDip:15, bendMs:120};  // auto-bend scoop (on by default)
 const AP_DEFAULTS={mode:'free', rate:15, bpm:120, div:'1/2 bar', width:0.65, shape:'sine', spread:1, char:'rotate', lTopSpread:1, lTopSpeed:1.12, lBotSpread:0.5, lBotSpeed:0.86};  // auto-pan engine (gentle defaults; l* = Leslie per-rotor spread/speed)
 
@@ -1045,7 +1164,6 @@ const FAMILIES = [
   ]},
   { family:'Other', section:'Lap Steel', tunings:[
     {name:'B11', notes:'B D# F# A C# E', offsets:[0,2,2,4,-6,-5]},
-    {name:'B11 TK Smith', notes:'B D# F# A C# E', offsets:[0,2,2,4,-6,-5]},
     {name:'Cyrus Hybrid', notes:'G B D F# A D', offsets:[-2,-2,-1,0,2,3]},
   ]},
   { family:'Open Majors', tunings:[
@@ -1101,24 +1219,89 @@ const ETHNIC=[
   {name:'Balalaika', pitches:[64,64,69], notes:'E E A', ref:'Russian Folk Tunes'},
   {name:'Banjo', pitches:[50,55,59,62,67], notes:'D G B D G', ref:'5-string · open G'},
 ];
+// Tooltip copy for tuning tiles — keyed by the app's stable tuning NAME (its in-code identifier), resolved from
+// plans/tuning-tooltips.md by meaning. Fields kept separate: `desc` (what/why) + optional `song` (one signature example).
+// NOTES are not stored here — the tile already shows them (t.notes), so we never duplicate. Author's ⚠︎ annotations were
+// stripped: dev-directed notes dropped, genuine trivia folded into desc. Entries with no real song omit `song`.
+const TUNING_TIPS = {
+  // Common
+  'DADGAD':        { desc:`Modal "Celtic" tuning — the open strings ring a Dsus4. Pioneered by Davey Graham.`, song:`"Kashmir" — Led Zeppelin` },
+  'Nashville':     { desc:`"High-strung" — the lower four strings swap to light gauges an octave up for a shimmering, 12-string-like chime. A studio doubling trick.`, song:`"Wild Horses" — The Rolling Stones` },
+  'Baritone':      { desc:`A long-scale guitar tuned a fourth low (B to B); born in surf and spaghetti-western scores.`, song:`"Wichita Lineman" — Glen Campbell` },
+  // Lap steel — 6th family
+  'C6':            { desc:`The workhorse sixth-chord lap-steel tuning — rich western-swing, jazz and Hawaiian voicings (Jerry Byrd's C6).`, song:`"Steel Guitar Rag" — Bob Wills & His Texas Playboys` },
+  'A6':            { desc:`C6 transposed down a minor third for a warmer, lower western-swing voice (Herb Remington, Leon McAuliffe).`, song:`"Remington Ride" — Herb Remington` },
+  'C6/A7':         { desc:`A Jerry-Byrd-style hybrid giving both a C6 and an A7 in one tuning, for Hawaiian and country lap steel.`, song:`Hawaiian & country lap steel — Jerry Byrd` },
+  // Lap steel — dominant / 7th
+  'E7':            { desc:`A sevenths tuning — bluesy, dominant colour favoured for blues and rock slide (layout varies).`, song:`early Hawaiian & blues lap steel — Sol Hoʻopiʻi` },
+  'E13':           { desc:`A rich extended-chord tuning for western swing and jazz lap steel (the McAuliffe/Remington era).`, song:`western swing — Bob Wills & His Texas Playboys` },
+  'E9 lap':        { desc:`Lush E-major-9 voicings for non-pedal lap steel — the non-pedal cousin of the country pedal-steel E9.`, song:`Hawaiian & rock lap steel` },
+  // Lap steel — other
+  'B11':           { desc:`A gorgeous, quintessentially Hawaiian lap-steel tuning full of extended chords; also half of Don Helms' Hank Williams double-neck (E6/B11).`, song:`Hank Williams sides (Don Helms) — e.g. "Your Cheatin' Heart"` },
+  'Cyrus Hybrid':  { desc:`A specialised hybrid voicing — the open strings spell a Gmaj9.` },
+  // Open majors
+  'Open E':        { desc:`An open E-major chord — the classic bottleneck-slide tuning.`, song:`"Statesboro Blues" — The Allman Brothers Band (Duane Allman)` },
+  'Open D':        { desc:`Open D major ("Vestapol") — a cornerstone of Delta blues and folk fingerstyle/slide.`, song:`"Little Martha" — The Allman Brothers Band` },
+  'Open G Dobro':  { desc:`The standard resonator/Dobro tuning — the sound of bluegrass and Hawaiian-style slide.`, song:`bluegrass Dobro — Jerry Douglas` },
+  'Open G low':    { desc:`Full six-string open G — the classic Delta-blues "Spanish" tuning and the basis of the Stones' open-G sound.`, song:`"Cross Road Blues" — Robert Johnson` },
+  'Open A high':   { desc:`Open A major — open G raised a whole step for a brighter, tenser slide tone, with the same chord shapes. The higher-voiced counterpart to open G.` },
+  // Drop
+  'Drop D':        { desc:`The low string dropped a whole step for one-finger power chords and a heavier low end.`, song:`"Everlong" — Foo Fighters` },
+  'Drop Db':       { desc:`Drop D shifted down a half step (Drop C#) for extra weight while staying playable.`, song:`"Them Bones" — Alice in Chains` },
+  'Drop C':        { desc:`Drop D down a whole step — a huge nu-metal/metalcore rhythm tuning.`, song:`"Chop Suey!" — System of a Down` },
+  'Drop B':        { desc:`Drop D down a minor third — heavy, tight and modern.`, song:`"Duality" — Slipknot` },
+  'Drop Bb':       { desc:`Drop D down a fourth (Drop A#) for a crushing low register.`, song:`"Shadow Moses" — Bring Me The Horizon` },
+  'Drop A':        { desc:`The low string down a fourth then dropped — a metalcore/deathcore staple.`, song:`"Psychosocial" — Slipknot` },
+  // Artists
+  'Fripp NST':     { desc:`Robert Fripp's New Standard Tuning — all fifths (plus a top minor third), built for wide, ringing intervals.`, song:`"Frame by Frame" — King Crimson` },
+  'Gambale':       { desc:`Frank Gambale's tuning — the whole guitar up a fourth with the top two strings dropped an octave, so standard shapes yield piano-like close voicings. Invented for his own fusion playing.` },
+  'Rain Song':     { desc:`Jimmy Page's lush DADGAD variation (a Gsus4/D voicing), written for one specific song.`, song:`"The Rain Song" — Led Zeppelin` },
+  'Ostrich':       { desc:`Lou Reed's "ostrich" tuning — every string to the same note for a droning, chorused wall of sound.`, song:`"The Ostrich" — Lou Reed & The Primitives` },
+  'Schizophrenia': { desc:`Thurston Moore's clustered Sonic Youth drone tuning — three adjacent scale tones doubled, with no clear root.`, song:`"Schizophrenia" — Sonic Youth` },
+  'Nick Drake':    { desc:`One of Nick Drake's signature open-C-based tunings (capo 2 on the record) — a wide, resonant shimmer.`, song:`"Pink Moon" — Nick Drake` },
+  'Keith Richards':{ desc:`Keith's trademark — open G with the low string removed, played on a 5-string.`, song:`"Start Me Up" — The Rolling Stones` },
+  'Am. Football':  { desc:`American Football's open-F(maj9) emo/math-rock tuning — the whole opening line falls under one finger.`, song:`"Never Meant" — American Football` },
+  'Soundgarden':   { desc:`Chris Cornell & Kim Thayil's drone tuning — often written EEBBBB, but Thayil says it's really EEBBBE.`, song:`"My Wave" — Soundgarden` },
+  'Joni Mitchell': { desc:`Joni built her sound on personal open tunings, described by bass note plus fret offsets (her catalog uses 50+).`, song:`"Big Yellow Taxi" — Joni Mitchell` },
+  // Ethnic instruments
+  'Mandolin':      { desc:`Standard mandolin, tuned in fifths like a violin.`, song:`"Losing My Religion" — R.E.M. (Peter Buck)` },
+  'Irish Bouzouki':{ desc:`The Greek bouzouki adapted for Celtic music — flat-backed, tuned a fifth lower — as a rhythm and countermelody engine.`, song:`Irish trad — Planxty (Andy Irvine & Dónal Lunny)` },
+  'Greek Bouzouki':{ desc:`The bright, tremolo-driven lead of Greek rebetiko and laïkó.`, song:`"Zorba's Dance (Sirtaki)" — Mikis Theodorakis` },
+  'Oud':           { desc:`The fretless lute at the heart of Arabic and Turkish maqam music (tuning varies by region and maqam).`, song:`Arabic maqam tradition — e.g. Munir Bashir` },
+  'Charango':      { desc:`A small Andean lute (traditionally armadillo-shell) with all strings inside one octave — the sparkle of Andean folk.`, song:`"El Cóndor Pasa" — Los Incas` },
+  'Saz / Bağlama': { desc:`Turkey's long-necked folk lute with microtonal, quarter-tone frets — the voice of the âşık poet-minstrels (many regional tunings).`, song:`"Uzun İnce Bir Yoldayım" — Aşık Veysel` },
+  'Cavaquinho':    { desc:`A small Brazilian 4-string (open G) — the rhythmic-harmonic engine of samba and choro.`, song:`"Brasileirinho" — Waldir Azevedo` },
+  'Ukulele':       { desc:`The classic re-entrant soprano/concert uke tuning, with a high g.`, song:`"Over the Rainbow" — Israel Kamakawiwoʻole` },
+  'Baritone Uke':  { desc:`Tuned like a guitar's top four strings, an octave below a soprano uke — warm and mellow. Favoured in jazz and folk (e.g. Lyle Ritz).` },
+  'Cuatro':        { desc:`Venezuela's 4-string (re-entrant) — the rhythmic-harmonic base of joropo and música llanera.`, song:`"Alma Llanera" (Venezuela's unofficial anthem)` },
+  'Balalaika':     { desc:`Russia's triangular folk lute, played with the fingers.`, song:`"Kalinka" (traditional)` },
+  'Banjo':         { desc:`A re-entrant 5-string with a high drone — the bluegrass sound.`, song:`"Foggy Mountain Breakdown" — Earl Scruggs` },
+  // Pedal steel
+  'E9 Nashville':  { desc:`THE country pedal-steel tuning — the crying, gliding sound you picture when you think "pedal steel" (Bud Isaacs, Buddy Emmons).`, song:`"Slowly" — Webb Pierce (Bud Isaacs, 1954)` },
+  'C6 Swing/Jazz': { desc:`The "back neck" of a double-neck pedal steel — used for western swing and jazz's fuller chord voicings (Buddy Emmons, Cindy Cashdollar).`, song:`western swing — Bob Wills; jazz steel — Buddy Emmons` },
+  'B6 Universal':  { desc:`Jeff Newman's single-neck tuning that fuses the E9 (country) and C6 (jazz/swing) necks, so one neck covers both.` },
+};
+// Tooltip payload for a tile: rich copy if we have it, else fall back to the tile's own ref/sub (e.g. unmatched E9 Lanois keeps its blurb).
+function tipFor(t){ const tip=TUNING_TIPS[t.name]; if(tip) return tip; const fb=t.ref||t.sub; return fb?{desc:fb}:null; }
+function escAttr(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
 // Per-string pan positions, index 0 = high E (str 1) … 5 = low E (str 6). −1 = hard L (L50), +1 = hard R (R50).
 let activePan='center';
 const PANMODES=[
   {id:'center',  name:'Center',         pos:[0,0,0,0,0,0]},
+  {id:'narrow',  name:'Narrow',         pos:[0.5,0.3,0.1,-0.1,-0.3,-0.5]}, // gentle spread
   {id:'spread1', name:'Equal Spread 1', pos:[1,0.6,0.2,-0.2,-0.6,-1]},   // low E left → high E right, none centered
-  {id:'spread2', name:'Equal Spread 2', pos:[-1,-0.6,-0.2,0.2,0.6,1]},
+  {id:'spread2', name:'Equal Spread 2', pos:[-1,-0.6,-0.2,0.2,0.6,1]},   // kept next to Equal Spread 1
+  {id:'pairs',   name:'Pairs',          pos:[-1,-1,0,0,1,1]},            // high pair L · mid pair C · low pair R
   {id:'split1',  name:'Split 1',        pos:[-1,-1,-1,1,1,1]},           // top 3 (high) left, bottom 3 (low) right
   {id:'split2',  name:'Split 2',        pos:[1,1,1,-1,-1,-1]},
   {id:'zig1',    name:'Zig-Zag 1',      pos:[-1,1,-1,1,-1,1]},           // hard-alternate L/R per string
   {id:'zig2',    name:'Zig-Zag 2',      pos:[1,-1,1,-1,1,-1]},
-  {id:'narrow',  name:'Narrow',         pos:[0.5,0.3,0.1,-0.1,-0.3,-0.5]}, // gentle spread
-  {id:'pairs',   name:'Pairs',          pos:[-1,-1,0,0,1,1]},            // high pair L · mid pair C · low pair R
 ];
 // Fixed per-string colors (str 1 high E … str 6 low E) that link the two overview strips.
 const STR_COLORS=['#ef5350','#f2a33d','#c6d43f','#4cc178','#4f9dea','#a563d4'];
 let dispOffsets=[0,0,0,0,0,0];   // the pitch offsets currently shown (base tuning + engaged pedal bends)
 
-function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; if(typeof s.fxDoubler!=='boolean') s.fxDoubler=true; if(typeof s.fxOctave!=='boolean') s.fxOctave=true; if(typeof s.swellMs!=='number') s.swellMs=0; if(typeof s.swellLatch!=='boolean') s.swellLatch=true; if(typeof s.chordExt!=='string' || !['add9','6','m6','sus2','sus4','dim7','m7b5','aug'].includes(s.chordExt)) s.chordExt='add9'; if(typeof s.keyRoot!=='string') s.keyRoot='C'; if(typeof s.keyScale!=='string') s.keyScale='off'; if(s.voicing!=='voiced') s.voicing='spread'; if(s.voiceSize!==4) s.voiceSize=3; if(typeof s.voiceStart!=='number'||s.voiceStart<0||s.voiceStart>6-s.voiceSize) s.voiceStart=0; if(s.voiceFeel!=='grip') s.voiceFeel='legato'; if(!s.ap||typeof s.ap!=='object'){ s.ap={...AP_DEFAULTS}; if(typeof s.autoPanRate==='number') s.ap.rate=s.autoPanRate; } else { for(const k in AP_DEFAULTS) if(!(k in s.ap)) s.ap[k]=AP_DEFAULTS[k]; if(s.ap.char==='none') s.ap.char='rotate'; if(!['1 bar','1 bar T','1/2 bar','1/2 bar T','1/4','1/4 T'].includes(s.ap.div)) s.ap.div='1/2 bar'; if(s.ap.bpm>170) s.ap.bpm=170; } return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, fxDoubler:true, fxOctave:true, swellMs:0, swellLatch:true, chordExt:'add9', keyRoot:'C', keyScale:'off', voicing:'spread', voiceSize:3, voiceStart:0, voiceFeel:'legato', ap:{...AP_DEFAULTS}, ...AB_DEFAULTS}; }
+function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; if(typeof s.fxDoubler!=='boolean') s.fxDoubler=true; if(typeof s.fxOctave!=='boolean') s.fxOctave=true; if(typeof s.swellMs!=='number') s.swellMs=0; if(typeof s.swellLatch!=='boolean') s.swellLatch=true; if(typeof s.chordExt!=='string' || !['add9','6','m6','sus2','sus4','dim7','m7b5'].includes(s.chordExt)) s.chordExt='add9'; if(typeof s.keyRoot!=='string') s.keyRoot='C'; if(typeof s.keyScale!=='string') s.keyScale='off'; if(s.voicing!=='voiced') s.voicing='spread'; if(s.voiceSize!==4) s.voiceSize=3; if(typeof s.voiceStart!=='number'||s.voiceStart<0||s.voiceStart>6-s.voiceSize) s.voiceStart=0; if(s.voiceFeel!=='grip') s.voiceFeel='legato'; if(!s.chordLayers||typeof s.chordLayers!=='object') s.chordLayers={sevenths:false,borrowed:false,resolutions:false}; else for(const k of ['sevenths','borrowed','resolutions']) if(typeof s.chordLayers[k]!=='boolean') s.chordLayers[k]=false; if(!s.ap||typeof s.ap!=='object'){ s.ap={...AP_DEFAULTS}; if(typeof s.autoPanRate==='number') s.ap.rate=s.autoPanRate; } else { for(const k in AP_DEFAULTS) if(!(k in s.ap)) s.ap[k]=AP_DEFAULTS[k]; if(s.ap.char==='none') s.ap.char='rotate'; if(!['1 bar','1 bar T','1/2 bar','1/2 bar T','1/4','1/4 T'].includes(s.ap.div)) s.ap.div='1/2 bar'; if(s.ap.bpm>170) s.ap.bpm=170; } return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, fxDoubler:true, fxOctave:true, swellMs:0, swellLatch:true, chordExt:'add9', keyRoot:'C', keyScale:'off', voicing:'spread', voiceSize:3, voiceStart:0, voiceFeel:'legato', chordLayers:{sevenths:false,borrowed:false,resolutions:false}, ap:{...AP_DEFAULTS}, ...AB_DEFAULTS}; }
 function saveSettingsLS(){ localStorage.setItem('vg800_settings', JSON.stringify(settings)); }
 function loadCustom(){ try{ return JSON.parse(localStorage.getItem('vg800_custom'))||[]; }catch(e){ return []; } }
 function saveCustomLS(){ localStorage.setItem('vg800_custom', JSON.stringify(customs)); }
@@ -1275,6 +1458,19 @@ const COPEDENTS={
     {id:'LWR',name:'Min 3rd', group:'knee', key:'f', act:'3rd −½ (minor)',   moves:[{deg:'3',semis:-1}]},
   ]},
 };
+// Scale-tone bends (Area 1) — a Chords-mode pedal set: six string-pedals, each raising ONE string to the next scale tone up.
+// Bypasses chordInfo entirely (reads the selected key/scale). Shown only while a chord is held in key mode; always momentary.
+const SCALE_BEND={ controls:[
+  {id:'SB1', name:'String 1', group:'scalebend', string:0, key:'a'},
+  {id:'SB2', name:'String 2', group:'scalebend', string:1, key:'s'},
+  {id:'SB3', name:'String 3', group:'scalebend', string:2, key:'d'},
+  {id:'SB4', name:'String 4', group:'scalebend', string:3, key:'f'},
+  {id:'SB5', name:'String 5', group:'scalebend', string:4, key:'g'},
+  {id:'SB6', name:'String 6', group:'scalebend', string:5, key:'h'},
+]};
+function scalePcSet(){ if(!chordKeyOn()) return null; const sc=SCALES[settings.keyScale], base=CHORD_ROOTS.indexOf(settings.keyRoot); const s=new Set(); sc.intervals.forEach(iv=> s.add((base+iv)%12)); return s; }
+function scaleBendActive(){ return !!activeChord && chordKeyOn(); }   // a chord is held AND a key/scale is chosen
+function pedalControls(){ return scaleBendActive() ? SCALE_BEND.controls : copedent.controls; }
 // Pedal steel tunings — 10 strings, midi low→high (index 0 = string 10 lowest, 9 = string 1 highest).
 const STEEL=[
   {id:'e9', name:'E9 Nashville', sub:'country · session sound', root:4,  copedent:'e9', midi:[47,50,52,54,56,59,64,68,75,78], spell:'B D E F# G# B E G# D# F#'},
@@ -1290,9 +1486,9 @@ const WINDOWS=[   // contiguous 6-of-10; i0 = lowest midi index of the window
 ];
 let copedent=COPEDENTS.generic, steelInst=null, steelWin=0, steelRoot=null;
 let KEYMAP={}, bindingCtrl=null;
-function ctrlById(id){ return copedent.controls.find(c=>c.id===id); }
+function ctrlById(id){ return copedent.controls.find(c=>c.id===id) || SCALE_BEND.controls.find(c=>c.id===id); }
 function keyFor(id){ const c=ctrlById(id), ov=settings.keys[id]; return (ov!==undefined?ov:(c?c.key:'')); }
-function rebuildKeymap(){ KEYMAP={}; copedent.controls.forEach(c=>{ const k=keyFor(c.id); if(k) KEYMAP[k]=c.id; }); const sk=keyFor('SWELL'); if(sk && !KEYMAP[sk]) KEYMAP[sk]='SWELL'; }   // don't shadow a copedent pedal that already claimed this key
+function rebuildKeymap(){ KEYMAP={}; pedalControls().forEach(c=>{ const k=keyFor(c.id); if(k) KEYMAP[k]=c.id; }); }   // in Chords key mode a–h drive the scale-bend string-pedals; otherwise the copedent
 rebuildKeymap();
 
 function pcOf(base){ return base.map((o,i)=> (((STD_MIDI[i]+o)%12)+12)%12 ); }
@@ -1318,6 +1514,13 @@ function chordInfo(base, name){
 // One control = one or more degree moves, aggregated to per-string bends.
 // Greys out if the root is unknown, a target degree is absent from the window, or any string exceeds ±12.
 function controlState(ctrl, info, base){
+  if(ctrl.string!=null){                                        // scale-tone bend: raise this string to the next scale tone up (ignores the chord root)
+    const S=scalePcSet(); if(!S) return {avail:false, why:'no scale', moves:[]};
+    const i=ctrl.string, m=STD_MIDI[i]+base[i]; let d=1; while(d<=11 && !S.has((((m+d)%12)+12)%12)) d++;
+    if(d>11) return {avail:false, why:'no scale', moves:[]};
+    const off=base[i]+d, ok=off>=-12&&off<=12;
+    return {avail:ok, why: ok?'':'out of range', moves:[{i, from:m, to:m+d, off, bend:d, ok}]};
+  }
   if(info.root==null) return {avail:false, why:'no root', moves:[]};
   const bends=[0,0,0,0,0,0]; let missing='';
   ctrl.moves.forEach(mv=>{ const tPc=(info.root+DEG_INT[mv.deg])%12; let hit=false; info.pc.forEach((x,i)=>{ if(x===tPc){ bends[i]+=mv.semis; hit=true; } }); if(!hit) missing='no '+DEG_NM[mv.deg]; });
@@ -1345,9 +1548,20 @@ const PEDAL_ICONS={
   combo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linejoin="round" aria-hidden="true"><rect x="4.6" y="8.6" width="9.4" height="9.4" rx="2.3"/><rect x="10" y="4" width="9.4" height="9.4" rx="2.3"/></svg>'
 };
 function pedalBtnHTML(ctrl, label, sub, st){
-  const dis=!st.avail, key=(keyFor(ctrl)||'').toUpperCase();
+  const dis=!st.avail, key=(keyFor(ctrl)||'').toUpperCase(), c=ctrlById(ctrl)||{};
+  if(c.string!=null){                                           // scale-tone string pedal — string-coloured dot, note→note preview
+    const mv=st.moves&&st.moves[0];
+    const body = dis ? `<span class="mv off">${st.why||'n/a'}</span>` : `<span class="mv"><span class="to">${nameOf(mv.from).name} → ${nameOf(mv.to).name}</span></span>`;
+    const subtxt = (dis||!mv) ? '' : (mv.bend===1?'½ step ↑':'whole step ↑');
+    return `<button class="pedal sb${dis?' disabled':''}" data-ctrl="${ctrl}"${dis?' aria-disabled="true"':''}>
+      <span class="pedal-name">${label}${key?`<span class="pedal-key">${key}</span>`:''}</span>
+      <span class="pedal-do">${subtxt}</span>
+      <span class="pedal-moves">${body}</span>
+      <span class="pedal-badge sb-dot" style="background:${STR_COLORS[c.string]}"></span>
+    </button>`;
+  }
   const body = dis ? `<span class="mv off">${st.why||'n/a here'}</span>` : movesHTML(st.moves);
-  const ico=PEDAL_ICONS[(ctrlById(ctrl)||{}).group]||'';
+  const ico=PEDAL_ICONS[c.group]||'';
   return `<button class="pedal${dis?' disabled':''}" data-ctrl="${ctrl}"${dis?' aria-disabled="true"':''}>
     <span class="pedal-name">${label}${key?`<span class="pedal-key">${key}</span>`:''}</span>
     <span class="pedal-do">${sub}</span>
@@ -1355,38 +1569,57 @@ function pedalBtnHTML(ctrl, label, sub, st){
     ${ico?`<span class="pedal-badge">${ico}</span>`:''}
   </button>`;
 }
-let keysOpen = !document.documentElement.classList.contains('compact');   // Key-mapping drawer: open by default, closed in compact mode
-function keymapHTML(){
+// Keyboard icon (used on the per-section "Map" buttons and could label the Settings group)
+const KBD_ICO='<svg class="km-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h.01M18 14h.01M9 14h6"/></svg>';
+// Key mapping now lives in Settings (moved out of the Bends panel). Bends = rebindable pedal/swell chips; Chords = fixed number-key reference.
+function renderKeymap(){
+  const box=document.getElementById('keymapSettings'); if(!box) return;
   const chips=copedent.controls.map(c=>{ const k=(keyFor(c.id)||'').toUpperCase(), L=bindingCtrl===c.id;
     return `<button class="kb-chip${L?' listening':''}" data-bind="${c.id}"><span class="kb-cname">${c.name}</span><span class="kb-key">${L?'press…':(k||'—')}</span></button>`; }).join('');
-  const sk=(keyFor('SWELL')||'').toUpperCase(), SL=bindingCtrl==='SWELL';
-  const swellChip=`<button class="kb-chip${SL?' listening':''}" data-bind="SWELL"><span class="kb-cname">Swell</span><span class="kb-key">${SL?'press…':(sk||'—')}</span></button>`;
-  return `<details class="kdraw"${keysOpen?' open':''}>
-    <summary class="fam-name kdraw-sum"><span>Key Mapping<i class="kchev"></i></span></summary>
-    <div class="kdraw-body">
-    <label class="latch-tog"><input type="checkbox" id="latchChk"${settings.latch?' checked':''}><span>Latch — tap on/off instead of holding</span></label>
-    <div class="kb-chips">${chips}${swellChip}<button class="kb-chip kb-reset" data-reset="1"><span class="kb-cname">Reset</span><span class="kb-key">↺</span></button></div>
-    </div></details>`;
+  const kb=chordKeyOn();
+  const degRN=i=> kb ? romanNumeral(i, SCALES[settings.keyScale].quals[i]) : RN_BASE[i];
+  const degChips=[0,1,2,3,4,5,6].map(i=>`<div class="kb-chip static"><span class="kb-cname">${degRN(i)}</span><span class="kb-key">${i+1}</span></div>`).join('');
+  box.innerHTML=`
+    <div class="subhd" data-kmsec="bends" style="margin-top:2px">Bends · pedals</div>
+    <div class="kb-chips">${chips}<button class="kb-chip kb-reset" data-reset="1"><span class="kb-cname">Reset</span><span class="kb-key">↺</span></button></div>
+    <div class="subhd" data-kmsec="chords">Chords · degrees</div>
+    <p class="km-hint">Number keys play the diatonic chords of the current key${kb?` (<b>${settings.keyRoot} ${settings.keyScale}</b>)`:' — set a Key &amp; Scale in the Chords panel to enable them'}, in your current voicing.</p>
+    <div class="kb-chips">${degChips}</div>
+    <div class="km-mods">
+      <div class="km-mod"><span class="km-keys"><kbd>⇧</kbd><span class="km-plus">+</span><kbd>1</kbd><span class="km-dash">–</span><kbd>7</kbd></span><span>Diatonic <b>7th</b> chord of that degree</span></div>
+      <div class="km-mod"><span class="km-keys"><kbd>−</kbd><kbd>=</kbd></span><span>Switch <b>3</b>- / <b>4</b>-note voicing</span></div>
+      <div class="km-mod"><span class="km-keys"><kbd>[</kbd><kbd>]</kbd></span><span>Move the voicing <b>cluster window</b> (Voiced)</span></div>
+      <div class="km-mod"><span class="km-keys"><kbd>0</kbd><kbd>\`</kbd></span><span><b>Re-center</b> voice leading</span></div>
+    </div>`;
+  box.querySelectorAll('.kb-chip[data-bind]').forEach(b=> b.addEventListener('click', ()=>{ bindingCtrl=b.dataset.bind; renderKeymap(); }));
+  const rb=box.querySelector('.kb-chip[data-reset]'); if(rb) rb.addEventListener('click', ()=>{ copedent.controls.forEach(c=> settings.keys[c.id]=c.key); rebuildKeymap(); saveSettingsLS(); bindingCtrl=null; renderKeymap(); renderPedals(); });
 }
 function renderPedals(){
   const wrap=document.getElementById('pedalWrap'); if(!wrap) return;
+  const sbMode=scaleBendActive(), controls=pedalControls();
   curInfo=chordInfo(baseOffsets, active); if(steelRoot!=null) curInfo.root=steelRoot;   // pedal-steel forces the real root
   rebuildKeymap();
   ctrlStateCache={};
-  copedent.controls.forEach(c=>{ ctrlStateCache[c.id]=controlState(c,curInfo,baseOffsets); });
-  const info = curInfo.root==null
-    ? 'No chord root here — pedals disabled.'
-    : `Chord: root <b>${NOTE[curInfo.root]}</b> · 3rd <b>${NOTE[(curInfo.root+4)%12]}</b> · 5th <b>${NOTE[(curInfo.root+7)%12]}</b>`;
-  const grp=g=> copedent.controls.filter(c=>c.group===g).map(c=>pedalBtnHTML(c.id,c.name,c.act,ctrlStateCache[c.id])).join('');
-  const foot=grp('foot'), knee=grp('knee'), combo=grp('combo');
-  let html=`<div class="pedal-info">${info}</div>`;
-  if(foot)  html+=`<div class="fam-name">Foot Pedals</div><div class="pedals">${foot}</div>`;
-  if(knee)  html+=`<div class="fam-name">Knee Levers</div><div class="pedals">${knee}</div>`;
-  if(combo) html+=`<div class="fam-name">Combos</div><div class="pedals">${combo}</div>`;
+  controls.forEach(c=>{ ctrlStateCache[c.id]=controlState(c,curInfo,baseOffsets); });
+  let html=`<div class="sec-tools"><button class="map-btn" data-mapjump="bends" title="Configure keyboard shortcuts">${KBD_ICO}Map</button></div>`;
+  if(!sbMode) html+=`<div class="latch-row"><div class="seg latch-seg" id="latchSeg" title="Latch — tap a pedal on/off instead of holding it"><button class="${settings.latch?'on':''}" data-latch="1">Latch</button><button class="${!settings.latch?'on':''}" data-latch="0">Off</button></div></div>`;
+  if(sbMode){                                                   // Chords key mode — six string-pedals raise each string to the next scale tone
+    html+=`<div class="pedal-info">Chord held in <b>${settings.keyRoot} ${settings.keyScale}</b> — each pedal raises one string to the next scale tone. Hold to bend, release to return.</div>`;
+    html+=`<div class="fam-name">Scale Bends · one string each</div><div class="pedals">${controls.map(c=>pedalBtnHTML(c.id,c.name,'',ctrlStateCache[c.id])).join('')}</div>`;
+  } else {
+    const info = curInfo.root==null
+      ? 'No chord root here — pedals disabled.'
+      : `Chord: root <b>${NOTE[curInfo.root]}</b> · 3rd <b>${NOTE[(curInfo.root+4)%12]}</b> · 5th <b>${NOTE[(curInfo.root+7)%12]}</b>`;
+    const grp=g=> controls.filter(c=>c.group===g).map(c=>pedalBtnHTML(c.id,c.name,c.act,ctrlStateCache[c.id])).join('');
+    const foot=grp('foot'), knee=grp('knee'), combo=grp('combo');
+    html+=`<div class="pedal-info">${info}</div>`;
+    if(curInfo.root!=null) html+=`<p class="bend-cap"><b>Latch</b> keeps a pedal engaged after one tap — sustain a bend hands-free. Off = press &amp; hold.</p>`;
+    if(foot)  html+=`<div class="fam-name">Foot Pedals</div><div class="pedals">${foot}</div>`;
+    if(knee)  html+=`<div class="fam-name">Knee Levers</div><div class="pedals">${knee}</div>`;
+    if(combo) html+=`<div class="fam-name">Combos</div><div class="pedals">${combo}</div>`;
+  }
   html+=swellHTML();
-  html+=keymapHTML();
   wrap.innerHTML=html;
-  const kd=wrap.querySelector('.kdraw'); if(kd) kd.addEventListener('toggle',()=>{ keysOpen=kd.open; });
   wrap.querySelectorAll('.pedal').forEach(b=>{
     if(b.classList.contains('disabled')) return;
     const ctrl=b.dataset.ctrl;
@@ -1396,19 +1629,8 @@ function renderPedals(){
     b.addEventListener('lostpointercapture', ()=> releaseCtrl(ctrl));
   });
   wrap.querySelectorAll('.pedal').forEach(b=> b.classList.toggle('on', ctrlEngaged(b.dataset.ctrl)));  // keep latched state after re-render
-  const latchEl=wrap.querySelector('#latchChk');
-  if(latchEl) latchEl.addEventListener('change', e=>{ settings.latch=e.target.checked; saveSettingsLS(); updatePedalHint(); });
-  wrap.querySelectorAll('.kb-chip[data-bind]').forEach(b=> b.addEventListener('click', ()=>{ bindingCtrl=b.dataset.bind; renderPedals(); }));
-  const rb=wrap.querySelector('.kb-chip[data-reset]'); if(rb) rb.addEventListener('click', ()=>{ copedent.controls.forEach(c=> settings.keys[c.id]=c.key); settings.keys.SWELL=DEFAULT_KEYS.SWELL; rebuildKeymap(); saveSettingsLS(); bindingCtrl=null; renderPedals(); });
+  wrap.querySelectorAll('#latchSeg [data-latch]').forEach(b=> b.addEventListener('click',()=>{ settings.latch=b.dataset.latch==='1'; saveSettingsLS(); updatePedalHint(); wrap.querySelectorAll('#latchSeg [data-latch]').forEach(x=> x.classList.toggle('on',(x.dataset.latch==='1')===settings.latch)); }));
   wrap.querySelectorAll('.swell-seg button').forEach(b=> b.addEventListener('click', ()=> setSwellSpeed(+b.dataset.swell)));
-  const slc=wrap.querySelector('#swellLatchChk'); if(slc) slc.addEventListener('change', ()=>{ settings.swellLatch=slc.checked; saveSettingsLS(); if(!settings.swellLatch) setSwell(false); });   // leaving latch mode disarms a latched swell
-  const sb=wrap.querySelector('#swellBtn');
-  if(sb && !sb.classList.contains('disabled')){
-    sb.addEventListener('pointerdown', e=>{ e.preventDefault(); try{ sb.setPointerCapture(e.pointerId); }catch(_){}; swellPress(); });
-    sb.addEventListener('pointerup', ()=> swellRelease());
-    sb.addEventListener('pointercancel', ()=> swellRelease());
-    sb.addEventListener('lostpointercapture', ()=> swellRelease());
-  }
 }
 // a control shows engaged (highlighted + animated) if it's held directly OR it's a part of a held combo
 function ctrlEngaged(ctrl){ if(held.has(ctrl)) return true; for(const h of held){ const c=ctrlById(h); if(c&&c.parts&&c.parts.includes(ctrl)) return true; } return false; }
@@ -1423,11 +1645,11 @@ function setCtrl(ctrl,on){
   if(midiOut) send(eff);
   renderStrings(eff);
 }
-function pressCtrl(ctrl){ if(settings.latch) setCtrl(ctrl, !held.has(ctrl)); else setCtrl(ctrl, true); }
-function releaseCtrl(ctrl){ if(!settings.latch) setCtrl(ctrl, false); }
+function pressCtrl(ctrl){ if(settings.latch && !scaleBendActive()) setCtrl(ctrl, !held.has(ctrl)); else setCtrl(ctrl, true); }   // scale bends are always momentary
+function releaseCtrl(ctrl){ if(!settings.latch || scaleBendActive()) setCtrl(ctrl, false); }
 function updatePedalHint(){ const el=document.getElementById('pedalHint'); if(el) el.textContent=settings.latch?'TAP TO LATCH':'HOLD TO BEND'; }
 /* ===== Volume swell — CC70 (INST LEVEL) fades up on each bend, pedal-steel style ===== */
-let swellHeld=false, swellTimer=null, swellLevel=127;   // swellLevel = last CC70 value we sent (0–127), for send-on-change
+let swellTimer=null, swellLevel=127;   // swellLevel = last CC70 value we sent (0–127), for send-on-change
 const swellEase = t => t*t;                             // quadratic ease-in — a quiet start (log-taper-like) hides the pick attack
 function sendLevel(v, force){ v=Math.max(0,Math.min(127,Math.round(v))); if(!force && v===swellLevel) return; swellLevel=v; if(midiOut) midiOut.send([0xB0|((settings.channel-1)&0x0F), (settings.levelCC||70)&0x7F, v]); }
 function cancelScoop(){ if(bendTimer){ clearInterval(bendTimer); bendTimer=null; } if(bendHold){ clearTimeout(bendHold); bendHold=null; } if(midiOut) midiOut.send([0xB0|((settings.channel-1)&0x0F), (settings.bendCC||69)&0x7F, 127]); }   // stop any in-flight tuning-scoop so the swell solely owns CC70; restore bend control to full
@@ -1441,47 +1663,65 @@ function rampLevel(from, to, ms, ease){                  // one-shot CC70 ramp, 
   swellTimer=setInterval(()=>{ n++; const t=Math.min(1,n/steps), e=ease?ease(t):t; sendLevel(from+(to-from)*e); if(n>=steps){ clearInterval(swellTimer); swellTimer=null; sendLevel(to, true); } }, tick);
 }
 function swellTrigger(){                                  // called when a bend starts
-  if(!settings.swellMs) return;                          // OFF → never touch CC70
-  if(swellHeld) rampLevel(0, 127, settings.swellMs, swellEase);   // armed → full musical swell 0→127 over the selected time
-  else rampLevel(swellLevel, 127, 22, null);             // not armed → quick de-click ramp up to full (no pop)
+  if(!settings.swellMs) return;                          // Off → never touch CC70
+  rampLevel(0, 127, settings.swellMs, swellEase);        // a speed is set → full volume swell 0→127 on every bend
 }
-function setSwell(on){ swellHeld=on; const b=document.getElementById('swellBtn'); if(b) b.classList.toggle('on', on); }
-function swellPress(){ if(!settings.swellMs) return; if(settings.swellLatch) setSwell(!swellHeld); else setSwell(true); }   // swell has its OWN latch, independent of the pedals'
-function swellRelease(){ if(!settings.swellLatch) setSwell(false); }
-function setSwellSpeed(ms){ settings.swellMs=ms; saveSettingsLS(); if(swellTimer){ clearInterval(swellTimer); swellTimer=null; } if(!ms) setSwell(false); sendLevel(127, true); renderPedals(); }   // toggle change → clean full level
+function setSwellSpeed(ms){ settings.swellMs=ms; saveSettingsLS(); if(swellTimer){ clearInterval(swellTimer); swellTimer=null; } sendLevel(127, true); renderPedals(); }   // Off/Slow/Moderate/Fast is the swell's on/off + speed
 const SWELL_OPTS=[[0,'Off'],[1200,'Slow'],[400,'Moderate'],[120,'Fast']];
 function swellHTML(){
-  const ms=settings.swellMs||0, dis=ms===0, key=(keyFor('SWELL')||'').toUpperCase();
+  const ms=settings.swellMs||0;
   const seg=SWELL_OPTS.map(([v,nm])=>`<button class="${ms===v?'on':''}" data-swell="${v}">${nm}</button>`).join('');
-  return `<div class="fam-name">Swell</div><div class="swell-row"><div class="seg swell-seg">${seg}</div>`
-    +`<button class="swell-btn${swellHeld?' on':''}${dis?' disabled':''}" id="swellBtn"${dis?' aria-disabled="true"':''} title="Hold or latch to arm the full volume swell on the next bend">`
-    +`<svg class="swell-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17 L21 6 L21 17 Z" fill="currentColor"/></svg>`
-    +`<span class="swell-lbl">Swell${key?`<span class="pedal-key">${key}</span>`:''}</span></button>`
-    +`<label class="latch-tog swell-latch${dis?' off':''}" title="Latch: tap to arm/disarm. Off: hold to swell."><input type="checkbox" id="swellLatchChk"${settings.swellLatch?' checked':''}${dis?' disabled':''}><span>Latch</span></label></div>`;
+  return `<div class="fam-name">Swell</div>`
+    +`<p class="bend-cap">A volume <b>swell</b> fades up as each bend lands — pedal-steel style. Pick a speed to switch it on; <b>Off</b> disables it. <span style="opacity:.75">(Separate from the pedal Latch above — that one holds a pedal.)</span></p>`
+    +`<div class="swell-row"><div class="seg swell-seg">${seg}</div></div>`;
 }
-document.addEventListener('keydown', e=>{                 // rebind capture
+document.addEventListener('keydown', e=>{                 // rebind capture (chips live in Settings now)
   if(!bindingCtrl) return;
   e.preventDefault();
-  if(e.key==='Escape'){ bindingCtrl=null; renderPedals(); return; }
+  if(e.key==='Escape'){ bindingCtrl=null; renderKeymap(); return; }
   if((e.key||'').length!==1) return;                      // wait for a printable key
   const k=e.key.toLowerCase();
   copedent.controls.forEach(c=>{ if(c.id!==bindingCtrl && keyFor(c.id)===k) settings.keys[c.id]=''; });  // no dupes
-  if(bindingCtrl!=='SWELL' && keyFor('SWELL')===k) settings.keys.SWELL='';   // …incl. the swell key
-  settings.keys[bindingCtrl]=k; bindingCtrl=null; rebuildKeymap(); saveSettingsLS(); renderPedals();
+  settings.keys[bindingCtrl]=k; bindingCtrl=null; rebuildKeymap(); saveSettingsLS(); renderKeymap(); renderPedals();   // chips (Settings) + key badges (Bends)
 });
 document.addEventListener('keydown', e=>{                 // pedal engage
   if(e.repeat || e.metaKey || e.ctrlKey || e.altKey || bindingCtrl) return;
   if(document.querySelector('.scrim.open')) return;
   const tag=e.target.tagName||''; if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT') return;
   const ctrl=KEYMAP[(e.key||'').toLowerCase()]; if(!ctrl) return;
-  e.preventDefault(); if(ctrl==='SWELL') swellPress(); else pressCtrl(ctrl);
+  e.preventDefault(); pressCtrl(ctrl);
 });
-document.addEventListener('keyup', e=>{ if(bindingCtrl) return; const ctrl=KEYMAP[(e.key||'').toLowerCase()]; if(ctrl==='SWELL') swellRelease(); else if(ctrl) releaseCtrl(ctrl); });
+document.addEventListener('keyup', e=>{ if(bindingCtrl) return; const ctrl=KEYMAP[(e.key||'').toLowerCase()]; if(ctrl) releaseCtrl(ctrl); });
+// Chord keyboard — number keys 1–7 play the diatonic degree chords (in the current voicing, latched like the on-screen cells).
+// Uses e.code so Shift's symbol remapping doesn't matter; ignores Ctrl/Meta/Alt, modals, text fields, and pedal-owned keys.
+document.addEventListener('keydown', e=>{
+  if(e.repeat || e.metaKey || e.ctrlKey || e.altKey || bindingCtrl) return;
+  if(document.querySelector('.scrim.open')) return;
+  const tag=e.target.tagName||''; if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT') return;
+  if(KEYMAP[(e.key||'').toLowerCase()]) return;            // a pedal owns this key
+  const code=e.code||'', md=/^Digit([1-7])$/.exec(code);
+  if(md){ if(!chordKeyOn()) return; e.preventDefault(); const deg=+md[1]-1;
+    const nc=e.shiftKey ? diatonic7ChordAt(settings.keyRoot,settings.keyScale,deg) : diatonicChordAt(settings.keyRoot,settings.keyScale,deg);
+    if(nc) applyChord(nc.r, nc.row, CHORD_ROOTS[nc.r]+nc.suffix, nc.formula); return; }
+  if(!chordKeyOn() && !activeChord) return;                 // the voicing modifiers only act once you're engaged with chords
+  if(code==='Digit0' || code==='Backquote'){ e.preventDefault(); lastVoiced=null; if(!reapplyActiveChord()) renderChords(); return; }         // re-center voice leading
+  if(code==='Minus' || code==='Equal'){ e.preventDefault(); settings.voiceSize=code==='Equal'?4:3; if(settings.voiceStart>6-settings.voiceSize) settings.voiceStart=6-settings.voiceSize; saveSettingsLS(); if(!reapplyActiveChord()) renderChords(); return; }   // 3/4-note
+  if(code==='BracketLeft' || code==='BracketRight'){ e.preventDefault(); if(settings.voicing==='voiced'){ const d=code==='BracketRight'?1:-1; settings.voiceStart=Math.max(0,Math.min(6-settings.voiceSize,(settings.voiceStart||0)+d)); saveSettingsLS(); if(!reapplyActiveChord()) renderChords(); } return; }   // nudge cluster window
+});
+// "Map" buttons (Bends / Chords section headers) → open Settings at the Keyboard Mapping group and flash the relevant sub-block.
+function jumpToKeymap(section){
+  openSettings();
+  const grp=document.querySelector('.settgrp[data-grp="keys"]'); if(grp) grp.open=true;   // toggle listener persists this
+  requestAnimationFrame(()=>{ const g=document.querySelector('.settgrp[data-grp="keys"]'); if(!g) return; g.scrollIntoView({behavior:'smooth', block:'start'});
+    const sub=g.querySelector(`[data-kmsec="${section}"]`); if(sub){ sub.classList.add('km-flash'); setTimeout(()=>sub.classList.remove('km-flash'), 1500); } });
+}
+document.addEventListener('click', e=>{ const b=e.target.closest('[data-mapjump]'); if(b) jumpToKeymap(b.dataset.mapjump); });
 
 function makeCard(t,isC){
   const c=document.createElement('div');
   c.className='card'+(isC?' custom':'')+(active===t.name?' active':'');
-  if(t.ref) c.setAttribute('data-ref', t.ref);
+  c.tabIndex=0;                                                    // keyboard-focusable → tooltip on focus, Enter/Space to apply
+  const tip=tipFor(t); if(tip){ c.dataset.ttDesc=tip.desc; if(tip.song) c.dataset.ttSong=tip.song; }
   const dispNotes=(t.notes||notesOf(t.offsets)).split(' ');
   const revOff=t.offsets.slice().reverse();
   const noteCells=dispNotes.map(n=>`<span>${n}</span>`).join('');
@@ -1604,7 +1844,8 @@ function ethnicCardHTML(inst){
   const d=computeCluster(inst.pitches, 0).delta;   // default placement (what a click applies)
   const badges=instBadges(inst, d), capo=capoNeed(d);
   const foot=(badges||capo)?`<div class="card-foot"><span class="ibadges">${badges}</span>${capo?`<span class="card-capo">${capo}</span>`:''}</div>`:'';
-  return `<div class="card inst${on?' active':''}" data-name="${inst.name}" data-ref="${inst.ref}"><div class="card-name">${inst.name}</div><div class="card-notes">${notes}</div>${foot}</div>`;
+  const tip=tipFor(inst), tt=tip?` tabindex="0" data-tt-desc="${escAttr(tip.desc)}"${tip.song?` data-tt-song="${escAttr(tip.song)}"`:''}`:' tabindex="0"';
+  return `<div class="card inst${on?' active':''}" data-name="${inst.name}"${tt}><div class="card-name">${inst.name}</div><div class="card-notes">${notes}</div>${foot}</div>`;
 }
 function clusterRowHTML(inst, start){
   const N=inst.pitches.length, opts=[];
@@ -1635,8 +1876,33 @@ function renderEthnic(){
 function steelCardHTML(t){
   const on = steelInst && steelInst.id===t.id;
   const notes=t.spell.split(' ').map(x=>`<span>${x}</span>`).join('');
-  return `<div class="card steel${on?' active':''}" data-id="${t.id}" data-ref="${t.sub}"><div class="card-name">${t.name}</div><div class="card-notes stnotes">${notes}</div></div>`;
+  const tip=tipFor(t), tt=tip?` tabindex="0" data-tt-desc="${escAttr(tip.desc)}"${tip.song?` data-tt-song="${escAttr(tip.song)}"`:''}`:' tabindex="0"';
+  return `<div class="card steel${on?' active':''}" data-id="${t.id}"${tt}><div class="card-name">${t.name}</div><div class="card-notes stnotes">${notes}</div></div>`;
 }
+/* ===== Tuning tile tooltips — one shared popover, shown on hover / keyboard focus / touch (copy in TUNING_TIPS) ===== */
+let _ttEl=null, _ttHideT=null, _ttTarget=null;
+function ttEl(){ if(!_ttEl){ _ttEl=document.createElement('div'); _ttEl.className='tuning-tip'; _ttEl.setAttribute('role','tooltip'); document.body.appendChild(_ttEl); } return _ttEl; }
+function showTuningTip(el){
+  const desc=el.dataset.ttDesc; if(!desc) return;
+  _ttTarget=el;
+  const tip=ttEl(); tip.innerHTML='';
+  const d=document.createElement('div'); d.className='tt-desc'; d.textContent=desc; tip.appendChild(d);
+  if(el.dataset.ttSong){ const s=document.createElement('div'); s.className='tt-song'; const i=document.createElement('span'); i.className='tt-ico'; i.textContent='♪'; s.appendChild(i); s.appendChild(document.createTextNode(' '+el.dataset.ttSong)); tip.appendChild(s); }   // description then song, styled independently; notes come from the tile itself
+  tip.classList.add('on');
+  const r=el.getBoundingClientRect(), tw=tip.offsetWidth, th=tip.offsetHeight;
+  let left=Math.max(8, Math.min(window.innerWidth-tw-8, r.left+r.width/2-tw/2));
+  let top=r.top-th-10, below=false; if(top<8){ top=r.bottom+10; below=true; }
+  tip.style.left=left+'px'; tip.style.top=top+'px'; tip.classList.toggle('below', below);
+  tip.style.setProperty('--tt-ax', Math.max(14, Math.min(tw-14, r.left+r.width/2-left))+'px');
+}
+function hideTuningTip(){ _ttTarget=null; if(_ttEl) _ttEl.classList.remove('on'); }
+document.addEventListener('mouseover', e=>{ const el=e.target.closest&&e.target.closest('[data-tt-desc]'); if(el) showTuningTip(el); });
+document.addEventListener('mouseout',  e=>{ const el=e.target.closest&&e.target.closest('[data-tt-desc]'); if(el && !el.contains(e.relatedTarget)) hideTuningTip(); });
+document.addEventListener('focusin',   e=>{ const el=e.target.closest&&e.target.closest('[data-tt-desc]'); if(el) showTuningTip(el); });
+document.addEventListener('focusout',  e=>{ const el=e.target.closest&&e.target.closest('[data-tt-desc]'); if(el) hideTuningTip(); });
+document.addEventListener('pointerdown', e=>{ if(e.pointerType!=='touch') return; const el=e.target.closest&&e.target.closest('[data-tt-desc]'); if(!el){ hideTuningTip(); return; } showTuningTip(el); clearTimeout(_ttHideT); _ttHideT=setTimeout(hideTuningTip, 3400); }, true);   // tap flashes the tip; the tile still applies
+window.addEventListener('scroll', ()=>{ if(_ttTarget && _ttEl && _ttEl.classList.contains('on')) showTuningTip(_ttTarget); }, true);   // follow the tile on scroll (e.g. Tab scrolls it into view) instead of hiding
+document.addEventListener('keydown', e=>{ if(e.key!=='Enter' && e.key!==' ') return; const el=e.target; if(el && el.classList && el.classList.contains('card') && el.hasAttribute('tabindex')){ e.preventDefault(); el.click(); } });   // Enter/Space applies a focused tile
 function steelWinHTML(t, win){
   const opts=WINDOWS.map((w,idx)=>{
     const res=computeCluster(t.midi.slice(w.i0, w.i0+6), 0);
@@ -1675,8 +1941,9 @@ const CHORD_FIXED=[   // suffix = full name (workbench / current-tuning); sym = 
   {key:'min7',label:'MIN7',suffix:'m7',  sym:'m7',   formula:[0,3,7,10]},
   {key:'maj7',label:'MAJ7',suffix:'maj7',sym:'Δ',    formula:[0,4,7,11]},
   {key:'dim', label:'DIM', suffix:'dim', sym:'°',    formula:[0,3,6]},   // dedicated dim triad row (every supported scale has one diatonic dim chord)
+  {key:'aug', label:'AUG', suffix:'aug', sym:'+',    formula:[0,4,8]},   // dedicated aug triad row — under DIM; diatonic in Harm. Minor (III+)
 ];
-const CHORD_EXT=[     // grouped: added-tone · suspended · diminished-7ths · augmented  (plain dim is now a fixed row)
+const CHORD_EXT=[     // grouped: added-tone · suspended · diminished-7ths  (plain dim + aug are now fixed rows)
   {key:'add9',label:'add9',suffix:'add9',sym:'add9', formula:[0,4,7,14]},
   {key:'6',   label:'6',   suffix:'6',   sym:'6',    formula:[0,4,7,9]},
   {key:'m6',  label:'m6',  suffix:'m6',  sym:'m6',   formula:[0,3,7,9]},
@@ -1684,7 +1951,6 @@ const CHORD_EXT=[     // grouped: added-tone · suspended · diminished-7ths · 
   {key:'sus4',label:'sus4',suffix:'sus4',sym:'sus',  formula:[0,5,7]},
   {key:'dim7',label:'dim7',suffix:'dim7',sym:'°7',   formula:[0,3,6,9]},
   {key:'m7b5',label:'m7♭5',suffix:'m7♭5',sym:'ø',    formula:[0,3,6,10]},
-  {key:'aug', label:'aug', suffix:'aug', sym:'+',    formula:[0,4,8]},
 ];
 const CHORD_STR_LO=[40,45,50,55,59,64];   // string 6 (low E) … string 1 (high E)
 // Voice a chord as a musical spread: root in the bass, tones stacked ascending low→high (R-5-[color]-3-5-R),
@@ -1716,7 +1982,7 @@ function permsUniq(a){                              // unique permutations of a 
     for(let i=0;i<s.length;i++){ if(used[i]||(i>0&&s[i]===s[i-1]&&!used[i-1])) continue; used[i]=true; cur.push(s[i]); rec(); cur.pop(); used[i]=false; } })();
   return res;
 }
-function solveCluster(targetPcs, ascStd, prev, center){   // ascending / no-cross, covers targetPcs, min (motion|center) cost
+function solveCluster(targetPcs, ascStd, prev, center, rootLow){   // ascending / no-cross, covers targetPcs, min (motion|center) cost; rootLow set → force root as lowest cluster note (Grip block chords)
   let best=null;
   for(const perm of permsUniq(targetPcs)){
     const cand=ascStd.map((s,k)=>reachPitch(s, perm[k]));
@@ -1724,6 +1990,7 @@ function solveCluster(targetPcs, ascStd, prev, center){   // ascending / no-cros
       if(k===ascStd.length){ for(let i=1;i<acc.length;i++) if(acc[i]<=acc[i-1]) return;   // strictly ascending
         let c=0; if(prev) for(let i=0;i<acc.length;i++) c+=Math.abs(acc[i]-prev[i]);
         c+=0.25*acc.reduce((t,p)=>t+Math.abs(p-center),0);                                  // soft register anchor
+        if(rootLow!=null && (((acc[0]%12)+12)%12)!==rootLow) c+=100;                          // Grip: root must be the lowest cluster note → same "block" shape every time
         if(!best||c<best.cost) best={cost:c, pit:acc.slice()}; return; }
       for(const p of cand[k]) rec(k+1, acc.concat(p));
     })(0, []);
@@ -1744,8 +2011,9 @@ function voiceChordVoiced(rootPc, formula, rowKey){
   const cluster=clusterIdx(), N=cluster.length, clKey=cluster.join(',');
   const ascIdx=cluster.slice().sort((a,b)=>VOICE_STD[a]-VOICE_STD[b]), ascStd=ascIdx.map(i=>VOICE_STD[i]);   // ascending pitch
   const center=(Math.max(...ascStd)-12 + Math.min(...ascStd)+12)/2;
-  const prev=(settings.voiceFeel==='legato' && lastVoiced && lastVoiced.cluster===clKey) ? lastVoiced.pitches : null;   // Legato: voice-lead from the last cluster voicing; seed Grip on first tap / cluster change
-  const sol=solveCluster(clusterTargetPcs(rootPc, formula, N), ascStd, prev, center);          // Grip when prev=null; Legato when prev set (center pull is the register guard)
+  const isGrip=settings.voiceFeel!=='legato';                                                  // Grip = deterministic block chords (root position); Legato = smooth voice leading
+  const prev=(!isGrip && lastVoiced && lastVoiced.cluster===clKey) ? lastVoiced.pitches : null; // Legato: voice-lead from the last cluster voicing; null → seed centered
+  const sol=solveCluster(clusterTargetPcs(rootPc, formula, N), ascStd, prev, center, isGrip ? (((rootPc%12)+12)%12) : null);
   if(!sol) return voiceChord(rootPc, formula);                                                 // safety fallback (never observed)
   const off=new Array(6).fill(null);
   ascIdx.forEach((si,k)=> off[si]=sol.pit[k]-VOICE_STD[si]);
@@ -1798,18 +2066,22 @@ function chordDegrees(){                // {pcInterval(0-11): {label,color}} for
   return map;
 }
 /* ===== Key mode — highlight the seven diatonic chords of a chosen root+scale ===== */
-const SCALES={   // intervals = semitones from root; quals = diatonic chord quality per degree; special = Extend auto-set
-  'Major':      {alt:'Ionian', intervals:[0,2,4,5,7,9,11], quals:['maj','min','min','maj','7','min','dim'],  special:'add9'},
-  'Minor':      {alt:'Aeolian',intervals:[0,2,3,5,7,8,10], quals:['min','dim','maj','min','min','maj','maj'], special:'add9'},
-  'Dorian':     {alt:'',       intervals:[0,2,3,5,7,9,10], quals:['min','min','maj','maj','min','dim','maj'], special:'add9'},
-  'Phrygian':   {alt:'',       intervals:[0,1,3,5,7,8,10], quals:['min','maj','maj','min','dim','maj','min'], special:'add9'},
-  'Lydian':     {alt:'',       intervals:[0,2,4,6,7,9,11], quals:['maj','maj','min','dim','maj','min','min'], special:'add9'},
-  'Mixolydian': {alt:'',       intervals:[0,2,4,5,7,9,10], quals:['maj','min','dim','maj','min','min','maj'], special:'add9'},
-  'Harm. Minor':{alt:'',       intervals:[0,2,3,5,7,8,11], quals:['min','dim','aug','min','7','maj','dim7'],  special:'aug'},
+// quals = diatonic TRIAD quality per degree; quals7 = diatonic SEVENTH quality per degree (built by stacking scale thirds).
+// 'mMaj7'/'+maj7' have no grid row (harmonic minor i & III) → QUAL_ROW7 maps them to null so the 7ths layer skips them.
+const SCALES={   // intervals = semitones from root; special = Extend auto-set
+  'Major':      {alt:'Ionian', intervals:[0,2,4,5,7,9,11], quals:['maj','min','min','maj','7','min','dim'],  quals7:['maj7','min7','min7','maj7','7','min7','m7b5'],   special:'add9'},
+  'Minor':      {alt:'Aeolian',intervals:[0,2,3,5,7,8,10], quals:['min','dim','maj','min','min','maj','maj'], quals7:['min7','m7b5','maj7','min7','min7','maj7','7'],   special:'add9'},
+  'Dorian':     {alt:'',       intervals:[0,2,3,5,7,9,10], quals:['min','min','maj','maj','min','dim','maj'], quals7:['min7','min7','maj7','7','min7','m7b5','maj7'],   special:'add9'},
+  'Phrygian':   {alt:'',       intervals:[0,1,3,5,7,8,10], quals:['min','maj','maj','min','dim','maj','min'], quals7:['min7','maj7','7','min7','m7b5','maj7','min7'],   special:'add9'},
+  'Lydian':     {alt:'',       intervals:[0,2,4,6,7,9,11], quals:['maj','maj','min','dim','maj','min','min'], quals7:['maj7','7','min7','m7b5','maj7','min7','min7'],   special:'add9'},
+  'Mixolydian': {alt:'',       intervals:[0,2,4,5,7,9,10], quals:['maj','min','dim','maj','min','min','maj'], quals7:['7','min7','m7b5','maj7','min7','min7','maj7'],   special:'add9'},
+  'Harm. Minor':{alt:'',       intervals:[0,2,3,5,7,8,11], quals:['min','dim','aug','min','7','maj','dim7'],  quals7:['mMaj7','m7b5','+maj7','min7','7','maj7','dim7'], special:'dim7'},   // III+ highlights via the fixed AUG row; special row surfaces the diatonic VII°7
 };
 const CHORD_FUNC=['tonic','subdom','tonic','subdom','dominant','tonic','dominant'];   // harmonic function by scale degree
 const RN_BASE=['I','II','III','IV','V','VI','VII'];
-const QUAL_ROW={maj:'maj',min:'min','7':'sev',dim:'dim',aug:'aug',dim7:'dim7'};       // diatonic quality → grid row key
+const QUAL_ROW={maj:'maj',min:'min','7':'sev',dim:'dim',aug:'aug',dim7:'dim7'};       // diatonic TRIAD quality → grid row key
+const QUAL_ROW7={maj7:'maj7','min7':'min7','7':'sev','m7b5':'m7b5','dim7':'dim7','mMaj7':null,'+maj7':null};   // diatonic SEVENTH quality → grid row key (null = no row exists)
+const BORROW_RN=['I','♭II','II','♭III','III','IV','♭V','V','♭VI','VI','♭VII','VII'];   // semitone-from-root → roman-numeral base (with accidental) for borrowed chords
 function romanNumeral(deg,q){ const b=RN_BASE[deg];
   if(q==='min') return b.toLowerCase();
   if(q==='dim') return b.toLowerCase()+'°';
@@ -1824,11 +2096,68 @@ function diatonicMap(rootName, scaleName){   // "<pc>-<rowKey>" -> {func, rn}
   sc.intervals.forEach((iv,i)=>{ const pc=(base+iv)%12, q=sc.quals[i]; map[pc+'-'+QUAL_ROW[q]]={func:CHORD_FUNC[i], rn:romanNumeral(i,q)}; });
   return map;
 }
+function roman7(deg, q7){                      // degree + 7th-quality → roman numeral (e.g. Imaj7, ii7, V7, viiø7)
+  const b=RN_BASE[deg];
+  if(q7==='maj7') return b+'maj7';
+  if(q7==='min7') return b.toLowerCase()+'7';
+  if(q7==='7')    return b+'7';
+  if(q7==='m7b5') return b.toLowerCase()+'ø7';
+  if(q7==='dim7') return b.toLowerCase()+'°7';
+  return b;
+}
+// Layer: diatonic SEVENTH chords. Same shape/keying as diatonicMap; skips qualities with no grid row (mMaj7, +maj7).
+function diatonic7Map(rootName, scaleName){   // "<pc>-<rowKey>" -> {func, rn}
+  const sc=SCALES[scaleName], base=CHORD_ROOTS.indexOf(rootName), map={};
+  if(!sc || !sc.quals7 || base<0) return map;
+  sc.intervals.forEach((iv,i)=>{ const q7=sc.quals7[i], row=QUAL_ROW7[q7]; if(!row) return; const pc=(base+iv)%12;
+    map[pc+'-'+row]={func:CHORD_FUNC[i], rn:roman7(i, q7)}; });
+  return map;
+}
+// Layer: modal interchange. Diatonic TRIADS of the parallel mode (major↔minor) that aren't already diatonic here → borrowed.
+function borrowedMap(rootName, scaleName){   // "<pc>-<rowKey>" -> {rn}
+  const sc=SCALES[scaleName], base=CHORD_ROOTS.indexOf(rootName); if(!sc || base<0) return {};
+  const parallel = sc.intervals[2]===4 ? SCALES['Minor'] : SCALES['Major'];   // major-3rd scale borrows from minor, else from major
+  const dia=diatonicMap(rootName, scaleName), map={};
+  parallel.intervals.forEach((iv,i)=>{ const q=parallel.quals[i], row=QUAL_ROW[q], pc=(base+iv)%12, key=pc+'-'+row;
+    if(dia[key]) return;                                                        // already diatonic here → not "borrowed"
+    let rn=BORROW_RN[iv%12]; if(q==='min') rn=rn.toLowerCase(); else if(q==='dim') rn=rn.toLowerCase()+'°';
+    map[key]={rn}; });
+  return map;
+}
+function chordDegreeIn(rootName, scaleName, chord){   // which scale degree (0-6) the active chord sits on, else -1
+  const sc=SCALES[scaleName], base=CHORD_ROOTS.indexOf(rootName); if(!sc || base<0 || !chord) return -1;
+  for(let i=0;i<7;i++) if(chord.r===(base+sc.intervals[i])%12 && chord.row===QUAL_ROW[sc.quals[i]]) return i;
+  return -1;
+}
+function diatonicChordAt(rootName, scaleName, deg){   // the diatonic chord at a degree → {r,row,suffix,formula}
+  const sc=SCALES[scaleName], base=CHORD_ROOTS.indexOf(rootName); if(!sc || base<0) return null;
+  const r=(base+sc.intervals[deg])%12, row=QUAL_ROW[sc.quals[deg]];
+  const def=[...CHORD_FIXED, ...CHORD_EXT].find(x=>x.key===row); if(!def) return null;
+  return {r, row, suffix:def.suffix, formula:def.formula};
+}
+function diatonic7ChordAt(rootName, scaleName, deg){  // the diatonic SEVENTH at a degree (Shift+number); falls back to the triad if the 7th has no grid row
+  const sc=SCALES[scaleName], base=CHORD_ROOTS.indexOf(rootName); if(!sc || !sc.quals7 || base<0) return null;
+  const row=QUAL_ROW7[sc.quals7[deg]];
+  if(!row) return diatonicChordAt(rootName, scaleName, deg);
+  const def=[...CHORD_FIXED, ...CHORD_EXT].find(x=>x.key===row); if(!def) return null;
+  return {r:(base+sc.intervals[deg])%12, row, suffix:def.suffix, formula:def.formula};
+}
+function chordKeyOn(){ return settings.keyScale && settings.keyScale!=='off' && SCALES[settings.keyScale] && CHORD_ROOTS.includes(settings.keyRoot); }
+function moveChordToKey(oldRoot, oldScale){           // key/scale changed → re-apply the active chord at the SAME scale degree in the new key
+  if(!activeChord || settings.keyScale==='off' || !SCALES[settings.keyScale]) return false;
+  const deg=chordDegreeIn(oldRoot, oldScale, activeChord); if(deg<0) return false;   // only diatonic chords have a degree to preserve
+  const nc=diatonicChordAt(settings.keyRoot, settings.keyScale, deg); if(!nc) return false;
+  applyChord(nc.r, nc.row, CHORD_ROOTS[nc.r]+nc.suffix, nc.formula);   // re-renders via apply()
+  return true;
+}
 function renderChords(){
   const wrap=document.getElementById('chordWrap'); if(!wrap) return;
   const rows=chordRows();
   const keyOn = settings.keyScale && settings.keyScale!=='off' && SCALES[settings.keyScale] && CHORD_ROOTS.includes(settings.keyRoot);
   const dmap = keyOn ? diatonicMap(settings.keyRoot, settings.keyScale) : null;
+  const L = settings.chordLayers || {};
+  const d7map = keyOn && L.sevenths ? diatonic7Map(settings.keyRoot, settings.keyScale) : null;   // Area 2 layers — off by default
+  const bmap  = keyOn && L.borrowed ? borrowedMap(settings.keyRoot, settings.keyScale) : null;
   const colhd=CHORD_ROOTS.map(r=>`<div class="chord-colhd">${r}</div>`).join('');
   let cells='';
   rows.forEach(row=>{
@@ -1836,7 +2165,16 @@ function renderChords(){
     CHORD_ROOTS.forEach((rn,ri)=>{
       const name=rn+row.sym, dis=!voiceChord(ri, row.formula), on=activeChord&&activeChord.r===ri&&activeChord.row===row.key;
       let cls='', rnHtml='';
-      if(keyOn && !dis){ const d=dmap[ri+'-'+row.key]; if(d) cls=' '+d.func; else cls=' offkey'; rnHtml=`<span class="chord-rn">${d?d.rn:''}</span>`; }   // always reserve the RN slot in key mode so symbols stay aligned across a row
+      if(keyOn && !dis){
+        const key=ri+'-'+row.key, d=dmap[key];
+        if(d){ cls=' '+d.func; rnHtml=`<span class="chord-rn">${d.rn}</span>`; }                      // diatonic triad (ships today)
+        else {
+          const d7=d7map&&d7map[key], db=bmap&&bmap[key];
+          if(d7){ cls=' '+d7.func+' lyr-seventh'; rnHtml=`<span class="chord-rn">${d7.rn}</span>`; }    // diatonic 7th → function colour + "7" badge
+          else if(db){ cls=' lyr-borrow'; rnHtml=`<span class="chord-rn">${db.rn}</span>`; }             // borrowed → dashed violet
+          else { cls=' offkey'; rnHtml=`<span class="chord-rn"></span>`; }                              // reserve the RN slot so symbols stay aligned
+        }
+      }
       cells+=`<button class="chord-cell${on?' on':''}${dis?' disabled':''}${cls}" data-r="${ri}" data-row="${row.key}"${dis?' aria-disabled="true"':''}>${rnHtml}<span class="chord-sym">${name}</span></button>`;
     });
   });
@@ -1845,28 +2183,47 @@ function renderChords(){
   const legend = keyOn ? `<div class="chord-legend"><span><i class="lg-dot tonic"></i>Tonic</span><span><i class="lg-dot subdom"></i>Subdominant</span><span><i class="lg-dot dominant"></i>Dominant</span></div>` : '';
   const keyBar=`<div class="chord-key"><label class="chord-key-lbl">Key</label><select id="keyRoot" class="num">${rootOpts}</select><select id="keyScale" class="num">${scaleOpts}</select>${legend}</div>`;
   const voiced = settings.voicing==='voiced';
-  const vMode=`<div class="seg" id="voiceMode"><button class="${!voiced?'on':''}" data-vmode="spread">Spread</button><button class="${voiced?'on':''}" data-vmode="voiced">Voiced</button></div>`;
-  let vSub='';
-  if(voiced){
+  const vMode=`<div class="seg" id="voiceMode"><button class="${!voiced?'on':''}" data-vmode="spread" title="Spread — the chord fanned across all six strings, low → high.">Spread</button><button class="${voiced?'on':''}" data-vmode="voiced" title="Voiced — a close 3- or 4-string cluster you choose; the other strings fill in the bass (root &amp; 5th).">Voiced</button></div>`;
+  const voiceBar=`<div class="chord-key chord-voice"><label class="chord-key-lbl">Voicing</label>${vMode}</div>`;
+  let voiceSubBar='';
+  if(voiced){                                                     // Voiced-only options, shown indented under the Voicing row so the relationship is clear
     const N=settings.voiceSize; let cbtn='';
-    for(let s=0;s<=6-N;s++){ const dots=[0,1,2,3,4,5].map(i=>`<i class="${i>=s&&i<s+N?'on':''}"></i>`).join(''); cbtn+=`<button class="clbtn${s===settings.voiceStart?' on':''}" data-vstart="${s}"><span class="cldots">${dots}</span><span class="cllbl">${s+1}–${s+N}</span></button>`; }
-    const vSize=`<div class="seg" id="voiceSize"><button class="${N===3?'on':''}" data-vsize="3">3</button><button class="${N===4?'on':''}" data-vsize="4">4</button></div>`;
-    const vFeel=`<div class="seg" id="voiceFeel"><button class="${settings.voiceFeel==='legato'?'on':''}" data-vfeel="legato">Legato</button><button class="${settings.voiceFeel==='grip'?'on':''}" data-vfeel="grip">Grip</button></div>`;
-    const vRC = settings.voiceFeel==='legato' ? `<div class="seg"><button id="voiceRecenter" title="Re-center — discard voice-leading history">⟲ Center</button></div>` : '';
-    vSub=`${vSize}<div class="clrow vcl">${cbtn}</div>${vFeel}${vRC}`;
+    for(let s=0;s<=6-N;s++){ const dots=[0,1,2,3,4,5].map(i=>`<i class="${i>=s&&i<s+N?'on':''}"></i>`).join(''); cbtn+=`<button class="clbtn${s===settings.voiceStart?' on':''}" data-vstart="${s}" title="Put the cluster on strings ${s+1}–${s+N}"><span class="cldots">${dots}</span><span class="cllbl">${s+1}–${s+N}</span></button>`; }
+    const vSize=`<div class="seg" id="voiceSize"><button class="${N===3?'on':''}" data-vsize="3" title="Three-note cluster">3</button><button class="${N===4?'on':''}" data-vsize="4" title="Four-note cluster — adds the 7th / colour tone">4</button></div>`;
+    const vFeel=`<div class="seg" id="voiceFeel"><button class="${settings.voiceFeel==='legato'?'on':''}" data-vfeel="legato" title="Legato — smooth voice leading: keeps common tones and moves each voice the least from the previous chord, so changes glide.">Legato</button><button class="${settings.voiceFeel==='grip'?'on':''}" data-vfeel="grip" title="Grip — block chords: every chord in root position, the same shape moved around. Predictable and identical every time.">Grip</button></div>`;
+    voiceSubBar=`<div class="voice-sub"><span class="vsub-lbl">Notes</span>${vSize}<span class="vsub-lbl">Strings</span><div class="clrow vcl">${cbtn}</div><span class="vsub-lbl">Feel</span>${vFeel}</div>`;
   }
-  const voiceBar=`<div class="chord-key chord-voice"><label class="chord-key-lbl">Voicing</label>${vMode}${vSub}</div>`;
+  const anyLayer = L.sevenths||L.borrowed||L.resolutions;
+  const layerBar = keyOn ? `<div class="chord-layers"><span class="chord-key-lbl">Layers</span>`
+    +`<button class="layer-tog locked on" disabled title="The seven diatonic triads — always shown">▣ Triads</button>`
+    +`<button class="layer-tog${L.sevenths?' on':''}" data-layer="sevenths" title="Diatonic 7th chords — Imaj7, ii7, V7…">⑦ 7ths</button>`
+    +`<button class="layer-tog${L.borrowed?' on':''}" data-layer="borrowed" title="Borrowed / modal-interchange chords from the parallel key">⌁ Borrowed</button>`
+    +`<button class="layer-tog${L.resolutions?' on':''}" data-layer="resolutions" title="Hover a dominant chord to ring where it resolves">→ Resolve</button>`
+    +(anyLayer?`<button class="layer-clear" data-layer-clear title="Turn all layers off">✕ Clear</button>`:'')
+    +`</div>` : '';
   const seg=CHORD_EXT.map(e=>`<button class="${e.key===settings.chordExt?'on':''}" data-ext="${e.key}">${e.label}</button>`).join('');
-  wrap.innerHTML=`${keyBar}${voiceBar}<div class="chord-scroll"><div class="chord-matrix"><div class="chord-corner"></div>${colhd}${cells}</div></div><div class="chord-ext"><div class="seg">${seg}</div></div>`;
+  const tools=`<div class="sec-tools"><button class="map-btn" data-mapjump="chords" title="Configure keyboard shortcuts">${KBD_ICO}Map</button></div>`;
+  wrap.innerHTML=`${tools}${keyBar}${voiceBar}${voiceSubBar}${layerBar}<div class="chord-scroll"><div class="chord-matrix"><div class="chord-corner"></div>${colhd}${cells}</div></div><div class="chord-ext"><div class="seg">${seg}</div></div>`;
+  wrap.querySelectorAll('.chord-layers [data-layer]').forEach(b=> b.addEventListener('click',()=>{ settings.chordLayers[b.dataset.layer]=!settings.chordLayers[b.dataset.layer]; saveSettingsLS(); renderChords(); }));
+  const lclr=wrap.querySelector('[data-layer-clear]'); if(lclr) lclr.addEventListener('click',()=>{ settings.chordLayers={sevenths:false,borrowed:false,resolutions:false}; saveSettingsLS(); renderChords(); });
+  if(keyOn && L.resolutions){                                   // Resolutions layer — ring a dominant's target tonic on hover (and while it's the active chord)
+    const tonic=diatonicChordAt(settings.keyRoot, settings.keyScale, 0);
+    if(tonic){
+      const tsel=`.chord-cell[data-r="${tonic.r}"][data-row="${tonic.row}"]`, setRes=on=>{ const t=wrap.querySelector(tsel); if(t) t.classList.toggle('resolve', on); };
+      wrap.querySelectorAll('.chord-cell.dominant').forEach(b=>{
+        b.addEventListener('mouseenter',()=>{ setRes(true); b.classList.add('resolve-src'); });
+        b.addEventListener('mouseleave',()=>{ setRes(false); b.classList.remove('resolve-src'); }); });
+      if(activeChord){ const deg=chordDegreeIn(settings.keyRoot, settings.keyScale, activeChord); if(deg>=0 && CHORD_FUNC[deg]==='dominant'){ setRes(true); const src=wrap.querySelector(`.chord-cell[data-r="${activeChord.r}"][data-row="${activeChord.row}"]`); if(src) src.classList.add('resolve-src'); } }
+    }
+  }
   wrap.querySelectorAll('.chord-cell').forEach(b=> b.addEventListener('click',()=>{ if(b.classList.contains('disabled')) return; const ri=+b.dataset.r, row=chordRows().find(x=>x.key===b.dataset.row); if(row) applyChord(ri, row.key, CHORD_ROOTS[ri]+row.suffix, row.formula); }));   // non-diatonic cells stay tappable (borrowed chords)
   wrap.querySelectorAll('.chord-ext [data-ext]').forEach(b=> b.addEventListener('click',()=>{ settings.chordExt=b.dataset.ext; saveSettingsLS(); renderChords(); }));   // manual override of the special row
-  const kr=wrap.querySelector('#keyRoot'); if(kr) kr.addEventListener('change',()=>{ settings.keyRoot=kr.value; saveSettingsLS(); renderChords(); });
-  const ks=wrap.querySelector('#keyScale'); if(ks) ks.addEventListener('change',()=>{ settings.keyScale=ks.value; if(ks.value!=='off' && SCALES[ks.value]) settings.chordExt=SCALES[ks.value].special; saveSettingsLS(); renderChords(); });   // scale auto-sets the special row
+  const kr=wrap.querySelector('#keyRoot'); if(kr) kr.addEventListener('change',()=>{ const oR=settings.keyRoot, oS=settings.keyScale; settings.keyRoot=kr.value; saveSettingsLS(); if(!moveChordToKey(oR, oS)) renderChords(); renderPedals(); });   // changing the key transposes the active chord to the same degree + retargets scale bends
+  const ks=wrap.querySelector('#keyScale'); if(ks) ks.addEventListener('change',()=>{ const oR=settings.keyRoot, oS=settings.keyScale; settings.keyScale=ks.value; if(ks.value!=='off' && SCALES[ks.value]) settings.chordExt=SCALES[ks.value].special; saveSettingsLS(); if(!moveChordToKey(oR, oS)) renderChords(); renderPedals(); });   // scale auto-sets the special row + moves the active chord + retargets scale bends
   wrap.querySelectorAll('#voiceMode [data-vmode]').forEach(b=> b.addEventListener('click',()=>{ settings.voicing=b.dataset.vmode; saveSettingsLS(); if(!reapplyActiveChord()) renderChords(); }));
   wrap.querySelectorAll('#voiceSize [data-vsize]').forEach(b=> b.addEventListener('click',()=>{ settings.voiceSize=+b.dataset.vsize; if(settings.voiceStart>6-settings.voiceSize) settings.voiceStart=6-settings.voiceSize; saveSettingsLS(); if(!reapplyActiveChord()) renderChords(); }));
   wrap.querySelectorAll('.vcl [data-vstart]').forEach(b=> b.addEventListener('click',()=>{ settings.voiceStart=+b.dataset.vstart; saveSettingsLS(); if(!reapplyActiveChord()) renderChords(); }));
-  wrap.querySelectorAll('#voiceFeel [data-vfeel]').forEach(b=> b.addEventListener('click',()=>{ settings.voiceFeel=b.dataset.vfeel; saveSettingsLS(); if(!reapplyActiveChord()) renderChords(); }));
-  const vrc=wrap.querySelector('#voiceRecenter'); if(vrc) vrc.addEventListener('click',()=>{ lastVoiced=null; if(!reapplyActiveChord()) renderChords(); });   // discard Legato history → next chord re-seeds centered
+  wrap.querySelectorAll('#voiceFeel [data-vfeel]').forEach(b=> b.addEventListener('click',()=>{ settings.voiceFeel=b.dataset.vfeel; saveSettingsLS(); if(!reapplyActiveChord()) renderChords(); }));   // re-centering Legato history is available via the 0 / ` key shortcut
 }
 /* ===== Panning — per-string pan modes, glided so the sweep is felt ===== */
 function panToCC(p){ return Math.round((Math.max(-1,Math.min(1,p))+1)/2*127); }   // −1→L50(0), +1→R50(127)
@@ -1892,7 +2249,7 @@ function applyPan(id){
   if(autoPanOn) stopAutoPan();
   activePan=id;
   if(wasAuto){ renderPan(); }   // picking a preset exits auto-pan → revert the UI (Auto-pan button de-activates)
-  else document.querySelectorAll('.panmode[data-pan]').forEach(b=> b.classList.toggle('on', b.dataset.pan===id));
+  else document.querySelectorAll('[data-pan]').forEach(b=> b.classList.toggle('on', b.dataset.pan===id));
   panGlide(m.pos.slice());
 }
 function panGlide(target){
@@ -1978,10 +2335,10 @@ function ensurePanVisible(){ const wrap=document.getElementById('panWrap'); if(!
 function renderPan(){
   const wrap=document.getElementById('panWrap'); if(!wrap) return;
   const a=settings.ap, pm=settings.panMs|0;
-  const btns=PANMODES.map(m=>`<button class="panmode${activePan===m.id?' on':''}" data-pan="${m.id}">${m.name}</button>`).join('');
+  const btns=PANMODES.map(m=>`<button class="${activePan===m.id?'on':''}" data-pan="${m.id}">${m.name}</button>`).join('');
   const PG_OPTS=[[0,'Instant'],[500,'Short'],[2000,'Medium'],[5000,'Long']];
   const pgSnap = PG_OPTS.reduce((b,o)=> Math.abs(o[0]-pm)<Math.abs(b-pm)?o[0]:b, 0);   // nearest named option
-  const glideBlock = `<div class="glide-row"><div class="pg-lbl"><span>Pan glide — ease between modes</span></div>
+  const glideBlock = `<div class="glide-row"><div class="apcap glide-cap">Pan glide time</div>
       <div class="seg">${PG_OPTS.map(([v,nm])=>`<button class="${pgSnap===v?'on':''}" data-glide="${v}">${nm}</button>`).join('')}</div></div>`;
   const charBtns=AP_CHARLIST.map(([id,nm])=>`<button class="panmode${a.char===id?' on':''}" data-char="${id}">${nm}</button>`).join('');
   const divBtns=AP_DIVS.map(([id])=>`<button class="panmode${a.div===id?' on':''}" data-div="${id}">${id}</button>`).join('');
@@ -2025,8 +2382,16 @@ function renderPan(){
       </div>
     </div>`;
   const autoBtn=`<button class="panmode autopan${autoPanOn?' on':''}" data-autopan title="Toggle auto-pan">Auto-pan</button>`;
-  wrap.innerHTML=`<div class="panmodes">${btns}${autoBtn}</div>
-    ${autoPanOn?'':glideBlock}
+  // Mode group: Stereo Spread presets (+ their glide setting) OR Auto-pan — mutually exclusive, so the inactive side dims.
+  wrap.innerHTML=`<div class="pan-mode-group${autoPanOn?' auto-on':''}">
+      <div class="pan-spread${autoPanOn?' pan-dim':''}">
+        <div class="fam-name">Stereo Spread</div>
+        <div class="seg panmode-seg">${btns}</div>
+        ${glideBlock}
+      </div>
+      <div class="pan-mode-or">or</div>
+      <div class="autopan-row">${autoBtn}</div>
+    </div>
     ${autoPanOn?`<div class="pan-auto">${autoBody}</div>`:''}`;
   wrap.querySelectorAll('[data-pan]').forEach(b=> b.addEventListener('click',()=>applyPan(b.dataset.pan)));
   const apbtn=wrap.querySelector('[data-autopan]');
@@ -2256,6 +2621,7 @@ function renderSettings(){
   for(let i=0;i<6;i++){ const c=document.createElement('div'); c.className='cc-c';
     c.innerHTML=`<label>PAN ${i+1} · ${pn[i]}</label><select class="num" data-pcc="${i}">${optList(1,127,settings.panCCs[i])}</select>`; pr.appendChild(c);
   }
+  renderKeymap();
 }
 function openSettings(){ renderSettings(); applyGrpState(); open('settingsModal'); }
 document.getElementById('settingsBtn').addEventListener('click', ()=>{ setThemeMenu(false); setJumpMenu(false); openSettings(); });
@@ -2312,7 +2678,7 @@ document.getElementById('saveSettings').addEventListener('click',()=>{
   const num=(id,lo,hi,d)=>{ const v=+document.getElementById(id).value; return isNaN(v)?d:Math.max(lo,Math.min(hi,v)); };
   const ab={ autoBend:document.getElementById('autoBendChk').checked, bendCC:num('bendCCInput',0,127,69), levelCC:num('levelCCInput',0,127,70), bendDepth:num('bendDepthInput',0,50,25), levelDip:num('levelDipInput',0,50,15), bendMs:num('bendMsInput',40,400,120) };
   const panCCs=[]; document.querySelectorAll('#panCcRows select').forEach(x=>panCCs[+x.dataset.pcc]=Math.max(1,Math.min(127,+x.value||1)));
-  settings={channel:ch,ccs,gap:settings.gap??20,glide:0,keys:settings.keys,latch:settings.latch,panCCs,panMs:settings.panMs,fxDoubler:settings.fxDoubler,fxOctave:settings.fxOctave,swellMs:settings.swellMs,swellLatch:settings.swellLatch,chordExt:settings.chordExt,keyRoot:settings.keyRoot,keyScale:settings.keyScale,voicing:settings.voicing,voiceSize:settings.voiceSize,voiceStart:settings.voiceStart,voiceFeel:settings.voiceFeel,ap:settings.ap, ...ab}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
+  settings={channel:ch,ccs,gap:settings.gap??20,glide:0,keys:settings.keys,latch:settings.latch,panCCs,panMs:settings.panMs,fxDoubler:settings.fxDoubler,fxOctave:settings.fxOctave,swellMs:settings.swellMs,swellLatch:settings.swellLatch,chordExt:settings.chordExt,keyRoot:settings.keyRoot,keyScale:settings.keyScale,voicing:settings.voicing,voiceSize:settings.voiceSize,voiceStart:settings.voiceStart,voiceFeel:settings.voiceFeel,chordLayers:settings.chordLayers,ap:settings.ap, ...ab}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
 });
 
 function applyTest(v){

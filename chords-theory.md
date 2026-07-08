@@ -100,6 +100,13 @@ dim but stay tappable (borrowed chords are a real songwriting tool). It's a
 lookup-and-highlight layer only: **tapping any cell still retunes exactly as
 before** — key mode never changes what a tap does.
 
+**Chord follows the key.** If a diatonic chord is latched and you then change the
+**root** or **scale**, the active chord *moves to the same scale degree* in the new
+key (`chordDegreeIn` → `diatonicChordAt` → re-`applyChord`, in `moveChordToKey`): e.g.
+the I in C major becomes the i when you switch to C minor; changing the root C→G
+transposes the vi from Am to Em; the V7 stays a V7. A non-diatonic (borrowed) active
+chord has no degree, so it's left as-is.
+
 ### Data
 
 ```js
@@ -327,8 +334,13 @@ dispatches on `settings.voicing`; everything downstream consumes the resulting
 - `voiceStart` — 0-based index of the cluster's top string (0 = string 1 / high E).
   Cluster = `[voiceStart … voiceStart+voiceSize-1]`; the picker offers `1–3`…`4–6`
   (size 3) or `1–4`…`3–6` (size 4).
-- `voiceFeel` — `'grip'` (stateless, always centered — deterministic) |
-  `'legato'` (voice-leads from the previous voicing, holding common tones).
+- `voiceFeel` — `'grip'` (**block chords**: root position — the root is the lowest
+  cluster note, so a chord is the same shape every time; stateless, deterministic) |
+  `'legato'` (**smooth**: voice-leads from the previous voicing, holding common tones).
+  The two are genuinely distinct: Grip's bottom voice tracks the chord roots (they
+  jump), Legato holds common tones and moves one voice. (For rootless cluster targets
+  — m7♭5/dim7 on a 3-string cluster — Grip falls back to a centered voicing since
+  there's no root to put on the bottom.)
 
 ### Engine (`voiceChordVoiced`)
 
@@ -338,10 +350,12 @@ dispatches on `settings.voicing`; everything downstream consumes the resulting
    cluster is larger than the chord (triad on 4 strings), **double the root**.
 2. **Solve** (`solveCluster`): pick pitches for the cluster strings — one per string,
    strictly **ascending / no crossing**, each within its ±12 window — minimising
-   `Σ|pitch − prev| + 0.25·Σ|pitch − center|`. `prev` is the previous cluster voicing
-   (Legato) or `null` (Grip); the `0.25·center` term is the **register guard** that
-   keeps voicings inside ±12 (no drift). `center` = midpoint of the cluster's ±12
-   intersection band.
+   `Σ|pitch − prev| + 0.25·Σ|pitch − center|` (+ a `rootLow` penalty for Grip). In
+   **Legato** `prev` = the previous cluster voicing (follow it); in **Grip** `prev` is
+   `null` and `rootLow` = the chord root, adding +100 cost to any voicing whose lowest
+   note isn't the root → **root position** every time. The `0.25·center` term is the
+   **register guard** that keeps voicings inside ±12 (no drift). `center` = midpoint of
+   the cluster's ±12 intersection band.
 3. **Complete**: bass strings below the cluster get root/5th (the chord's *actual*
    5th), strings above get the nearest chord tone. Any failure → fall back to
    `voiceChord`.
