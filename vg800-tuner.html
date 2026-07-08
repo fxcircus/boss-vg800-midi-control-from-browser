@@ -337,7 +337,10 @@
   .km-flash { animation: kmFlash 1.5s ease; }
   @keyframes kmFlash { 0%,100% { color: var(--brass-deep); } 30% { color: var(--brass); text-shadow: 0 0 12px var(--brass-glow); } }
   /* ===== Played history — live strip (under Current Tuning) + settings rows + trim-timeline modal ===== */
-  #histHd { margin-top: 12px; }
+  /* Detached "Played" bubble — its own bench-styled panel that sits right under the workbench (moves with it via placeBench) */
+  .hist-bubble { margin-top: 14px; padding: 16px 8px 15px; }
+  .hist-bubble > .fam-name { margin-top: 0; margin-bottom: 12px; }
+  #sideNav .hist-bubble { margin-top: 12px; }
   #histWrap { margin-top: 2px; }
   .hist-strip { display: flex; gap: 5px; overflow-x: auto; padding: 3px 1px 7px; scrollbar-width: thin; scroll-behavior: smooth; }
   .hist-strip::-webkit-scrollbar { height: 5px; }
@@ -355,16 +358,16 @@
   .hist-set-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
   .hist-set-row .chord-key-lbl { flex: 0 0 84px; }
   .hist-set-row .seg { flex: 1 1 auto; }
-  /* Trim-and-copy timeline modal */
-  .tl-help { font-family: var(--mono); font-size: 11px; color: var(--bone-dim); text-align: center; margin: 0 0 14px; letter-spacing: 0.2px; }
-  .tl-track { position: relative; display: flex; align-items: center; gap: 6px; overflow-x: auto; padding: 24px 10px 14px; background: var(--ink); border: 1px solid var(--edge); border-radius: 10px; min-height: 66px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.35); }
-  .tl-item { flex: 0 0 auto; font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--bone-faint); background: var(--wood); border: 1px solid var(--edge); border-radius: 7px; padding: 8px 11px; white-space: nowrap; transition: color .12s, background .12s, border-color .12s; }
+  /* Trim-and-copy timeline modal — wide sheet + roomy timeline so long logs need little scrolling */
+  #timelineModal .sheet { max-width: min(960px, 95vw); }
+  .tl-help { font-family: var(--mono); font-size: 11.5px; color: var(--bone-dim); text-align: center; margin: 0 0 18px; letter-spacing: 0.2px; }
+  .tl-track { position: relative; display: flex; align-items: center; gap: 7px; overflow-x: auto; padding: 34px 14px 20px; background: var(--ink); border: 1px solid var(--edge); border-radius: 12px; min-height: 108px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.35); }
+  .tl-item { flex: 0 0 auto; font-family: var(--mono); font-size: 13.5px; font-weight: 700; color: var(--bone-faint); background: var(--wood); border: 1px solid var(--edge); border-radius: 8px; padding: 11px 15px; white-space: nowrap; transition: color .12s, background .12s, border-color .12s; }
   .tl-item.sel { color: var(--brass); background: var(--felt); border-color: var(--brass-deep); }
-  .tl-handle { position: absolute; top: 6px; bottom: 6px; width: 13px; border-radius: 5px; background: var(--brass); cursor: ew-resize; touch-action: none; z-index: 5; box-shadow: 0 0 0 1px var(--ink), 0 2px 7px rgba(0,0,0,0.45); }
-  .tl-handle::after { content: ''; position: absolute; left: 50%; top: 50%; width: 4px; height: 18px; transform: translate(-50%,-50%); border-left: 1px solid var(--ink); border-right: 1px solid var(--ink); opacity: 0.6; }
+  .tl-handle { position: absolute; top: 8px; bottom: 8px; width: 15px; border-radius: 6px; background: var(--brass); cursor: ew-resize; touch-action: none; z-index: 5; box-shadow: 0 0 0 1px var(--ink), 0 3px 9px rgba(0,0,0,0.5); }
+  .tl-handle::after { content: ''; position: absolute; left: 50%; top: 50%; width: 5px; height: 22px; transform: translate(-50%,-50%); border-left: 1px solid var(--ink); border-right: 1px solid var(--ink); opacity: 0.6; }
   .tl-handle:hover, .tl-handle.grab { background: var(--brass-deep); }
-  .tl-preview { font-family: var(--mono); font-size: 12px; color: var(--brass); background: rgba(0,0,0,0.16); border: 1px solid var(--edge-soft); border-radius: 8px; padding: 10px 12px; margin: 14px 0; line-height: 1.5; word-break: break-word; min-height: 20px; }
-  .tl-fmt-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .tl-preview { font-family: var(--mono); font-size: 13px; color: var(--brass); background: rgba(0,0,0,0.16); border: 1px solid var(--edge-soft); border-radius: 10px; padding: 14px 16px; margin: 18px 0; line-height: 1.55; word-break: break-word; min-height: 24px; }
 
   /* Chunky scrollbar (always on) — easier to grab on touch */
   html[data-scroll="fat"]::-webkit-scrollbar { width: 18px; height: 18px; }
@@ -931,7 +934,10 @@
       <span class="name std" id="nowName">Standard</span>
     </div>
     <div id="strings"></div>
-    <div class="fam-name" id="histHd">Played</div>
+  </div>
+
+  <div class="bench hist-bubble" id="sec-history">
+    <div class="fam-name">Played</div>
     <div id="histWrap"></div>
   </div>
 </div>
@@ -1186,7 +1192,6 @@
     <p class="tl-help">Drag the brackets inward to pick a range, then Copy.</p>
     <div class="tl-track" id="tlTrack"></div>
     <div class="tl-preview" id="tlPreview"></div>
-    <div class="tl-fmt-row"><label class="chord-key-lbl">Format</label><select class="num" id="tlFmt"></select></div>
     <div class="acts">
       <button class="btn" id="tlCancel">Cancel</button>
       <button class="btn go" id="tlCopy">Copy selection</button>
@@ -1207,7 +1212,7 @@ const DEFAULT_KEYS={A:'a',B:'s',LKL:'d',LKR:'f',AB:'g',ABR:'h'};  // ergonomic l
 // Chords keyboard — rebindable, stored as KeyboardEvent.code (layout-independent, so Shift+degree stays robust)
 const CHORD_KEYS_DEFAULT={deg1:'Digit1',deg2:'Digit2',deg3:'Digit3',deg4:'Digit4',deg5:'Digit5',deg6:'Digit6',deg7:'Digit7',voice3:'Minus',voice4:'Equal',clusterDown:'BracketLeft',clusterUp:'BracketRight',recenter:'Digit0'};
 // Played history — mode (rolling window vs manual session), N (rolling size), timeline (trim-on-copy modal), fmt (copy format)
-const HIST_DEFAULT={mode:'rolling', n:8, timeline:false, fmt:'simple'};
+const HIST_DEFAULT={mode:'rolling', n:8, timeline:false};
 function codeLabel(code){ if(!code) return '—';
   let m=/^Digit(\d)$/.exec(code); if(m) return m[1];
   m=/^Key([A-Z])$/.exec(code); if(m) return m[1];
@@ -1372,7 +1377,7 @@ const PANMODES=[
 const STR_COLORS=['#ef5350','#f2a33d','#c6d43f','#4cc178','#4f9dea','#a563d4'];
 let dispOffsets=[0,0,0,0,0,0];   // the pitch offsets currently shown (base tuning + engaged pedal bends)
 
-function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; if(typeof s.fxDoubler!=='boolean') s.fxDoubler=true; if(typeof s.fxOctave!=='boolean') s.fxOctave=true; if(typeof s.swellMs!=='number') s.swellMs=0; if(typeof s.swellLatch!=='boolean') s.swellLatch=true; if(typeof s.chordExt!=='string' || !['add9','6','m6','sus2','sus4','dim7','m7b5'].includes(s.chordExt)) s.chordExt='add9'; if(typeof s.keyRoot!=='string') s.keyRoot='C'; if(typeof s.keyScale!=='string') s.keyScale='off'; if(s.voicing!=='voiced') s.voicing='spread'; if(s.voiceSize!==4) s.voiceSize=3; if(typeof s.voiceStart!=='number'||s.voiceStart<0||s.voiceStart>6-s.voiceSize) s.voiceStart=0; if(s.voiceFeel!=='grip') s.voiceFeel='legato'; if(!s.chordLayers||typeof s.chordLayers!=='object') s.chordLayers={sevenths:false,borrowed:false,resolutions:false}; else for(const k of ['sevenths','borrowed','resolutions']) if(typeof s.chordLayers[k]!=='boolean') s.chordLayers[k]=false; if(!s.chordKeys||typeof s.chordKeys!=='object') s.chordKeys={...CHORD_KEYS_DEFAULT}; else for(const k in CHORD_KEYS_DEFAULT) if(typeof s.chordKeys[k]!=='string') s.chordKeys[k]=CHORD_KEYS_DEFAULT[k]; if(!s.hist||typeof s.hist!=='object') s.hist={...HIST_DEFAULT}; else { if(s.hist.mode!=='manual') s.hist.mode='rolling'; if(![4,8,16,32].includes(s.hist.n)) s.hist.n=8; if(typeof s.hist.timeline!=='boolean') s.hist.timeline=false; if(!['simple','arrows','key'].includes(s.hist.fmt)) s.hist.fmt='simple'; } if(!s.ap||typeof s.ap!=='object'){ s.ap={...AP_DEFAULTS}; if(typeof s.autoPanRate==='number') s.ap.rate=s.autoPanRate; } else { for(const k in AP_DEFAULTS) if(!(k in s.ap)) s.ap[k]=AP_DEFAULTS[k]; if(s.ap.char==='none') s.ap.char='rotate'; if(!['1 bar','1 bar T','1/2 bar','1/2 bar T','1/4','1/4 T'].includes(s.ap.div)) s.ap.div='1/2 bar'; if(s.ap.bpm>170) s.ap.bpm=170; } return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, fxDoubler:true, fxOctave:true, swellMs:0, swellLatch:true, chordExt:'add9', keyRoot:'C', keyScale:'off', voicing:'spread', voiceSize:3, voiceStart:0, voiceFeel:'legato', chordLayers:{sevenths:false,borrowed:false,resolutions:false}, chordKeys:{...CHORD_KEYS_DEFAULT}, hist:{...HIST_DEFAULT}, ap:{...AP_DEFAULTS}, ...AB_DEFAULTS}; }
+function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; if(typeof s.fxDoubler!=='boolean') s.fxDoubler=true; if(typeof s.fxOctave!=='boolean') s.fxOctave=true; if(typeof s.swellMs!=='number') s.swellMs=0; if(typeof s.swellLatch!=='boolean') s.swellLatch=true; if(typeof s.chordExt!=='string' || !['add9','6','m6','sus2','sus4','dim7','m7b5'].includes(s.chordExt)) s.chordExt='add9'; if(typeof s.keyRoot!=='string') s.keyRoot='C'; if(typeof s.keyScale!=='string') s.keyScale='off'; if(s.voicing!=='voiced') s.voicing='spread'; if(s.voiceSize!==4) s.voiceSize=3; if(typeof s.voiceStart!=='number'||s.voiceStart<0||s.voiceStart>6-s.voiceSize) s.voiceStart=0; if(s.voiceFeel!=='grip') s.voiceFeel='legato'; if(!s.chordLayers||typeof s.chordLayers!=='object') s.chordLayers={sevenths:false,borrowed:false,resolutions:false}; else for(const k of ['sevenths','borrowed','resolutions']) if(typeof s.chordLayers[k]!=='boolean') s.chordLayers[k]=false; if(!s.chordKeys||typeof s.chordKeys!=='object') s.chordKeys={...CHORD_KEYS_DEFAULT}; else for(const k in CHORD_KEYS_DEFAULT) if(typeof s.chordKeys[k]!=='string') s.chordKeys[k]=CHORD_KEYS_DEFAULT[k]; if(!s.hist||typeof s.hist!=='object') s.hist={...HIST_DEFAULT}; else { if(s.hist.mode!=='manual') s.hist.mode='rolling'; if(![4,8,16,32].includes(s.hist.n)) s.hist.n=8; if(typeof s.hist.timeline!=='boolean') s.hist.timeline=false; } if(!s.ap||typeof s.ap!=='object'){ s.ap={...AP_DEFAULTS}; if(typeof s.autoPanRate==='number') s.ap.rate=s.autoPanRate; } else { for(const k in AP_DEFAULTS) if(!(k in s.ap)) s.ap[k]=AP_DEFAULTS[k]; if(s.ap.char==='none') s.ap.char='rotate'; if(!['1 bar','1 bar T','1/2 bar','1/2 bar T','1/4','1/4 T'].includes(s.ap.div)) s.ap.div='1/2 bar'; if(s.ap.bpm>170) s.ap.bpm=170; } return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, fxDoubler:true, fxOctave:true, swellMs:0, swellLatch:true, chordExt:'add9', keyRoot:'C', keyScale:'off', voicing:'spread', voiceSize:3, voiceStart:0, voiceFeel:'legato', chordLayers:{sevenths:false,borrowed:false,resolutions:false}, chordKeys:{...CHORD_KEYS_DEFAULT}, hist:{...HIST_DEFAULT}, ap:{...AP_DEFAULTS}, ...AB_DEFAULTS}; }
 function saveSettingsLS(){ localStorage.setItem('vg800_settings', JSON.stringify(settings)); }
 function loadCustom(){ try{ return JSON.parse(localStorage.getItem('vg800_custom'))||[]; }catch(e){ return []; } }
 function saveCustomLS(){ localStorage.setItem('vg800_custom', JSON.stringify(customs)); }
@@ -1865,10 +1870,11 @@ function renderNav(){
   updateSpy();
 }
 function placeBench(){
-  const bench=document.getElementById('sec-current'), nav=document.getElementById('sideNav'), wrap=document.querySelector('.wrap');
+  const bench=document.getElementById('sec-current'), hist=document.getElementById('sec-history'), nav=document.getElementById('sideNav'), wrap=document.querySelector('.wrap');
   if(!bench||!nav||!wrap) return;
-  if(window.matchMedia('(min-width:1280px)').matches){ if(bench.parentElement!==nav) nav.appendChild(bench); }
-  else { if(bench.parentElement!==wrap) wrap.appendChild(bench); }
+  const target=window.matchMedia('(min-width:1280px)').matches ? nav : wrap;   // desktop → sidebar, else main column
+  if(bench.parentElement!==target) target.appendChild(bench);
+  if(hist && (hist.parentElement!==target || bench.nextElementSibling!==hist)) bench.after(hist);   // the Played bubble always sits right under the workbench
 }
 window.addEventListener('resize', placeBench);
 function updateSpy(){
@@ -1915,7 +1921,7 @@ function applyInst(inst, start){
   const n=document.getElementById('nowName'); n.textContent=inst.name; n.classList.remove('std');
   renderStrings(res.offsets); renderGrid(); renderPedals(); renderEthnic(); renderSteel(); renderChords();
   sendInstFx(); tuningSend(res.offsets);   // display always updates; push INST fx + MIDI when connected
-  logHistory(inst.name);                   // played-history hook — ethnic instruments
+  logHistory(inst.name, false);            // played-history hook — ethnic instruments (a tuning, not a chord)
 }
 function ethnicCardHTML(inst){
   const on = ethnicInst && ethnicInst.name===inst.name;
@@ -2009,7 +2015,7 @@ function applySteel(t, win){
   const n=document.getElementById('nowName'); n.textContent=t.name; n.classList.remove('std');
   renderStrings(res.offsets); renderGrid(); renderEthnic(); renderSteel(); renderPedals(); renderChords();
   sendInstFx(); tuningSend(res.offsets);   // display always updates; push INST fx (off) + MIDI when connected
-  logHistory(t.name);                      // played-history hook — pedal steel
+  logHistory(t.name, false);               // played-history hook — pedal steel (a tuning, not a chord)
 }
 // Random tuning — pick from every real tuning (guitar, lap steel, ethnic, pedal steel, user), excluding chords and the current one.
 function randomTuning(){
@@ -2540,7 +2546,7 @@ function apply(t){
   const n=document.getElementById('nowName'); n.textContent=t.name; n.classList.toggle('std',t.name==='Standard');
   renderStrings(t.offsets); renderGrid(); renderPedals(); renderEthnic(); renderSteel(); renderChords();
   sendInstFx(); tuningSend(t.offsets);   // display always updates; push INST fx (off) + MIDI when connected (shows the existing error toast if not)
-  logHistory(t.name);                    // played-history hook — covers tunings, chords, transposed chords, random tuning (all route through apply)
+  logHistory(t.name, !!t.chord);         // played-history hook — tunings/chords/transposed chords/random tuning (chord flag drives the key prefix)
 }
 
 function renderEd(){
@@ -2793,7 +2799,7 @@ function applyTest(v){
   const n=document.getElementById('nowName'); n.textContent='TEST '+(v>0?'+'+v:''+v); n.classList.remove('std');
   renderStrings([v,v,v,v,v,v]); renderGrid(); renderPedals(); renderEthnic(); renderSteel(); renderChords();
   sendInstFx(); tuningSend([v,v,v,v,v,v]);   // display always updates; push INST fx (off) + MIDI when connected
-  logHistory('Transpose '+(v>0?'+'+v:''+v));  // played-history hook — transpose tool
+  logHistory('Transpose '+(v>0?'+'+v:''+v), false);  // played-history hook — transpose tool (not a chord)
 }
 function renderTestBtns(){
   const wrap=document.getElementById('testBtns'); wrap.innerHTML='';
@@ -2823,19 +2829,18 @@ function toast(m,err,action){
 /* ===== Played history — logs every sound-changing selection (tunings, chords, ethnic, steel, transpose) ===== */
 let history=[], histTracking=false;          // histTracking = a Manual-mode capture session is live
 function escHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function logHistory(name){
+function logHistory(name, chord){
   if(!name) return; const H=settings.hist;
   if(H.mode==='manual' && !histTracking) return;                         // Manual: only during a Start→Copy session
-  if(history.length && history[history.length-1]===name) return;          // collapse consecutive duplicates
-  history.push(name);
+  if(history.length && history[history.length-1].name===name) return;    // collapse consecutive duplicates (by name)
+  history.push({name, chord:!!chord});                                   // chord flag → decides whether the key gets prefixed
   if(H.mode==='rolling' && history.length>H.n) history=history.slice(-H.n);   // rolling window keeps the last N
   renderHistory();
 }
-const HIST_SEP={simple:' - ', arrows:' → ', key:' - '};
-const HIST_FMTS=[['simple','Dashes'],['arrows','Arrows'],['key','With key']];
-function formatHistory(items, fmt){
-  fmt=fmt||settings.hist.fmt; const body=items.join(HIST_SEP[fmt]||' - ');
-  if(fmt==='key' && chordKeyOn()) return '['+settings.keyRoot+' '+settings.keyScale.toLowerCase()+'] '+body;
+// Always dashes; prefix the current key ONLY if a chord was played in the selection (tunings carry their own root, so a key prefix there would mislead).
+function formatHistory(items){
+  const body=items.map(i=>i.name).join(' - ');
+  if(items.some(i=>i.chord) && chordKeyOn()) return '['+settings.keyRoot+' '+settings.keyScale.toLowerCase()+'] '+body;
   return body;
 }
 function copyHistText(text){
@@ -2848,14 +2853,12 @@ function renderHistory(){
   const wrap=document.getElementById('histWrap'); if(!wrap) return;
   const H=settings.hist, manual=H.mode==='manual', recording=manual&&histTracking;
   const chips = history.length
-    ? history.map(h=>`<span class="hist-chip">${escHtml(h)}</span>`).join('')
+    ? history.map(h=>`<span class="hist-chip">${escHtml(h.name)}</span>`).join('')
     : `<span class="hist-empty">${manual&&!histTracking?'Press Start, then play…':'Play something to log it…'}</span>`;
-  const fmtOpts=HIST_FMTS.map(([v,l])=>`<option value="${v}"${H.fmt===v?' selected':''}>${l}</option>`).join('');
   let ctrls = (manual && !histTracking) ? `<button class="hist-btn go" data-hist="start">● Start</button>`
                                         : `<button class="hist-btn" data-hist="copy">Copy</button>`;
-  ctrls += `<select class="num hist-fmt" data-hist="fmt" title="Copy format">${fmtOpts}</select><button class="hist-btn ghost" data-hist="clear">Clear</button>`;
+  ctrls += `<button class="hist-btn ghost" data-hist="clear">Clear</button>`;
   wrap.innerHTML=`<div class="hist-strip${recording?' rec':''}">${chips}</div><div class="hist-ctrls">${ctrls}</div>`;
-  wrap.querySelector('[data-hist="fmt"]').addEventListener('change', e=>{ settings.hist.fmt=e.target.value; saveSettingsLS(); });
   wrap.querySelector('[data-hist="clear"]').addEventListener('click', ()=>{ history=[]; histTracking=false; renderHistory(); });
   const sb=wrap.querySelector('[data-hist="start"]'); if(sb) sb.addEventListener('click', ()=>{ history=[]; histTracking=true; renderHistory(); toast('● Recording — play, then Copy'); });
   const cb=wrap.querySelector('[data-hist="copy"]'); if(cb) cb.addEventListener('click', histCopyAction);
@@ -2865,7 +2868,7 @@ function histCopyAction(){
   const H=settings.hist;
   if(H.mode==='rolling' && H.timeline){ openTimelineModal(); return; }    // Rolling + Trim-on-copy → draggable timeline
   if(!history.length){ toast('Nothing to copy yet', true); return; }
-  copyHistText(formatHistory(history, H.fmt));
+  copyHistText(formatHistory(history));
   if(H.mode==='manual'){ history=[]; histTracking=false; renderHistory(); }   // Manual: Copy ends the session
 }
 function renderHistSettings(){
@@ -2885,13 +2888,12 @@ let tlItems=[], tlStart=0, tlEnd=0, _tlDrag=null;
 function openTimelineModal(){
   if(!history.length){ toast('Nothing to copy yet', true); return; }
   tlItems=history.slice(); tlStart=0; tlEnd=tlItems.length-1;
-  document.getElementById('tlFmt').innerHTML=HIST_FMTS.map(([v,l])=>`<option value="${v}"${settings.hist.fmt===v?' selected':''}>${l}</option>`).join('');
   buildTimeline(); open('timelineModal'); requestAnimationFrame(positionHandles);
 }
 function tlSel(){ return tlItems.slice(tlStart, tlEnd+1); }
 function buildTimeline(){
   const track=document.getElementById('tlTrack'); if(!track) return;
-  track.innerHTML=tlItems.map((it,i)=>`<div class="tl-item" data-i="${i}">${escHtml(it)}</div>`).join('')
+  track.innerHTML=tlItems.map((it,i)=>`<div class="tl-item" data-i="${i}">${escHtml(it.name)}</div>`).join('')
     + `<div class="tl-handle tl-h-start" aria-label="Range start"></div><div class="tl-handle tl-h-end" aria-label="Range end"></div>`;
   updateTimeline();
 }
@@ -2899,7 +2901,7 @@ function updateTimeline(){
   const track=document.getElementById('tlTrack'); if(!track) return;
   track.querySelectorAll('.tl-item').forEach((el,i)=> el.classList.toggle('sel', i>=tlStart && i<=tlEnd));
   positionHandles();
-  const pv=document.getElementById('tlPreview'); if(pv) pv.textContent=formatHistory(tlSel(), settings.hist.fmt)||'(empty)';
+  const pv=document.getElementById('tlPreview'); if(pv) pv.textContent=formatHistory(tlSel())||'(empty)';
 }
 function positionHandles(){
   const track=document.getElementById('tlTrack'); if(!track) return;
@@ -2916,9 +2918,8 @@ function tlIndexFromX(x){
 document.addEventListener('pointerdown', e=>{ const h=e.target.closest&&e.target.closest('#tlTrack .tl-handle'); if(!h) return; e.preventDefault(); _tlDrag=h.classList.contains('tl-h-start')?'start':'end'; h.classList.add('grab'); });
 document.addEventListener('pointermove', e=>{ if(!_tlDrag) return; const track=document.getElementById('tlTrack'); if(track){ const r=track.getBoundingClientRect(); if(e.clientX<r.left+30) track.scrollLeft-=16; else if(e.clientX>r.right-30) track.scrollLeft+=16; } const idx=tlIndexFromX(e.clientX); if(idx==null) return; if(_tlDrag==='start') tlStart=Math.min(idx, tlEnd); else tlEnd=Math.max(idx, tlStart); updateTimeline(); });
 document.addEventListener('pointerup', ()=>{ if(_tlDrag){ document.querySelectorAll('#tlTrack .tl-handle').forEach(h=>h.classList.remove('grab')); _tlDrag=null; } });
-document.getElementById('tlFmt').addEventListener('change', e=>{ settings.hist.fmt=e.target.value; saveSettingsLS(); updateTimeline(); });
 document.getElementById('tlCancel').addEventListener('click', ()=> close('timelineModal'));
-document.getElementById('tlCopy').addEventListener('click', ()=>{ copyHistText(formatHistory(tlSel(), settings.hist.fmt)); close('timelineModal'); });
+document.getElementById('tlCopy').addEventListener('click', ()=>{ copyHistText(formatHistory(tlSel())); close('timelineModal'); });
 
 renderStrings([0,0,0,0,0,0]);
 renderGrid();
