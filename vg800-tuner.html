@@ -341,6 +341,12 @@
   .hist-bubble { margin-top: 14px; padding: 16px 8px 15px; }
   .hist-bubble > .fam-name { margin-top: 0; margin-bottom: 12px; }
   #sideNav .hist-bubble { margin-top: 12px; }
+  .hist-hide { position: absolute; top: 11px; right: 11px; z-index: 2; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border: 1px solid var(--edge); border-radius: 8px; background: var(--wood); color: var(--bone-faint); cursor: pointer; transition: color .12s, border-color .12s, background .12s; }
+  .hist-hide:hover { color: var(--brass); border-color: var(--brass-deep); background: var(--felt); }
+  .hist-hide .hist-ico { width: 15px; height: 15px; }
+  #sec-history.collapsed { padding-bottom: 16px; }
+  #sec-history.collapsed > .fam-name { margin-bottom: 0; }
+  #sec-history.collapsed #histWrap { display: none; }
   #histWrap { margin-top: 2px; }
   .hist-strip { display: flex; gap: 5px; overflow-x: auto; padding: 3px 1px 7px; scrollbar-width: thin; scroll-behavior: smooth; }
   .hist-strip::-webkit-scrollbar { height: 5px; }
@@ -351,7 +357,8 @@
   .hist-ctrls { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 2px; }
   .hist-btn { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10.5px; font-weight: 700; letter-spacing: 0.4px; color: var(--bone-dim); background: var(--wood); border: 1px solid var(--edge); border-radius: 7px; padding: 6px 12px; cursor: pointer; transition: color .12s, border-color .12s, background .12s; }
   .hist-ico { width: 14px; height: 14px; flex-shrink: 0; }
-  .hist-btn:hover { color: var(--brass); border-color: var(--brass-deep); background: var(--felt); }
+  .hist-btn:hover:not(:disabled) { color: var(--brass); border-color: var(--brass-deep); background: var(--felt); }
+  .hist-btn:disabled { opacity: 0.4; cursor: not-allowed; color: var(--bone-faint); }
   .hist-btn.go { color: var(--err); border-color: color-mix(in srgb, var(--err) 45%, var(--edge)); }
   .hist-btn.go:hover { color: var(--err); border-color: var(--err); }
   .hist-btn.ghost { color: var(--bone-faint); }
@@ -940,6 +947,7 @@
   </div>
 
   <div class="bench hist-bubble" id="sec-history">
+    <button class="hist-hide" id="histHide" aria-label="Show or hide the played history"></button>
     <div class="fam-name">Played</div>
     <div id="histWrap"></div>
   </div>
@@ -1215,7 +1223,7 @@ const DEFAULT_KEYS={A:'a',B:'s',LKL:'d',LKR:'f',AB:'g',ABR:'h'};  // ergonomic l
 // Chords keyboard — rebindable, stored as KeyboardEvent.code (layout-independent, so Shift+degree stays robust)
 const CHORD_KEYS_DEFAULT={deg1:'Digit1',deg2:'Digit2',deg3:'Digit3',deg4:'Digit4',deg5:'Digit5',deg6:'Digit6',deg7:'Digit7',voice3:'Minus',voice4:'Equal',clusterDown:'BracketLeft',clusterUp:'BracketRight',recenter:'Digit0'};
 // Played history — mode (rolling window vs manual session), N (rolling size), timeline (trim-on-copy modal), fmt (copy format)
-const HIST_DEFAULT={mode:'rolling', n:8, timeline:false};
+const HIST_DEFAULT={mode:'rolling', n:8, timeline:false, hidden:false};
 function codeLabel(code){ if(!code) return '—';
   let m=/^Digit(\d)$/.exec(code); if(m) return m[1];
   m=/^Key([A-Z])$/.exec(code); if(m) return m[1];
@@ -1380,7 +1388,7 @@ const PANMODES=[
 const STR_COLORS=['#ef5350','#f2a33d','#c6d43f','#4cc178','#4f9dea','#a563d4'];
 let dispOffsets=[0,0,0,0,0,0];   // the pitch offsets currently shown (base tuning + engaged pedal bends)
 
-function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; if(typeof s.fxDoubler!=='boolean') s.fxDoubler=true; if(typeof s.fxOctave!=='boolean') s.fxOctave=true; if(typeof s.swellMs!=='number') s.swellMs=0; if(typeof s.swellLatch!=='boolean') s.swellLatch=true; if(typeof s.chordExt!=='string' || !['add9','6','m6','sus2','sus4','dim7','m7b5'].includes(s.chordExt)) s.chordExt='add9'; if(typeof s.keyRoot!=='string') s.keyRoot='C'; if(typeof s.keyScale!=='string') s.keyScale='off'; if(s.voicing!=='voiced') s.voicing='spread'; if(s.voiceSize!==4) s.voiceSize=3; if(typeof s.voiceStart!=='number'||s.voiceStart<0||s.voiceStart>6-s.voiceSize) s.voiceStart=0; if(s.voiceFeel!=='grip') s.voiceFeel='legato'; if(!s.chordLayers||typeof s.chordLayers!=='object') s.chordLayers={sevenths:false,borrowed:false,resolutions:false}; else for(const k of ['sevenths','borrowed','resolutions']) if(typeof s.chordLayers[k]!=='boolean') s.chordLayers[k]=false; if(!s.chordKeys||typeof s.chordKeys!=='object') s.chordKeys={...CHORD_KEYS_DEFAULT}; else for(const k in CHORD_KEYS_DEFAULT) if(typeof s.chordKeys[k]!=='string') s.chordKeys[k]=CHORD_KEYS_DEFAULT[k]; if(!s.hist||typeof s.hist!=='object') s.hist={...HIST_DEFAULT}; else { if(s.hist.mode!=='manual') s.hist.mode='rolling'; if(![4,8,16,32].includes(s.hist.n)) s.hist.n=8; if(typeof s.hist.timeline!=='boolean') s.hist.timeline=false; } if(!s.ap||typeof s.ap!=='object'){ s.ap={...AP_DEFAULTS}; if(typeof s.autoPanRate==='number') s.ap.rate=s.autoPanRate; } else { for(const k in AP_DEFAULTS) if(!(k in s.ap)) s.ap[k]=AP_DEFAULTS[k]; if(s.ap.char==='none') s.ap.char='rotate'; if(!['1 bar','1 bar T','1/2 bar','1/2 bar T','1/4','1/4 T'].includes(s.ap.div)) s.ap.div='1/2 bar'; if(s.ap.bpm>170) s.ap.bpm=170; } return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, fxDoubler:true, fxOctave:true, swellMs:0, swellLatch:true, chordExt:'add9', keyRoot:'C', keyScale:'off', voicing:'spread', voiceSize:3, voiceStart:0, voiceFeel:'legato', chordLayers:{sevenths:false,borrowed:false,resolutions:false}, chordKeys:{...CHORD_KEYS_DEFAULT}, hist:{...HIST_DEFAULT}, ap:{...AP_DEFAULTS}, ...AB_DEFAULTS}; }
+function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; if(typeof s.fxDoubler!=='boolean') s.fxDoubler=true; if(typeof s.fxOctave!=='boolean') s.fxOctave=true; if(typeof s.swellMs!=='number') s.swellMs=0; if(typeof s.swellLatch!=='boolean') s.swellLatch=true; if(typeof s.chordExt!=='string' || !['add9','6','m6','sus2','sus4','dim7','m7b5'].includes(s.chordExt)) s.chordExt='add9'; if(typeof s.keyRoot!=='string') s.keyRoot='C'; if(typeof s.keyScale!=='string') s.keyScale='off'; if(s.voicing!=='voiced') s.voicing='spread'; if(s.voiceSize!==4) s.voiceSize=3; if(typeof s.voiceStart!=='number'||s.voiceStart<0||s.voiceStart>6-s.voiceSize) s.voiceStart=0; if(s.voiceFeel!=='grip') s.voiceFeel='legato'; if(!s.chordLayers||typeof s.chordLayers!=='object') s.chordLayers={sevenths:false,borrowed:false,resolutions:false}; else for(const k of ['sevenths','borrowed','resolutions']) if(typeof s.chordLayers[k]!=='boolean') s.chordLayers[k]=false; if(!s.chordKeys||typeof s.chordKeys!=='object') s.chordKeys={...CHORD_KEYS_DEFAULT}; else for(const k in CHORD_KEYS_DEFAULT) if(typeof s.chordKeys[k]!=='string') s.chordKeys[k]=CHORD_KEYS_DEFAULT[k]; if(!s.hist||typeof s.hist!=='object') s.hist={...HIST_DEFAULT}; else { if(s.hist.mode!=='manual') s.hist.mode='rolling'; if(![4,8,16,32].includes(s.hist.n)) s.hist.n=8; if(typeof s.hist.timeline!=='boolean') s.hist.timeline=false; if(typeof s.hist.hidden!=='boolean') s.hist.hidden=false; } if(!s.ap||typeof s.ap!=='object'){ s.ap={...AP_DEFAULTS}; if(typeof s.autoPanRate==='number') s.ap.rate=s.autoPanRate; } else { for(const k in AP_DEFAULTS) if(!(k in s.ap)) s.ap[k]=AP_DEFAULTS[k]; if(s.ap.char==='none') s.ap.char='rotate'; if(!['1 bar','1 bar T','1/2 bar','1/2 bar T','1/4','1/4 T'].includes(s.ap.div)) s.ap.div='1/2 bar'; if(s.ap.bpm>170) s.ap.bpm=170; } return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, fxDoubler:true, fxOctave:true, swellMs:0, swellLatch:true, chordExt:'add9', keyRoot:'C', keyScale:'off', voicing:'spread', voiceSize:3, voiceStart:0, voiceFeel:'legato', chordLayers:{sevenths:false,borrowed:false,resolutions:false}, chordKeys:{...CHORD_KEYS_DEFAULT}, hist:{...HIST_DEFAULT}, ap:{...AP_DEFAULTS}, ...AB_DEFAULTS}; }
 function saveSettingsLS(){ localStorage.setItem('vg800_settings', JSON.stringify(settings)); }
 function loadCustom(){ try{ return JSON.parse(localStorage.getItem('vg800_custom'))||[]; }catch(e){ return []; } }
 function saveCustomLS(){ localStorage.setItem('vg800_custom', JSON.stringify(customs)); }
@@ -1655,6 +1663,8 @@ const DICE_ICO='<svg class="dice-ico" viewBox="0 0 24 24" fill="none" stroke="cu
 // Played-history button icons
 const COPY_ICO='<svg class="hist-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>';
 const CLEAR_ICO='<svg class="hist-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/></svg>';
+const EYE_ICO='<svg class="hist-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYE_OFF_ICO='<svg class="hist-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.9 5.1A10.6 10.6 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.3 4M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7a10.6 10.6 0 0 0 4-.8M3 3l18 18M9.5 9.5a3 3 0 0 0 4.2 4.2"/></svg>';
 // Key mapping now lives in Settings (moved out of the Bends panel). Bends = rebindable pedal/swell chips; Chords = fixed number-key reference.
 function renderKeymap(){
   const box=document.getElementById('keymapSettings'); if(!box) return;
@@ -2861,15 +2871,23 @@ function renderHistory(){
   const chips = history.length
     ? history.map(h=>`<span class="hist-chip">${escHtml(h.name)}</span>`).join('')
     : `<span class="hist-empty">${manual&&!histTracking?'Press Start, then play…':'Play something to log it…'}</span>`;
+  const empty=!history.length, dis=empty?' disabled':'';   // nothing logged → Copy/Clear greyed out
   let ctrls = (manual && !histTracking) ? `<button class="hist-btn go" data-hist="start">● Start</button>`
-                                        : `<button class="hist-btn" data-hist="copy">${COPY_ICO}Copy</button>`;
-  ctrls += `<button class="hist-btn ghost" data-hist="clear">${CLEAR_ICO}Clear</button>`;
+                                        : `<button class="hist-btn" data-hist="copy"${dis}>${COPY_ICO}Copy</button>`;
+  ctrls += `<button class="hist-btn ghost" data-hist="clear"${dis}>${CLEAR_ICO}Clear</button>`;
   wrap.innerHTML=`<div class="hist-strip${recording?' rec':''}">${chips}</div><div class="hist-ctrls">${ctrls}</div>`;
   wrap.querySelector('[data-hist="clear"]').addEventListener('click', ()=>{ history=[]; histTracking=false; renderHistory(); });
   const sb=wrap.querySelector('[data-hist="start"]'); if(sb) sb.addEventListener('click', ()=>{ history=[]; histTracking=true; renderHistory(); toast('● Recording — play, then Copy'); });
   const cb=wrap.querySelector('[data-hist="copy"]'); if(cb) cb.addEventListener('click', histCopyAction);
   const strip=wrap.querySelector('.hist-strip'); if(strip) strip.scrollLeft=strip.scrollWidth;   // keep the newest chip in view
 }
+function applyHistHidden(){                         // the eye toggle next to "Played" collapses the strip + controls (tracking keeps running)
+  const sec=document.getElementById('sec-history'), btn=document.getElementById('histHide'); if(!sec) return;
+  const hidden=!!(settings.hist && settings.hist.hidden);
+  sec.classList.toggle('collapsed', hidden);
+  if(btn){ btn.innerHTML = hidden ? EYE_OFF_ICO : EYE_ICO; btn.title = hidden ? 'Show played history' : 'Hide played history'; }
+}
+document.getElementById('histHide').addEventListener('click', ()=>{ settings.hist.hidden=!settings.hist.hidden; saveSettingsLS(); applyHistHidden(); });
 function histCopyAction(){
   const H=settings.hist;
   if(H.mode==='rolling' && H.timeline){ openTimelineModal(); return; }    // Rolling + Trim-on-copy → draggable timeline
@@ -2936,6 +2954,7 @@ renderSteel();
 renderChords();
 renderPan();
 renderHistory();
+applyHistHidden();
 placeBench();
 updatePedalHint();
 initMIDI();
