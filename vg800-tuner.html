@@ -1964,6 +1964,7 @@ function randomTuning(){
   if(!pool.length) return;
   const pick=pool[Math.floor(Math.random()*pool.length)];
   pick.go(); toast('🎲 '+pick.name);
+  requestAnimationFrame(()=>{ const el=document.querySelector('.card.active'); if(el) el.scrollIntoView({behavior:'smooth', block:'center'}); });   // bring the picked tile into view
 }
 // Random key & scale for Chords mode — a random root + a random (non-off) scale, mirroring the scale selector's behaviour.
 function randomKey(){
