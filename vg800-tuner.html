@@ -914,6 +914,12 @@
     <input type="file" id="userFile" accept="application/json,.json" hidden>
   </fieldset>
 
+  <fieldset class="panel" id="sec-modes">
+    <legend class="panel-hd">Modes</legend>
+    <div class="panel-sub">one tuning · seven modes · C root</div>
+    <div id="modesWrap"></div>
+  </fieldset>
+
   <div id="lapWrap"></div>
 
   <fieldset class="panel" id="sec-steel">
@@ -1283,6 +1289,25 @@ const FAMILIES = [
 ];
 const BUILTIN = FAMILIES.flatMap(f=>f.tunings);
 
+// ===== Modes — one white-key tuning, seven parallel modes rooted on C =====
+// Base "White Keys" = C D E F G A: the natural notes read low→high like piano white keys, anchored so the C3 tonic
+// sits on the low string (string 6 = home). Only 6 of the 7 white keys fit six strings, so we take C→A from the root;
+// the 7th (B) has no open string. Every mode keeps C as the tonal centre and only flattens the degrees that differ
+// from C major, so moving along the brightness spectrum (Lydian brightest → Locrian darkest) shifts ONE string by ONE
+// semitone at a time — except Ionian→Mixolydian, whose sole difference is the ♭7 (B), which isn't an open string here,
+// so C Mixolydian comes out identical to C Ionian (and to the White Keys base). offsets are string1→6 (high→low),
+// all within ±12. `seventh` = pitch-class of the mode's 7th degree (11 = maj7 B, 10 = ♭7 B♭) — drives the Bends pedals.
+const MODES=[
+  {name:'White Keys',   notes:'C D E F G A',    offsets:[-7,-4,-2,2,5,8], modes:true, seventh:11, base:true},   // the natural-note set (= C Ionian)
+  {name:'C Lydian',     notes:'C D E F# G A',   offsets:[-7,-4,-1,2,5,8], modes:true, seventh:11},   // brightest — ♯4
+  {name:'C Ionian',     notes:'C D E F G A',    offsets:[-7,-4,-2,2,5,8], modes:true, seventh:11},   // major
+  {name:'C Mixolydian', notes:'C D E F G A',    offsets:[-7,-4,-2,2,5,8], modes:true, seventh:10},   // ♭7 (B absent → same shape as Ionian)
+  {name:'C Dorian',     notes:'C D Eb F G A',   offsets:[-7,-4,-2,1,5,8], modes:true, seventh:10},   // ♭3 ♭7
+  {name:'C Aeolian',    notes:'C D Eb F G Ab',  offsets:[-8,-4,-2,1,5,8], modes:true, seventh:10},   // natural minor — ♭3 ♭6 ♭7
+  {name:'C Phrygian',   notes:'C Db Eb F G Ab', offsets:[-8,-4,-2,1,4,8], modes:true, seventh:10},   // ♭2 ♭3 ♭6 ♭7
+  {name:'C Locrian',    notes:'C Db Eb F Gb Ab',offsets:[-8,-5,-2,1,4,8], modes:true, seventh:10},   // darkest — ♭2 ♭3 ♭5 ♭6 ♭7
+];
+
 let settings = loadSettings();
 try{ if(!localStorage.getItem('vg800_pgShort')){ settings.panMs=500; localStorage.setItem('vg800_pgShort','1'); localStorage.setItem('vg800_settings', JSON.stringify(settings)); } }catch(e){}   // Pan glide defaults to Short (one-time reset for existing users)
 let customs = loadCustom();
@@ -1292,6 +1317,7 @@ let midiAccess=null, midiOut=null, lastConnMsg=null;
 let curOffsets=[0,0,0,0,0,0], glideTimer=null;
 let baseOffsets=[0,0,0,0,0,0], held=new Set(), curInfo=null, pedalStateCache={}, ctrlStateCache={};
 let ethnicInst=null, ethnicStart=0;
+let activeModeTuning=null;   // the active Modes-section tuning (drives the 7th-degree Bends pedals), else null
 const ETHNIC=[
   {name:'Mandolin', pitches:[55,62,69,76], notes:'G D A E', ref:'Traditional Irish / Bluegrass', courses:true},
   {name:'Irish Bouzouki', pitches:[43,50,57,62], notes:'G D A D', ref:'Irish Traditional Music', courses:true},
@@ -1367,6 +1393,15 @@ const TUNING_TIPS = {
   'E9 Nashville':  { desc:`THE country pedal-steel tuning — the crying, gliding sound you picture when you think "pedal steel" (Bud Isaacs, Buddy Emmons).`, song:`"Slowly" — Webb Pierce (Bud Isaacs, 1954)` },
   'C6 Swing/Jazz': { desc:`The "back neck" of a double-neck pedal steel — used for western swing and jazz's fuller chord voicings (Buddy Emmons, Cindy Cashdollar).`, song:`western swing — Bob Wills; jazz steel — Buddy Emmons` },
   'B6 Universal':  { desc:`Jeff Newman's single-neck tuning that fuses the E9 (country) and C6 (jazz/swing) necks, so one neck covers both.` },
+  // Modes — one white-key tuning, seven parallel modes on C (brightest → darkest)
+  'White Keys':    { desc:`The natural notes C D E F G A on six strings — the white-key set every mode is drawn from, with C on the low string as home. Identical to C Ionian.` },
+  'C Lydian':      { desc:`The brightest mode — major with a raised 4th (F♯). Floating, film-score shimmer.`, song:`"Flying Theme" — John Williams (E.T.)` },
+  'C Ionian':      { desc:`The plain major scale — the white keys with C as home.`, song:`"Let It Be" — The Beatles` },
+  'C Mixolydian':  { desc:`Major with a flat 7th (B♭) — the dominant, bluesy-rock colour. (The ♭7 has no open string here, so it shares the Ionian shape.)`, song:`"Sweet Home Alabama" — Lynyrd Skynyrd` },
+  'C Dorian':      { desc:`Minor with a bright natural 6th — the hopeful, funky minor of jazz and modal rock.`, song:`"So What" — Miles Davis` },
+  'C Aeolian':     { desc:`The natural minor scale — ♭3 ♭6 ♭7. The default "sad" minor.`, song:`"Losing My Religion" — R.E.M.` },
+  'C Phrygian':    { desc:`Minor with a flat 2nd (D♭) — dark, Spanish/flamenco and metal tension.`, song:`"Wherever I May Roam" — Metallica` },
+  'C Locrian':     { desc:`The darkest mode — a flat 2nd AND flat 5th give an unstable, diminished tonic.`, song:`"YYZ" — Rush (main riff)` },
 };
 // Tooltip payload for a tile: rich copy if we have it, else fall back to the tile's own ref/sub (e.g. unmatched E9 Lanois keeps its blurb).
 function tipFor(t){ const tip=TUNING_TIPS[t.name]; if(tip) return tip; const fb=t.ref||t.sub; return fb?{desc:fb}:null; }
@@ -1557,7 +1592,15 @@ const SCALE_BEND={ controls:[
 ]};
 function scalePcSet(){ if(!chordKeyOn()) return null; const sc=SCALES[settings.keyScale], base=CHORD_ROOTS.indexOf(settings.keyRoot); const s=new Set(); sc.intervals.forEach(iv=> s.add((base+iv)%12)); return s; }
 function scaleBendActive(){ return !!activeChord && chordKeyOn(); }   // a chord is held AND a key/scale is chosen
-function pedalControls(){ return scaleBendActive() ? SCALE_BEND.controls : copedent.controls; }
+// Modes-section pedals — bend to the current mode's 7th degree from opposite ends of the range. Pedal A lifts string 1
+// (high E) up to the nearest 7th above; Pedal B drops string 6 (low E) down to the nearest 7th below. The 7th (maj7 in
+// Ionian/Lydian, ♭7 elsewhere) rides on activeModeTuning.seventh, so both targets recompute on every mode change.
+const MODE_BEND={ controls:[
+  {id:'MA', name:'Pedal A', group:'foot', key:'a', string:0, seventhDir:1},    // high E → 7th above
+  {id:'MB', name:'Pedal B', group:'foot', key:'s', string:5, seventhDir:-1},   // low E  → 7th below
+]};
+function modesBendActive(){ return !!activeModeTuning; }              // a Modes-section tuning is loaded
+function pedalControls(){ return modesBendActive() ? MODE_BEND.controls : (scaleBendActive() ? SCALE_BEND.controls : copedent.controls); }
 // Pedal steel tunings — 10 strings, midi low→high (index 0 = string 10 lowest, 9 = string 1 highest).
 const STEEL=[
   {id:'e9', name:'E9 Nashville', sub:'country · session sound', root:4,  copedent:'e9', midi:[47,50,52,54,56,59,64,68,75,78], spell:'B D E F# G# B E G# D# F#'},
@@ -1573,7 +1616,7 @@ const WINDOWS=[   // contiguous 6-of-10; i0 = lowest midi index of the window
 ];
 let copedent=COPEDENTS.generic, steelInst=null, steelWin=0, steelRoot=null;
 let KEYMAP={}, bindingCtrl=null;
-function ctrlById(id){ return copedent.controls.find(c=>c.id===id) || SCALE_BEND.controls.find(c=>c.id===id); }
+function ctrlById(id){ return copedent.controls.find(c=>c.id===id) || SCALE_BEND.controls.find(c=>c.id===id) || MODE_BEND.controls.find(c=>c.id===id); }
 function keyFor(id){ const c=ctrlById(id), ov=settings.keys[id]; return (ov!==undefined?ov:(c?c.key:'')); }
 function rebuildKeymap(){ KEYMAP={}; pedalControls().forEach(c=>{ const k=keyFor(c.id); if(k) KEYMAP[k]=c.id; }); }   // in Chords key mode a–h drive the scale-bend string-pedals; otherwise the copedent
 rebuildKeymap();
@@ -1601,6 +1644,15 @@ function chordInfo(base, name){
 // One control = one or more degree moves, aggregated to per-string bends.
 // Greys out if the root is unknown, a target degree is absent from the window, or any string exceeds ±12.
 function controlState(ctrl, info, base){
+  if(ctrl.seventhDir!=null){                                    // Modes bend: move this string to the mode's 7th degree (up for A, down for B)
+    const sev = activeModeTuning ? activeModeTuning.seventh : null;
+    if(sev==null) return {avail:false, why:'no mode', moves:[]};
+    const i=ctrl.string, m=STD_MIDI[i]+base[i], dir=ctrl.seventhDir;
+    let d=1; while(d<=12 && (((m+dir*d)%12)+12)%12 !== sev) d++;   // nearest 7th-degree pitch in the pedal's direction
+    if(d>12) return {avail:false, why:'no 7th', moves:[]};
+    const to=m+dir*d, bend=dir*d, off=base[i]+bend, ok=off>=-12&&off<=12;
+    return {avail:ok, why: ok?'':'out of range', moves:[{i, from:m, to, off, bend, ok}]};
+  }
   if(ctrl.string!=null){                                        // scale-tone bend: raise this string to the next scale tone up (ignores the chord root)
     const S=scalePcSet(); if(!S) return {avail:false, why:'no scale', moves:[]};
     const i=ctrl.string, m=STD_MIDI[i]+base[i]; let d=1; while(d<=11 && !S.has((((m+d)%12)+12)%12)) d++;
@@ -1636,6 +1688,17 @@ const PEDAL_ICONS={
 };
 function pedalBtnHTML(ctrl, label, sub, st){
   const dis=!st.avail, key=(keyFor(ctrl)||'').toUpperCase(), c=ctrlById(ctrl)||{};
+  if(c.seventhDir!=null){                                       // Modes 7th-degree pedal — string-coloured dot, directional note→note preview
+    const mv=st.moves&&st.moves[0], dn=c.seventhDir<0?' dn':'';
+    const body = dis ? `<span class="mv off">${st.why||'n/a'}</span>` : `<span class="mv"><span class="to${dn}">${nameOf(mv.from).name} → ${nameOf(mv.to).name}</span></span>`;
+    const subtxt = (dis||!mv) ? '' : `7th · ${Math.abs(mv.bend)} st ${mv.bend<0?'↓':'↑'}`;
+    return `<button class="pedal sb${dis?' disabled':''}" data-ctrl="${ctrl}"${dis?' aria-disabled="true"':''}>
+      <span class="pedal-name">${label}${key?`<span class="pedal-key">${key}</span>`:''}</span>
+      <span class="pedal-do">${subtxt}</span>
+      <span class="pedal-moves">${body}</span>
+      <span class="pedal-badge sb-dot" style="background:${STR_COLORS[c.string]}"></span>
+    </button>`;
+  }
   if(c.string!=null){                                           // scale-tone string pedal — string-coloured dot, note→note preview
     const mv=st.moves&&st.moves[0];
     const body = dis ? `<span class="mv off">${st.why||'n/a'}</span>` : `<span class="mv"><span class="to">${nameOf(mv.from).name} → ${nameOf(mv.to).name}</span></span>`;
@@ -1688,14 +1751,19 @@ function renderKeymap(){
 }
 function renderPedals(){
   const wrap=document.getElementById('pedalWrap'); if(!wrap) return;
-  const sbMode=scaleBendActive(), controls=pedalControls();
+  const modesMode=modesBendActive(), sbMode=!modesMode && scaleBendActive(), controls=pedalControls();
   curInfo=chordInfo(baseOffsets, active); if(steelRoot!=null) curInfo.root=steelRoot;   // pedal-steel forces the real root
   rebuildKeymap();
   ctrlStateCache={};
   controls.forEach(c=>{ ctrlStateCache[c.id]=controlState(c,curInfo,baseOffsets); });
   let html=`<div class="sec-tools"><button class="map-btn" data-mapjump="bends" title="Configure keyboard shortcuts">${KBD_ICO}Map</button></div>`;
   if(!sbMode) html+=`<div class="latch-row"><div class="seg latch-seg" id="latchSeg" title="Latch — tap a pedal on/off instead of holding it"><button class="${settings.latch?'on':''}" data-latch="1">Latch</button><button class="${!settings.latch?'on':''}" data-latch="0">Off</button></div></div>`;
-  if(sbMode){                                                   // Chords key mode — six string-pedals raise each string to the next scale tone
+  if(modesMode){                                                // Modes section — two foot pedals bend to the mode's 7th from opposite ends
+    const mn=activeModeTuning.name, sev=NOTE[activeModeTuning.seventh], kind=activeModeTuning.seventh===11?'major 7th':'♭7';
+    html+=`<div class="pedal-info">Bends to the 7th of <b>${mn}</b> — the <b>${sev}</b> (${kind}). <b>Pedal A</b> lifts the high E up to it; <b>Pedal B</b> drops the low E down to it. Retargets with each mode.</div>`;
+    html+=`<p class="bend-cap"><b>Latch</b> keeps a pedal engaged after one tap — sustain the bend hands-free. Off = press &amp; hold.</p>`;
+    html+=`<div class="fam-name">Foot Pedals · to the 7th</div><div class="pedals">${controls.map(c=>pedalBtnHTML(c.id,c.name,'',ctrlStateCache[c.id])).join('')}</div>`;
+  } else if(sbMode){                                            // Chords key mode — six string-pedals raise each string to the next scale tone
     html+=`<div class="pedal-info">Chord held in <b>${settings.keyRoot} ${settings.keyScale}</b> — each pedal raises one string to the next scale tone. Hold to bend, release to return.</div>`;
     html+=`<div class="fam-name">Scale Bends · one string each</div><div class="pedals">${controls.map(c=>pedalBtnHTML(c.id,c.name,'',ctrlStateCache[c.id])).join('')}</div>`;
   } else {
@@ -1832,6 +1900,20 @@ function makeCard(t,isC){
   c.addEventListener('click',e=>{ if(e.target.classList.contains('del'))return; apply(t); });
   return c;
 }
+// Modes section — the White Keys base, then the seven modes ordered brightest→darkest so each adjacent card
+// flattens one string (reusing makeCard, so tiles/tooltips/latching match the rest of the app).
+function renderModes(){
+  const wrap=document.getElementById('modesWrap'); if(!wrap) return;
+  wrap.innerHTML='';
+  const mkFam=(id,title,list)=>{
+    const b=document.createElement('div'); b.className='fam'; b.id=id;
+    const h=document.createElement('div'); h.className='fam-name'; h.textContent=title; b.appendChild(h);
+    const g=document.createElement('div'); g.className='grid'; list.forEach(t=>g.appendChild(makeCard(t,false))); b.appendChild(g);
+    return b;
+  };
+  wrap.appendChild(mkFam('fam-modes-base','Base · C major white keys', MODES.filter(m=>m.base)));
+  wrap.appendChild(mkFam('fam-modes-list','Modes · bright → dark', MODES.filter(m=>!m.base)));
+}
 function famBlock(f, isC, panel){
   const b=document.createElement(panel?'fieldset':'div'); b.className=panel?'panel':'fam'; b.id='fam-'+slug(f.family);
   const h=document.createElement(panel?'legend':'div'); h.className=panel?'panel-hd':'fam-name'; h.textContent=f.family; b.appendChild(h);
@@ -1878,6 +1960,7 @@ function renderNav(){
     +'<a class="sub" href="#sec-strings">Transpose</a>'
     +'<a class="sub" href="#sec-chords">Chords</a>'
     +'<a class="sub" href="#sec-user">User</a>'
+    +'<a class="sub" href="#sec-modes">Modes</a>'
     + sections                                       // Lap Steel
     +'<a class="sub" href="#sec-steel">Pedal Steel</a>'
     +'<a class="group" href="#sec-pedals">'+I.pedals+'Bends</a>'
@@ -1933,9 +2016,9 @@ function applyInst(inst, start){
   const N=inst.pitches.length; start=Math.max(0, Math.min(6-N, start));
   const res=computeCluster(inst.pitches, start);
   if(!res.ok){ toast(inst.name+' can’t fit those strings', true); return; }
-  active=inst.name; activeChord=null; lastVoiced=null; baseOffsets=[...res.offsets]; held.clear(); ethnicInst=inst; ethnicStart=start; clearSteel();
+  active=inst.name; activeChord=null; lastVoiced=null; baseOffsets=[...res.offsets]; held.clear(); ethnicInst=inst; ethnicStart=start; clearSteel(); activeModeTuning=null;
   const n=document.getElementById('nowName'); n.textContent=inst.name; n.classList.remove('std');
-  renderStrings(res.offsets); renderGrid(); renderPedals(); renderEthnic(); renderSteel(); renderChords();
+  renderStrings(res.offsets); renderGrid(); renderModes(); renderPedals(); renderEthnic(); renderSteel(); renderChords();
   sendInstFx(); tuningSend(res.offsets);   // display always updates; push INST fx + MIDI when connected
   logHistory(inst.name, false);            // played-history hook — ethnic instruments (a tuning, not a chord)
 }
@@ -2027,9 +2110,9 @@ function applySteel(t, win){
   const res=computeCluster(t.midi.slice(WINDOWS[win].i0, WINDOWS[win].i0+6), 0);
   if(!res.ok){ toast(t.name+' — that window won’t fit', true); return; }
   active=t.name; activeChord=null; lastVoiced=null; baseOffsets=[...res.offsets]; held.clear();   // steel is not ethnic → sendInstFx() sends both off
-  ethnicInst=null; steelInst=t; steelWin=win; steelRoot=t.root; copedent=COPEDENTS[t.copedent]||COPEDENTS.generic;
+  ethnicInst=null; steelInst=t; steelWin=win; steelRoot=t.root; copedent=COPEDENTS[t.copedent]||COPEDENTS.generic; activeModeTuning=null;
   const n=document.getElementById('nowName'); n.textContent=t.name; n.classList.remove('std');
-  renderStrings(res.offsets); renderGrid(); renderEthnic(); renderSteel(); renderPedals(); renderChords();
+  renderStrings(res.offsets); renderGrid(); renderModes(); renderEthnic(); renderSteel(); renderPedals(); renderChords();
   sendInstFx(); tuningSend(res.offsets);   // display always updates; push INST fx (off) + MIDI when connected
   logHistory(t.name, false);               // played-history hook — pedal steel (a tuning, not a chord)
 }
@@ -2037,6 +2120,7 @@ function applySteel(t, win){
 function randomTuning(){
   const pool=[];
   BUILTIN.forEach(t=>{ if(t.name!=='Standard' && t.name!==active) pool.push({name:t.name, go:()=>apply(t)}); });
+  MODES.forEach(t=>{ if(t.name!==active) pool.push({name:t.name, go:()=>apply(t)}); });
   customs.forEach(t=>{ if(t.name!==active) pool.push({name:t.name, go:()=>apply(t)}); });
   ETHNIC.forEach(i=>{ if(i.name!==active) pool.push({name:i.name, go:()=>applyInst(i,0)}); });
   STEEL.forEach(t=>{ if(t.name!==active) pool.push({name:t.name, go:()=>applySteel(t,0)}); });
@@ -2558,9 +2642,10 @@ function notesOf(offsets){ return offsets.map((s,i)=>nameOf(STD_MIDI[i]+s).name)
 function apply(t){
   active=t.name; activeChord=t.chord||null; if(!t.chord) lastVoiced=null;   // clear Legato memory on any non-chord tuning (guarded: chord taps route through here with t.chord set)
   baseOffsets=[...t.offsets]; held.clear(); ethnicInst=null; clearSteel();   // not ethnic → sendInstFx() sends both off
+  activeModeTuning = t.modes ? t : null;   // Modes tuning → Bends section becomes the 7th-degree pedals (targets track this mode)
   if(t.bends&&t.bends.keys){ settings.keys={...DEFAULT_KEYS, ...t.bends.keys}; rebuildKeymap(); saveSettingsLS(); }   // user preset carries its own pedal key mapping
   const n=document.getElementById('nowName'); n.textContent=t.name; n.classList.toggle('std',t.name==='Standard');
-  renderStrings(t.offsets); renderGrid(); renderPedals(); renderEthnic(); renderSteel(); renderChords();
+  renderStrings(t.offsets); renderGrid(); renderModes(); renderPedals(); renderEthnic(); renderSteel(); renderChords();
   sendInstFx(); tuningSend(t.offsets);   // display always updates; push INST fx (off) + MIDI when connected (shows the existing error toast if not)
   logHistory(t.name, !!t.chord);         // played-history hook — tunings/chords/transposed chords/random tuning (chord flag drives the key prefix)
 }
@@ -2811,9 +2896,9 @@ document.getElementById('saveSettings').addEventListener('click',()=>{
 });
 
 function applyTest(v){
-  active=''; activeChord=null; lastVoiced=null; baseOffsets=[v,v,v,v,v,v]; held.clear(); ethnicInst=null; clearSteel();   // transpose is not ethnic → sendInstFx() sends both off
+  active=''; activeChord=null; lastVoiced=null; baseOffsets=[v,v,v,v,v,v]; held.clear(); ethnicInst=null; clearSteel(); activeModeTuning=null;   // transpose is not ethnic → sendInstFx() sends both off
   const n=document.getElementById('nowName'); n.textContent='TEST '+(v>0?'+'+v:''+v); n.classList.remove('std');
-  renderStrings([v,v,v,v,v,v]); renderGrid(); renderPedals(); renderEthnic(); renderSteel(); renderChords();
+  renderStrings([v,v,v,v,v,v]); renderGrid(); renderModes(); renderPedals(); renderEthnic(); renderSteel(); renderChords();
   sendInstFx(); tuningSend([v,v,v,v,v,v]);   // display always updates; push INST fx (off) + MIDI when connected
   logHistory('Transpose '+(v>0?'+'+v:''+v), false);  // played-history hook — transpose tool (not a chord)
 }
@@ -2947,6 +3032,7 @@ document.getElementById('tlCopy').addEventListener('click', ()=>{ copyHistText(f
 
 renderStrings([0,0,0,0,0,0]);
 renderGrid();
+renderModes();
 renderTestBtns();
 renderPedals();
 renderEthnic();
