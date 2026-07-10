@@ -1289,6 +1289,7 @@ const FAMILIES = [
     {name:'Joni Mitchell', notes:'E B E G# B E', offsets:[0,0,1,2,2,0], ref:'Joni Mitchell · “Big Yellow Taxi” (Open E)'},
     {name:'Both Sides', artist:'Joni Mitchell', notes:'D A D F# A D', offsets:[-2,-2,-1,0,0,-2], chords:['Dmaj7','G/B','A7','A7sus4'], comment:'Open D, no capo. Recording uses capo 4 (sounds in F# major); this is the no-capo base tuning.'},
     {name:'Pyramid Song', artist:'Radiohead', notes:'F# A# C# F# A# F#', offsets:[2,-1,-1,-1,1,2], chords:['F#','Gmaj7','A6','F#m','Eadd9','G'], comment:'Open F# major. Let the top F# ring as a pedal; barre strings 6-2 for Gmaj7 (fret 1) and A6 (fret 3).'},
+    {name:'Radiohead !', artist:'Radiohead', notes:'F A C E A C', offsets:[-4,-2,-3,-2,0,1], chords:['Fmaj7','Cmaj7','Dbmaj7','Eb6'], comment:'"Everything In Its Right Place" — a high C pedal held on top of every chord (F minor). Open strings = Fmaj7 with C on top; keep string 1 (C) open and ringing while Cmaj7, Dbmaj7, Eb6 are fretted underneath.'},
   ]},
 ];
 const BUILTIN = FAMILIES.flatMap(f=>f.tunings);
@@ -1384,6 +1385,7 @@ const TUNING_TIPS = {
   'Joni Mitchell': { desc:`Joni built her sound on personal open tunings, described by bass note plus fret offsets (her catalog uses 50+).`, song:`"Big Yellow Taxi" — Joni Mitchell` },
   'Both Sides':    { desc:`Joni's open-D base — a Dmaj7 rings on the open strings. On the record she capos 4 (sounding F# major); this is the no-capo tuning.`, song:`"Both Sides, Now" — Joni Mitchell` },
   'Pyramid Song':  { desc:`Open F# major — let the top F# ring as a pedal while barre shapes slide beneath for the song's swaying, ambiguous chords.`, song:`"Pyramid Song" — Radiohead` },
+  'Radiohead !':   { desc:`The "Everything In Its Right Place" voicing — a high C pedal tone held on top of every chord (the same pedal-note trick as Pyramid Song's F#). The open strings ring an Fmaj7 with C on top; that top C string stays open through the whole song while Cmaj7, D♭maj7 and E♭6 are fretted underneath (all in F minor).`, song:`"Everything In Its Right Place" — Radiohead` },
   // Ethnic instruments
   'Mandolin':      { desc:`Standard mandolin, tuned in fifths like a violin.`, song:`"Losing My Religion" — R.E.M. (Peter Buck)` },
   'Irish Bouzouki':{ desc:`The Greek bouzouki adapted for Celtic music — flat-backed, tuned a fifth lower — as a rhythm and countermelody engine.`, song:`Irish trad — Planxty (Andy Irvine & Dónal Lunny)` },
