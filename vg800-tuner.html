@@ -1289,7 +1289,7 @@ const FAMILIES = [
     {name:'Joni Mitchell', notes:'E B E G# B E', offsets:[0,0,1,2,2,0], ref:'Joni Mitchell · “Big Yellow Taxi” (Open E)'},
     {name:'Both Sides', artist:'Joni Mitchell', notes:'D A D F# A D', offsets:[-2,-2,-1,0,0,-2], chords:['Dmaj7','G/B','A7','A7sus4'], comment:'Open D, no capo. Recording uses capo 4 (sounds in F# major); this is the no-capo base tuning.'},
     {name:'Pyramid Song', artist:'Radiohead', notes:'F# A# C# F# A# F#', offsets:[2,-1,-1,-1,1,2], chords:['F#','Gmaj7','A6','F#m','Eadd9','G'], comment:'Open F# major. Let the top F# ring as a pedal; barre strings 6-2 for Gmaj7 (fret 1) and A6 (fret 3).'},
-    {name:'Radiohead !', artist:'Radiohead', notes:'F A C E A C', offsets:[-4,-2,-3,-2,0,1], chords:['Fmaj7','Cmaj7','Dbmaj7','Eb6'], comment:'"Everything In Its Right Place" — a high C pedal held on top of every chord (F minor). Open strings = Fmaj7 with C on top; keep string 1 (C) open and ringing while Cmaj7, Dbmaj7, Eb6 are fretted underneath.'},
+    {name:'Radiohead', artist:'Radiohead', notes:'C G C G G# C', offsets:[-4,-3,0,-2,-2,-4], chords:['Fmaj7','Cmaj7','Dbmaj7','Eb6'], comment:'"Everything In Its Right Place" voicing — open strings C G C G G# C with a C pedal on the top string. Pedal A pushes the neutral G string (3) up 5 semitones (a fourth) to a second C.', pedals:[{id:'A', name:'Pedal A', group:'foot', key:'a', string:2, semis:5}], pedalInfo:'<b>Pedal A</b> raises the neutral G string (string 3) up 5 semitones — G → C — over this <b>Everything In Its Right Place</b> voicing.'},
   ]},
 ];
 const BUILTIN = FAMILIES.flatMap(f=>f.tunings);
@@ -1323,6 +1323,8 @@ let curOffsets=[0,0,0,0,0,0], glideTimer=null;
 let baseOffsets=[0,0,0,0,0,0], held=new Set(), curInfo=null, pedalStateCache={}, ctrlStateCache={};
 let ethnicInst=null, ethnicStart=0;
 let activeModeTuning=null;   // the active Modes-section tuning (drives the 7th-degree Bends pedals), else null
+let activeBendPedals=null;   // a tuning's own custom Bends pedals (fixed per-string bends declared on the tuning), else null
+let activeBendInfo='';       // caption for that tuning's custom pedals
 const ETHNIC=[
   {name:'Mandolin', pitches:[55,62,69,76], notes:'G D A E', ref:'Traditional Irish / Bluegrass', courses:true},
   {name:'Irish Bouzouki', pitches:[43,50,57,62], notes:'G D A D', ref:'Irish Traditional Music', courses:true},
@@ -1385,7 +1387,7 @@ const TUNING_TIPS = {
   'Joni Mitchell': { desc:`Joni built her sound on personal open tunings, described by bass note plus fret offsets (her catalog uses 50+).`, song:`"Big Yellow Taxi" — Joni Mitchell` },
   'Both Sides':    { desc:`Joni's open-D base — a Dmaj7 rings on the open strings. On the record she capos 4 (sounding F# major); this is the no-capo tuning.`, song:`"Both Sides, Now" — Joni Mitchell` },
   'Pyramid Song':  { desc:`Open F# major — let the top F# ring as a pedal while barre shapes slide beneath for the song's swaying, ambiguous chords.`, song:`"Pyramid Song" — Radiohead` },
-  'Radiohead !':   { desc:`The "Everything In Its Right Place" voicing — a high C pedal tone held on top of every chord (the same pedal-note trick as Pyramid Song's F#). The open strings ring an Fmaj7 with C on top; that top C string stays open through the whole song while Cmaj7, D♭maj7 and E♭6 are fretted underneath (all in F minor).`, song:`"Everything In Its Right Place" — Radiohead` },
+  'Radiohead':     { desc:`An "Everything In Its Right Place" voicing built around a C pedal on the top string (the same pedal-note trick as Pyramid Song's F#). Open strings ring C G C G G# C; hold Pedal A to push the neutral G string up a fourth to C while the top C keeps ringing.`, song:`"Everything In Its Right Place" — Radiohead` },
   // Ethnic instruments
   'Mandolin':      { desc:`Standard mandolin, tuned in fifths like a violin.`, song:`"Losing My Religion" — R.E.M. (Peter Buck)` },
   'Irish Bouzouki':{ desc:`The Greek bouzouki adapted for Celtic music — flat-backed, tuned a fifth lower — as a rhythm and countermelody engine.`, song:`Irish trad — Planxty (Andy Irvine & Dónal Lunny)` },
@@ -1610,7 +1612,8 @@ const MODE_BEND={ controls:[
   {id:'MB', name:'Pedal B', group:'foot', key:'s', string:5, seventhDir:-1},   // low E  → 7th below
 ]};
 function modesBendActive(){ return !!activeModeTuning; }              // a Modes-section tuning is loaded
-function pedalControls(){ return modesBendActive() ? MODE_BEND.controls : (scaleBendActive() ? SCALE_BEND.controls : copedent.controls); }
+function customBendActive(){ return !!(activeBendPedals && activeBendPedals.length); }   // the tuning declares its own pedals
+function pedalControls(){ return customBendActive() ? activeBendPedals : (modesBendActive() ? MODE_BEND.controls : (scaleBendActive() ? SCALE_BEND.controls : copedent.controls)); }
 // Pedal steel tunings — 10 strings, midi low→high (index 0 = string 10 lowest, 9 = string 1 highest).
 const STEEL=[
   {id:'e9', name:'E9 Nashville', sub:'country · session sound', root:4,  copedent:'e9', midi:[47,50,52,54,56,59,64,68,75,78], spell:'B D E F# G# B E G# D# F#'},
@@ -1626,7 +1629,7 @@ const WINDOWS=[   // contiguous 6-of-10; i0 = lowest midi index of the window
 ];
 let copedent=COPEDENTS.generic, steelInst=null, steelWin=0, steelRoot=null;
 let KEYMAP={}, bindingCtrl=null;
-function ctrlById(id){ return copedent.controls.find(c=>c.id===id) || SCALE_BEND.controls.find(c=>c.id===id) || MODE_BEND.controls.find(c=>c.id===id); }
+function ctrlById(id){ return (activeBendPedals&&activeBendPedals.find(c=>c.id===id)) || copedent.controls.find(c=>c.id===id) || SCALE_BEND.controls.find(c=>c.id===id) || MODE_BEND.controls.find(c=>c.id===id) || null; }   // a tuning's own pedals win over the copedent on id clashes (e.g. 'A')
 function keyFor(id){ const c=ctrlById(id), ov=settings.keys[id]; return (ov!==undefined?ov:(c?c.key:'')); }
 function rebuildKeymap(){ KEYMAP={}; pedalControls().forEach(c=>{ const k=keyFor(c.id); if(k) KEYMAP[k]=c.id; }); }   // in Chords key mode a–h drive the scale-bend string-pedals; otherwise the copedent
 rebuildKeymap();
@@ -1662,6 +1665,10 @@ function controlState(ctrl, info, base){
     if(d>12) return {avail:false, why:'no 7th', moves:[]};
     const to=m+dir*d, bend=dir*d, off=base[i]+bend, ok=off>=-12&&off<=12;
     return {avail:ok, why: ok?'':'out of range', moves:[{i, from:m, to, off, bend, ok}]};
+  }
+  if(ctrl.semis!=null && ctrl.string!=null){                    // tuning-declared fixed bend: move this string by a set number of semitones
+    const i=ctrl.string, m=STD_MIDI[i]+base[i], off=base[i]+ctrl.semis, ok=off>=-12&&off<=12;
+    return {avail:ok, why: ok?'':'out of range', moves:[{i, from:m, to:m+ctrl.semis, off, bend:ctrl.semis, ok}]};
   }
   if(ctrl.string!=null){                                        // scale-tone bend: raise this string to the next scale tone up (ignores the chord root)
     const S=scalePcSet(); if(!S) return {avail:false, why:'no scale', moves:[]};
@@ -1702,6 +1709,17 @@ function pedalBtnHTML(ctrl, label, sub, st){
     const mv=st.moves&&st.moves[0], dn=c.seventhDir<0?' dn':'';
     const body = dis ? `<span class="mv off">${st.why||'n/a'}</span>` : `<span class="mv"><span class="to${dn}">${nameOf(mv.from).name} → ${nameOf(mv.to).name}</span></span>`;
     const subtxt = (dis||!mv) ? '' : `7th · ${Math.abs(mv.bend)} st ${mv.bend<0?'↓':'↑'}`;
+    return `<button class="pedal sb${dis?' disabled':''}" data-ctrl="${ctrl}"${dis?' aria-disabled="true"':''}>
+      <span class="pedal-name">${label}${key?`<span class="pedal-key">${key}</span>`:''}</span>
+      <span class="pedal-do">${subtxt}</span>
+      <span class="pedal-moves">${body}</span>
+      <span class="pedal-badge sb-dot" style="background:${STR_COLORS[c.string]}"></span>
+    </button>`;
+  }
+  if(c.semis!=null && c.string!=null){                          // tuning-declared fixed string bend — string-coloured dot, directional note→note preview
+    const mv=st.moves&&st.moves[0], dn=c.semis<0?' dn':'';
+    const body = dis ? `<span class="mv off">${st.why||'n/a'}</span>` : `<span class="mv"><span class="to${dn}">${nameOf(mv.from).name} → ${nameOf(mv.to).name}</span></span>`;
+    const subtxt = (dis||!mv) ? '' : `${Math.abs(c.semis)} st ${c.semis<0?'↓':'↑'}`;
     return `<button class="pedal sb${dis?' disabled':''}" data-ctrl="${ctrl}"${dis?' aria-disabled="true"':''}>
       <span class="pedal-name">${label}${key?`<span class="pedal-key">${key}</span>`:''}</span>
       <span class="pedal-do">${subtxt}</span>
@@ -1761,14 +1779,22 @@ function renderKeymap(){
 }
 function renderPedals(){
   const wrap=document.getElementById('pedalWrap'); if(!wrap) return;
-  const modesMode=modesBendActive(), sbMode=!modesMode && scaleBendActive(), controls=pedalControls();
+  const customMode=customBendActive(), modesMode=!customMode && modesBendActive(), sbMode=!customMode && !modesMode && scaleBendActive(), controls=pedalControls();
   curInfo=chordInfo(baseOffsets, active); if(steelRoot!=null) curInfo.root=steelRoot;   // pedal-steel forces the real root
   rebuildKeymap();
   ctrlStateCache={};
   controls.forEach(c=>{ ctrlStateCache[c.id]=controlState(c,curInfo,baseOffsets); });
   let html=`<div class="sec-tools"><button class="map-btn" data-mapjump="bends" title="Configure keyboard shortcuts">${KBD_ICO}Map</button></div>`;
   if(!sbMode) html+=`<div class="latch-row"><div class="seg latch-seg" id="latchSeg" title="Latch — tap a pedal on/off instead of holding it"><button class="${settings.latch?'on':''}" data-latch="1">Latch</button><button class="${!settings.latch?'on':''}" data-latch="0">Off</button></div></div>`;
-  if(modesMode){                                                // Modes section — two foot pedals bend to the mode's 7th from opposite ends
+  if(customMode){                                               // Tuning declares its own pedals (fixed per-string bends)
+    const grp=g=> controls.filter(c=>c.group===g).map(c=>pedalBtnHTML(c.id,c.name,'',ctrlStateCache[c.id])).join('');
+    const foot=grp('foot'), knee=grp('knee'), combo=grp('combo');
+    html+=`<div class="pedal-info">${activeBendInfo||'This tuning\'s own pedals — hold to bend, release to return.'}</div>`;
+    html+=`<p class="bend-cap"><b>Latch</b> keeps a pedal engaged after one tap — sustain the bend hands-free. Off = press &amp; hold.</p>`;
+    if(foot)  html+=`<div class="fam-name">Foot Pedals</div><div class="pedals">${foot}</div>`;
+    if(knee)  html+=`<div class="fam-name">Knee Levers</div><div class="pedals">${knee}</div>`;
+    if(combo) html+=`<div class="fam-name">Combos</div><div class="pedals">${combo}</div>`;
+  } else if(modesMode){                                         // Modes section — two foot pedals bend to the mode's 7th from opposite ends
     const mn=activeModeTuning.name, sev=NOTE[activeModeTuning.seventh], kind=activeModeTuning.seventh===11?'major 7th':'♭7';
     html+=`<div class="pedal-info">Bends to the 7th of <b>${mn}</b> — the <b>${sev}</b> (${kind}). <b>Pedal A</b> lifts the high E up to it; <b>Pedal B</b> drops the low E down to it. Retargets with each mode.</div>`;
     html+=`<p class="bend-cap"><b>Latch</b> keeps a pedal engaged after one tap — sustain the bend hands-free. Off = press &amp; hold.</p>`;
@@ -2026,7 +2052,7 @@ function applyInst(inst, start){
   const N=inst.pitches.length; start=Math.max(0, Math.min(6-N, start));
   const res=computeCluster(inst.pitches, start);
   if(!res.ok){ toast(inst.name+' can’t fit those strings', true); return; }
-  active=inst.name; activeChord=null; lastVoiced=null; baseOffsets=[...res.offsets]; held.clear(); ethnicInst=inst; ethnicStart=start; clearSteel(); activeModeTuning=null;
+  active=inst.name; activeChord=null; lastVoiced=null; baseOffsets=[...res.offsets]; held.clear(); ethnicInst=inst; ethnicStart=start; clearSteel(); activeModeTuning=null; activeBendPedals=null; activeBendInfo="";
   const n=document.getElementById('nowName'); n.textContent=inst.name; n.classList.remove('std');
   renderStrings(res.offsets); renderGrid(); renderModes(); renderPedals(); renderEthnic(); renderSteel(); renderChords();
   sendInstFx(); tuningSend(res.offsets);   // display always updates; push INST fx + MIDI when connected
@@ -2120,7 +2146,7 @@ function applySteel(t, win){
   const res=computeCluster(t.midi.slice(WINDOWS[win].i0, WINDOWS[win].i0+6), 0);
   if(!res.ok){ toast(t.name+' — that window won’t fit', true); return; }
   active=t.name; activeChord=null; lastVoiced=null; baseOffsets=[...res.offsets]; held.clear();   // steel is not ethnic → sendInstFx() sends both off
-  ethnicInst=null; steelInst=t; steelWin=win; steelRoot=t.root; copedent=COPEDENTS[t.copedent]||COPEDENTS.generic; activeModeTuning=null;
+  ethnicInst=null; steelInst=t; steelWin=win; steelRoot=t.root; copedent=COPEDENTS[t.copedent]||COPEDENTS.generic; activeModeTuning=null; activeBendPedals=null; activeBendInfo="";
   const n=document.getElementById('nowName'); n.textContent=t.name; n.classList.remove('std');
   renderStrings(res.offsets); renderGrid(); renderModes(); renderEthnic(); renderSteel(); renderPedals(); renderChords();
   sendInstFx(); tuningSend(res.offsets);   // display always updates; push INST fx (off) + MIDI when connected
@@ -2653,6 +2679,7 @@ function apply(t){
   active=t.name; activeChord=t.chord||null; if(!t.chord) lastVoiced=null;   // clear Legato memory on any non-chord tuning (guarded: chord taps route through here with t.chord set)
   baseOffsets=[...t.offsets]; held.clear(); ethnicInst=null; clearSteel();   // not ethnic → sendInstFx() sends both off
   activeModeTuning = t.modes ? t : null;   // Modes tuning → Bends section becomes the 7th-degree pedals (targets track this mode)
+  activeBendPedals = t.pedals || null; activeBendInfo = t.pedalInfo || '';   // tuning-declared custom pedals (else the copedent)
   if(t.bends&&t.bends.keys){ settings.keys={...DEFAULT_KEYS, ...t.bends.keys}; rebuildKeymap(); saveSettingsLS(); }   // user preset carries its own pedal key mapping
   const n=document.getElementById('nowName'); n.textContent=t.name; n.classList.toggle('std',t.name==='Standard');
   renderStrings(t.offsets); renderGrid(); renderModes(); renderPedals(); renderEthnic(); renderSteel(); renderChords();
@@ -2906,7 +2933,7 @@ document.getElementById('saveSettings').addEventListener('click',()=>{
 });
 
 function applyTest(v){
-  active=''; activeChord=null; lastVoiced=null; baseOffsets=[v,v,v,v,v,v]; held.clear(); ethnicInst=null; clearSteel(); activeModeTuning=null;   // transpose is not ethnic → sendInstFx() sends both off
+  active=''; activeChord=null; lastVoiced=null; baseOffsets=[v,v,v,v,v,v]; held.clear(); ethnicInst=null; clearSteel(); activeModeTuning=null; activeBendPedals=null; activeBendInfo="";   // transpose is not ethnic → sendInstFx() sends both off
   const n=document.getElementById('nowName'); n.textContent='TEST '+(v>0?'+'+v:''+v); n.classList.remove('std');
   renderStrings([v,v,v,v,v,v]); renderGrid(); renderModes(); renderPedals(); renderEthnic(); renderSteel(); renderChords();
   sendInstFx(); tuningSend([v,v,v,v,v,v]);   // display always updates; push INST fx (off) + MIDI when connected

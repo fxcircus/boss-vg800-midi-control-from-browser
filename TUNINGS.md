@@ -75,7 +75,7 @@ Every tuning built into the app, with its open-string notes (low→high) and the
 | **Joni Mitchell** | E B E G# B E | `[0, 0, +1, +2, +2, 0]` | Joni Mitchell · “Big Yellow Taxi” (Open E) |
 | **Both Sides** | D A D F# A D | `[-2, -2, -1, 0, 0, -2]` | Joni Mitchell — Open D, no capo. Recording uses capo 4 (sounds in F# major); this is the no-capo base tuning. |
 | **Pyramid Song** | F# A# C# F# A# F# | `[+2, -1, -1, -1, +1, +2]` | Radiohead — Open F# major. Let the top F# ring as a pedal; barre strings 6-2 for Gmaj7 (fret 1) and A6 (fret 3). |
-| **Radiohead !** | F A C E A C | `[-4, -2, -3, -2, 0, +1]` | Radiohead — "Everything In Its Right Place" — a high C pedal held on top of every chord (F minor). Open strings = Fmaj7 with C on top; keep string 1 (C) open and ringing while Cmaj7, Dbmaj7, Eb6 are fretted underneath. |
+| **Radiohead** | C G C G G# C | `[-4, -3, 0, -2, -2, -4]` | Radiohead — "Everything In Its Right Place" voicing — open strings C G C G G# C with a C pedal on the top string. Pedal A pushes the neutral G string (3) up 5 semitones (a fourth) to a second C. |
 
 ## Modes
 
