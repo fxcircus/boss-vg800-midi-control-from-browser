@@ -285,6 +285,25 @@
   .pedal-badge.sb-dot { width: 13px; height: 13px; right: 14px; bottom: 13px; border-radius: 50%; opacity: 0.95; box-shadow: 0 0 8px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.25); }
   .pedal.sb.on .sb-dot { opacity: 1; box-shadow: 0 0 12px currentColor, inset 0 0 0 1px rgba(255,255,255,0.4); }
   .pedal.sb .pedal-moves .to { color: var(--amber); font-weight: 700; letter-spacing: 0.5px; }
+  /* Per-String mode — each pedal carries an inline semitone stepper (−/＋) that adjusts without engaging the pedal */
+  .pedal.ps { padding-bottom: 40px; }
+  .ps-stepper { position: absolute; left: 12px; right: 12px; bottom: 9px; display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+  .ps-step { width: 26px; height: 24px; flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 15px; line-height: 1; background: var(--ink); color: var(--bone); border: 1px solid var(--edge); border-radius: 6px; cursor: pointer; touch-action: manipulation; transition: border-color .12s, background .12s, color .12s; }
+  .ps-step:hover:not(:disabled) { border-color: var(--brass-deep); background: var(--felt); color: var(--brass); }
+  .ps-step:disabled { opacity: 0.32; cursor: not-allowed; }
+  .ps-val { flex: 1 1 auto; text-align: center; font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--amber); letter-spacing: 0.5px; }
+  .pedal.ps.disabled .ps-val { color: var(--bone-faint); }
+  /* Per-String presets bar — recall chips + Save, reusing the app's small-button voice */
+  .ps-presets { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; margin: 2px auto 12px; max-width: 560px; }
+  .ps-presets-lbl { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--bone-faint); margin-right: 2px; }
+  .ps-none { font-family: var(--mono); font-size: 11px; color: var(--bone-faint); font-style: italic; }
+  .ps-preset { display: inline-flex; align-items: stretch; border: 1px solid var(--edge); border-radius: 7px; overflow: hidden; background: var(--wood); }
+  .ps-preset-load { padding: 5px 10px; font-family: var(--cond); font-size: 12px; font-weight: 600; letter-spacing: 0.3px; background: none; border: none; color: var(--bone); cursor: pointer; transition: background .12s, color .12s; }
+  .ps-preset-load:hover { background: var(--felt); color: var(--brass); }
+  .ps-preset-del { padding: 0 7px; font-size: 13px; line-height: 1; background: none; border: none; border-left: 1px solid var(--edge); color: var(--bone-faint); cursor: pointer; }
+  .ps-preset-del:hover { color: var(--err); background: var(--felt); }
+  .ps-save { padding: 5px 12px; font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.3px; background: var(--wood); border: 1px solid var(--brass-deep); border-radius: 7px; color: var(--brass); cursor: pointer; transition: background .12s; }
+  .ps-save:hover { background: var(--felt); }
   /* Press animation: foot plate tilts down; knee lever swings left (LKL) / right (LKR) about its pivot */
   .pedal-badge .ap-plate, .pedal-badge .ap-lever { transform-box: view-box; transition: transform .2s cubic-bezier(.34,1.3,.5,1); }
   .pedal-badge .ap-plate { transform-origin: 9px 30px; }
@@ -1316,6 +1335,7 @@ const MODES=[
 let settings = loadSettings();
 try{ if(!localStorage.getItem('vg800_pgShort')){ settings.panMs=500; localStorage.setItem('vg800_pgShort','1'); localStorage.setItem('vg800_settings', JSON.stringify(settings)); } }catch(e){}   // Pan glide defaults to Short (one-time reset for existing users)
 let customs = loadCustom();
+let strPresets = loadStrPresets();
 let edOff = [0,0,0,0,0,0];
 let active = 'Standard', activeChord = null, lastVoiced = null;   // lastVoiced = previous voiced-cluster pitches, for Legato voice leading (not persisted)
 let midiAccess=null, midiOut=null, lastConnMsg=null;
@@ -1435,10 +1455,13 @@ const PANMODES=[
 const STR_COLORS=['#ef5350','#f2a33d','#c6d43f','#4cc178','#4f9dea','#a563d4'];
 let dispOffsets=[0,0,0,0,0,0];   // the pitch offsets currently shown (base tuning + engaged pedal bends)
 
-function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; if(typeof s.fxDoubler!=='boolean') s.fxDoubler=true; if(typeof s.fxOctave!=='boolean') s.fxOctave=true; if(typeof s.swellMs!=='number') s.swellMs=0; if(typeof s.swellLatch!=='boolean') s.swellLatch=true; if(typeof s.chordExt!=='string' || !['add9','6','m6','sus2','sus4','dim7','m7b5'].includes(s.chordExt)) s.chordExt='add9'; if(typeof s.keyRoot!=='string') s.keyRoot='C'; if(typeof s.keyScale!=='string') s.keyScale='off'; if(s.voicing!=='voiced') s.voicing='spread'; if(s.voiceSize!==4) s.voiceSize=3; if(typeof s.voiceStart!=='number'||s.voiceStart<0||s.voiceStart>6-s.voiceSize) s.voiceStart=0; if(s.voiceFeel!=='grip') s.voiceFeel='legato'; if(!s.chordLayers||typeof s.chordLayers!=='object') s.chordLayers={sevenths:false,borrowed:false,resolutions:false}; else for(const k of ['sevenths','borrowed','resolutions']) if(typeof s.chordLayers[k]!=='boolean') s.chordLayers[k]=false; if(!s.chordKeys||typeof s.chordKeys!=='object') s.chordKeys={...CHORD_KEYS_DEFAULT}; else for(const k in CHORD_KEYS_DEFAULT) if(typeof s.chordKeys[k]!=='string') s.chordKeys[k]=CHORD_KEYS_DEFAULT[k]; if(!s.hist||typeof s.hist!=='object') s.hist={...HIST_DEFAULT}; else { if(s.hist.mode!=='manual') s.hist.mode='rolling'; if(![4,8,16,32].includes(s.hist.n)) s.hist.n=8; if(typeof s.hist.timeline!=='boolean') s.hist.timeline=false; if(typeof s.hist.hidden!=='boolean') s.hist.hidden=false; } if(!s.ap||typeof s.ap!=='object'){ s.ap={...AP_DEFAULTS}; if(typeof s.autoPanRate==='number') s.ap.rate=s.autoPanRate; } else { for(const k in AP_DEFAULTS) if(!(k in s.ap)) s.ap[k]=AP_DEFAULTS[k]; if(s.ap.char==='none') s.ap.char='rotate'; if(!['1 bar','1 bar T','1/2 bar','1/2 bar T','1/4','1/4 T'].includes(s.ap.div)) s.ap.div='1/2 bar'; if(s.ap.bpm>170) s.ap.bpm=170; } return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, fxDoubler:true, fxOctave:true, swellMs:0, swellLatch:true, chordExt:'add9', keyRoot:'C', keyScale:'off', voicing:'spread', voiceSize:3, voiceStart:0, voiceFeel:'legato', chordLayers:{sevenths:false,borrowed:false,resolutions:false}, chordKeys:{...CHORD_KEYS_DEFAULT}, hist:{...HIST_DEFAULT}, ap:{...AP_DEFAULTS}, ...AB_DEFAULTS}; }
+function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; if(typeof s.fxDoubler!=='boolean') s.fxDoubler=true; if(typeof s.fxOctave!=='boolean') s.fxOctave=true; if(typeof s.swellMs!=='number') s.swellMs=0; if(typeof s.swellLatch!=='boolean') s.swellLatch=true; if(typeof s.chordExt!=='string' || !['add9','6','m6','sus2','sus4','dim7','m7b5'].includes(s.chordExt)) s.chordExt='add9'; if(typeof s.keyRoot!=='string') s.keyRoot='C'; if(typeof s.keyScale!=='string') s.keyScale='off'; if(s.voicing!=='voiced') s.voicing='spread'; if(s.voiceSize!==4) s.voiceSize=3; if(typeof s.voiceStart!=='number'||s.voiceStart<0||s.voiceStart>6-s.voiceSize) s.voiceStart=0; if(s.voiceFeel!=='grip') s.voiceFeel='legato'; if(!s.chordLayers||typeof s.chordLayers!=='object') s.chordLayers={sevenths:false,borrowed:false,resolutions:false}; else for(const k of ['sevenths','borrowed','resolutions']) if(typeof s.chordLayers[k]!=='boolean') s.chordLayers[k]=false; if(!s.chordKeys||typeof s.chordKeys!=='object') s.chordKeys={...CHORD_KEYS_DEFAULT}; else for(const k in CHORD_KEYS_DEFAULT) if(typeof s.chordKeys[k]!=='string') s.chordKeys[k]=CHORD_KEYS_DEFAULT[k]; if(!s.hist||typeof s.hist!=='object') s.hist={...HIST_DEFAULT}; else { if(s.hist.mode!=='manual') s.hist.mode='rolling'; if(![4,8,16,32].includes(s.hist.n)) s.hist.n=8; if(typeof s.hist.timeline!=='boolean') s.hist.timeline=false; if(typeof s.hist.hidden!=='boolean') s.hist.hidden=false; } if(!s.ap||typeof s.ap!=='object'){ s.ap={...AP_DEFAULTS}; if(typeof s.autoPanRate==='number') s.ap.rate=s.autoPanRate; } else { for(const k in AP_DEFAULTS) if(!(k in s.ap)) s.ap[k]=AP_DEFAULTS[k]; if(s.ap.char==='none') s.ap.char='rotate'; if(!['1 bar','1 bar T','1/2 bar','1/2 bar T','1/4','1/4 T'].includes(s.ap.div)) s.ap.div='1/2 bar'; if(s.ap.bpm>170) s.ap.bpm=170; } if(typeof s.perStringOn!=='boolean') s.perStringOn=false; if(!Array.isArray(s.stringBend)||s.stringBend.length!==6) s.stringBend=[0,0,0,0,0,0]; else s.stringBend=s.stringBend.map(x=>Math.max(-12,Math.min(12,Math.round(Number(x)||0)))); return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, fxDoubler:true, fxOctave:true, swellMs:0, swellLatch:true, chordExt:'add9', keyRoot:'C', keyScale:'off', voicing:'spread', voiceSize:3, voiceStart:0, voiceFeel:'legato', chordLayers:{sevenths:false,borrowed:false,resolutions:false}, chordKeys:{...CHORD_KEYS_DEFAULT}, hist:{...HIST_DEFAULT}, ap:{...AP_DEFAULTS}, perStringOn:false, stringBend:[0,0,0,0,0,0], ...AB_DEFAULTS}; }
 function saveSettingsLS(){ localStorage.setItem('vg800_settings', JSON.stringify(settings)); }
 function loadCustom(){ try{ return JSON.parse(localStorage.getItem('vg800_custom'))||[]; }catch(e){ return []; } }
 function saveCustomLS(){ localStorage.setItem('vg800_custom', JSON.stringify(customs)); }
+// Per-String bend presets — named snapshots of the six per-string semitone amounts (tuning-independent). Own localStorage key.
+function loadStrPresets(){ try{ const a=JSON.parse(localStorage.getItem('vg800_strpresets')); return Array.isArray(a)?a.filter(p=>p&&typeof p.name==='string'&&Array.isArray(p.amounts)&&p.amounts.length===6).map(p=>({name:p.name.slice(0,24), amounts:p.amounts.map(x=>Math.max(-12,Math.min(12,Math.round(Number(x)||0))))})):[]; }catch(e){ return []; } }
+function saveStrPresetsLS(){ localStorage.setItem('vg800_strpresets', JSON.stringify(strPresets)); }
 
 async function initMIDI(){
   if(!navigator.requestMIDIAccess){ setLamp(false,'WebMIDI needs Chrome'); return; }
@@ -1613,7 +1636,27 @@ const MODE_BEND={ controls:[
 ]};
 function modesBendActive(){ return !!activeModeTuning; }              // a Modes-section tuning is loaded
 function customBendActive(){ return !!(activeBendPedals && activeBendPedals.length); }   // the tuning declares its own pedals
-function pedalControls(){ return customBendActive() ? activeBendPedals : (modesBendActive() ? MODE_BEND.controls : (scaleBendActive() ? SCALE_BEND.controls : copedent.controls)); }
+// Per-String manual bends — a user-toggled mode that replaces the copedent: six pedals, each bending ONE string by a
+// saved semitone amount. Built fresh each render so the amount tracks settings.stringBend; keys a–h (DEFAULT_KEYS order).
+const PS_KEYS=['a','s','d','f','g','h'];
+function perStringControls(){ return [0,1,2,3,4,5].map(i=>({id:'PS'+(i+1), name:'String '+SLBL[i], group:'string', string:i, semis:settings.stringBend[i]|0, key:PS_KEYS[i], perString:true})); }
+function perStringActive(){ return !!settings.perStringOn && !customBendActive() && !modesBendActive() && !scaleBendActive(); }   // replaces only the copedent
+function pedalControls(){ return customBendActive() ? activeBendPedals : (modesBendActive() ? MODE_BEND.controls : (scaleBendActive() ? SCALE_BEND.controls : (perStringActive() ? perStringControls() : copedent.controls))); }
+function psResend(){ if(!held.size) return; const bends=bendsFromEngaged(); const eff=baseOffsets.map((o,i)=>o+bends[i]); if(midiOut) send(eff); renderStrings(eff); }   // push a live change to any held pedal
+function adjustStringBend(s, d){   // step one string's amount, clamped so the amount stays within ±12 AND base+amount stays within one octave
+  const lo=Math.max(-12, -12-baseOffsets[s]), hi=Math.min(12, 12-baseOffsets[s]);
+  const v=Math.max(lo, Math.min(hi, (settings.stringBend[s]|0)+d));
+  if(v===(settings.stringBend[s]|0)) return;
+  settings.stringBend[s]=v; saveSettingsLS(); renderPedals(); psResend();
+}
+function savePerStringPreset(){
+  const nm=(prompt('Name this per-string preset:')||'').trim().slice(0,24); if(!nm) return;
+  const ex=strPresets.findIndex(p=>p.name===nm), rec={name:nm, amounts:[...settings.stringBend]};
+  if(ex>=0) strPresets[ex]=rec; else strPresets.push(rec);
+  saveStrPresetsLS(); renderPedals(); toast('Saved "'+nm+'"');
+}
+function loadPerStringPreset(i){ const p=strPresets[i]; if(!p) return; settings.stringBend=p.amounts.map(x=>Math.max(-12,Math.min(12,x|0))); saveSettingsLS(); renderPedals(); psResend(); toast('“'+p.name+'”'); }
+function delPerStringPreset(i){ const p=strPresets[i]; if(!p) return; if(!confirm('Delete preset “'+p.name+'”?')) return; strPresets.splice(i,1); saveStrPresetsLS(); renderPedals(); }
 // Pedal steel tunings — 10 strings, midi low→high (index 0 = string 10 lowest, 9 = string 1 highest).
 const STEEL=[
   {id:'e9', name:'E9 Nashville', sub:'country · session sound', root:4,  copedent:'e9', midi:[47,50,52,54,56,59,64,68,75,78], spell:'B D E F# G# B E G# D# F#'},
@@ -1629,7 +1672,7 @@ const WINDOWS=[   // contiguous 6-of-10; i0 = lowest midi index of the window
 ];
 let copedent=COPEDENTS.generic, steelInst=null, steelWin=0, steelRoot=null;
 let KEYMAP={}, bindingCtrl=null;
-function ctrlById(id){ return (activeBendPedals&&activeBendPedals.find(c=>c.id===id)) || copedent.controls.find(c=>c.id===id) || SCALE_BEND.controls.find(c=>c.id===id) || MODE_BEND.controls.find(c=>c.id===id) || null; }   // a tuning's own pedals win over the copedent on id clashes (e.g. 'A')
+function ctrlById(id){ return (activeBendPedals&&activeBendPedals.find(c=>c.id===id)) || (perStringActive()&&perStringControls().find(c=>c.id===id)) || copedent.controls.find(c=>c.id===id) || SCALE_BEND.controls.find(c=>c.id===id) || MODE_BEND.controls.find(c=>c.id===id) || null; }   // a tuning's own pedals win over the copedent on id clashes (e.g. 'A')
 function keyFor(id){ const c=ctrlById(id), ov=settings.keys[id]; return (ov!==undefined?ov:(c?c.key:'')); }
 function rebuildKeymap(){ KEYMAP={}; pedalControls().forEach(c=>{ const k=keyFor(c.id); if(k) KEYMAP[k]=c.id; }); }   // in Chords key mode a–h drive the scale-bend string-pedals; otherwise the copedent
 rebuildKeymap();
@@ -1716,6 +1759,26 @@ function pedalBtnHTML(ctrl, label, sub, st){
       <span class="pedal-badge sb-dot" style="background:${STR_COLORS[c.string]}"></span>
     </button>`;
   }
+  if(c.perString){                                              // Per-String mode — string-dot pedal with an inline −/＋ semitone stepper
+    const mv=st.moves&&st.moves[0], amt=c.semis|0, dn=amt<0?' dn':'', dis=!st.avail;
+    const preview = amt===0 ? `<span class="mv off">no bend</span>`
+      : (dis||!mv) ? `<span class="mv off">${st.why||'out of range'}</span>`
+      : `<span class="mv"><span class="to${dn}">${nameOf(mv.from).name} → ${nameOf(mv.to).name}</span></span>`;
+    const sub = amt===0 ? 'set an amount' : `${Math.abs(amt)} st ${amt<0?'↓':'↑'}`;
+    const base=baseOffsets[c.string]|0, canDn=amt>Math.max(-12,-12-base), canUp=amt<Math.min(12,12-base);
+    const greyed = dis && amt!==0;                              // out-of-range on this tuning → not pressable (but the stepper still works)
+    return `<button class="pedal sb ps${greyed?' disabled':''}" data-ctrl="${c.id}"${greyed?' aria-disabled="true"':''}>
+      <span class="pedal-name">${label}${key?`<span class="pedal-key">${key}</span>`:''}</span>
+      <span class="pedal-do">${sub}</span>
+      <span class="pedal-moves">${preview}</span>
+      <span class="ps-stepper">
+        <button class="ps-step" data-psadj="${c.string}:-1"${canDn?'':' disabled'} aria-label="down">−</button>
+        <span class="ps-val">${amt>0?'+'+amt:amt}</span>
+        <button class="ps-step" data-psadj="${c.string}:1"${canUp?'':' disabled'} aria-label="up">＋</button>
+      </span>
+      <span class="pedal-badge sb-dot" style="background:${STR_COLORS[c.string]}"></span>
+    </button>`;
+  }
   if(c.semis!=null && c.string!=null){                          // tuning-declared fixed string bend — string-coloured dot, directional note→note preview
     const mv=st.moves&&st.moves[0], dn=c.semis<0?' dn':'';
     const body = dis ? `<span class="mv off">${st.why||'n/a'}</span>` : `<span class="mv"><span class="to${dn}">${nameOf(mv.from).name} → ${nameOf(mv.to).name}</span></span>`;
@@ -1779,12 +1842,13 @@ function renderKeymap(){
 }
 function renderPedals(){
   const wrap=document.getElementById('pedalWrap'); if(!wrap) return;
-  const customMode=customBendActive(), modesMode=!customMode && modesBendActive(), sbMode=!customMode && !modesMode && scaleBendActive(), controls=pedalControls();
+  const customMode=customBendActive(), modesMode=!customMode && modesBendActive(), sbMode=!customMode && !modesMode && scaleBendActive(), copedentContext=!customMode&&!modesMode&&!sbMode, psMode=copedentContext&&!!settings.perStringOn, controls=pedalControls();
   curInfo=chordInfo(baseOffsets, active); if(steelRoot!=null) curInfo.root=steelRoot;   // pedal-steel forces the real root
   rebuildKeymap();
   ctrlStateCache={};
   controls.forEach(c=>{ ctrlStateCache[c.id]=controlState(c,curInfo,baseOffsets); });
   let html=`<div class="sec-tools"><button class="map-btn" data-mapjump="bends" title="Configure keyboard shortcuts">${KBD_ICO}Map</button></div>`;
+  if(copedentContext) html+=`<div class="latch-row"><div class="seg" id="psSeg" title="Switch the six pedals between the chord copedent and one-per-string manual bends"><button class="${!settings.perStringOn?'on':''}" data-ps="0">Copedent</button><button class="${settings.perStringOn?'on':''}" data-ps="1">Per-String</button></div></div>`;
   if(!sbMode) html+=`<div class="latch-row"><div class="seg latch-seg" id="latchSeg" title="Latch — tap a pedal on/off instead of holding it"><button class="${settings.latch?'on':''}" data-latch="1">Latch</button><button class="${!settings.latch?'on':''}" data-latch="0">Off</button></div></div>`;
   if(customMode){                                               // Tuning declares its own pedals (fixed per-string bends)
     const grp=g=> controls.filter(c=>c.group===g).map(c=>pedalBtnHTML(c.id,c.name,'',ctrlStateCache[c.id])).join('');
@@ -1802,6 +1866,14 @@ function renderPedals(){
   } else if(sbMode){                                            // Chords key mode — six string-pedals raise each string to the next scale tone
     html+=`<div class="pedal-info">Chord held in <b>${settings.keyRoot} ${settings.keyScale}</b> — each pedal raises one string to the next scale tone. Hold to bend, release to return.</div>`;
     html+=`<div class="fam-name">Scale Bends · one string each</div><div class="pedals">${controls.map(c=>pedalBtnHTML(c.id,c.name,'',ctrlStateCache[c.id])).join('')}</div>`;
+  } else if(psMode){                                            // Per-String — six pedals, one per string, each a saved semitone bend
+    const chips = strPresets.length
+      ? strPresets.map((p,i)=>`<span class="ps-preset"><button class="ps-preset-load" data-psload="${i}" title="Recall">${p.name}</button><button class="ps-preset-del" data-psdel="${i}" title="Delete preset">×</button></span>`).join('')
+      : '<span class="ps-none">none saved</span>';
+    html+=`<div class="pedal-info">Each pedal bends <b>one string</b>. Set its semitones with <b>−</b>/<b>＋</b> — kept within one octave of standard, minus what the current tuning already uses — then hold or latch to bend.</div>`;
+    html+=`<p class="bend-cap"><b>Latch</b> keeps a pedal engaged after one tap. Off = press &amp; hold. A pedal greys out if its amount would exceed ±12 on this tuning.</p>`;
+    html+=`<div class="ps-presets"><span class="ps-presets-lbl">Presets</span>${chips}<button class="ps-save" data-pssave>Save…</button></div>`;
+    html+=`<div class="fam-name">Strings · one pedal each</div><div class="pedals">${controls.map(c=>pedalBtnHTML(c.id,c.name,'',ctrlStateCache[c.id])).join('')}</div>`;
   } else {
     const info = curInfo.root==null
       ? 'No chord root here — pedals disabled.'
@@ -1819,13 +1891,18 @@ function renderPedals(){
   wrap.querySelectorAll('.pedal').forEach(b=>{
     if(b.classList.contains('disabled')) return;
     const ctrl=b.dataset.ctrl;
-    b.addEventListener('pointerdown', e=>{ e.preventDefault(); try{ b.setPointerCapture(e.pointerId); }catch(_){}; pressCtrl(ctrl); });
+    b.addEventListener('pointerdown', e=>{ if(e.target.closest('.ps-step')) return; e.preventDefault(); try{ b.setPointerCapture(e.pointerId); }catch(_){}; pressCtrl(ctrl); });   // −/＋ steppers adjust the amount without engaging the pedal
     b.addEventListener('pointerup', ()=> releaseCtrl(ctrl));
     b.addEventListener('pointercancel', ()=> releaseCtrl(ctrl));
     b.addEventListener('lostpointercapture', ()=> releaseCtrl(ctrl));
   });
   wrap.querySelectorAll('.pedal').forEach(b=> b.classList.toggle('on', ctrlEngaged(b.dataset.ctrl)));  // keep latched state after re-render
   wrap.querySelectorAll('#latchSeg [data-latch]').forEach(b=> b.addEventListener('click',()=>{ settings.latch=b.dataset.latch==='1'; saveSettingsLS(); updatePedalHint(); wrap.querySelectorAll('#latchSeg [data-latch]').forEach(x=> x.classList.toggle('on',(x.dataset.latch==='1')===settings.latch)); }));
+  wrap.querySelectorAll('#psSeg [data-ps]').forEach(b=> b.addEventListener('click',()=>{ if(held.size){ held.clear(); if(midiOut) send(baseOffsets); renderStrings(baseOffsets); } settings.perStringOn=b.dataset.ps==='1'; saveSettingsLS(); rebuildKeymap(); renderPedals(); }));   // release any held bend when switching pedal mode
+  wrap.querySelectorAll('.ps-step').forEach(b=> b.addEventListener('click', e=>{ e.stopPropagation(); const [s,d]=b.dataset.psadj.split(':').map(Number); adjustStringBend(s,d); }));
+  wrap.querySelectorAll('.ps-preset-load').forEach(b=> b.addEventListener('click', ()=> loadPerStringPreset(+b.dataset.psload)));
+  wrap.querySelectorAll('.ps-preset-del').forEach(b=> b.addEventListener('click', e=>{ e.stopPropagation(); delPerStringPreset(+b.dataset.psdel); }));
+  const psSave=wrap.querySelector('[data-pssave]'); if(psSave) psSave.addEventListener('click', savePerStringPreset);
   wrap.querySelectorAll('.swell-seg button').forEach(b=> b.addEventListener('click', ()=> setSwellSpeed(+b.dataset.swell)));
 }
 // a control shows engaged (highlighted + animated) if it's held directly OR it's a part of a held combo
@@ -2929,7 +3006,7 @@ document.getElementById('saveSettings').addEventListener('click',()=>{
   const num=(id,lo,hi,d)=>{ const v=+document.getElementById(id).value; return isNaN(v)?d:Math.max(lo,Math.min(hi,v)); };
   const ab={ autoBend:document.getElementById('autoBendChk').checked, bendCC:num('bendCCInput',0,127,69), levelCC:num('levelCCInput',0,127,70), bendDepth:num('bendDepthInput',0,50,25), levelDip:num('levelDipInput',0,50,15), bendMs:num('bendMsInput',40,400,120) };
   const panCCs=[]; document.querySelectorAll('#panCcRows select').forEach(x=>panCCs[+x.dataset.pcc]=Math.max(1,Math.min(127,+x.value||1)));
-  settings={channel:ch,ccs,gap:settings.gap??20,glide:0,keys:settings.keys,latch:settings.latch,panCCs,panMs:settings.panMs,fxDoubler:settings.fxDoubler,fxOctave:settings.fxOctave,swellMs:settings.swellMs,swellLatch:settings.swellLatch,chordExt:settings.chordExt,keyRoot:settings.keyRoot,keyScale:settings.keyScale,voicing:settings.voicing,voiceSize:settings.voiceSize,voiceStart:settings.voiceStart,voiceFeel:settings.voiceFeel,chordLayers:settings.chordLayers,chordKeys:settings.chordKeys,hist:settings.hist,ap:settings.ap, ...ab}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
+  settings={channel:ch,ccs,gap:settings.gap??20,glide:0,keys:settings.keys,latch:settings.latch,panCCs,panMs:settings.panMs,fxDoubler:settings.fxDoubler,fxOctave:settings.fxOctave,swellMs:settings.swellMs,swellLatch:settings.swellLatch,chordExt:settings.chordExt,keyRoot:settings.keyRoot,keyScale:settings.keyScale,voicing:settings.voicing,voiceSize:settings.voiceSize,voiceStart:settings.voiceStart,voiceFeel:settings.voiceFeel,chordLayers:settings.chordLayers,chordKeys:settings.chordKeys,hist:settings.hist,ap:settings.ap,perStringOn:settings.perStringOn,stringBend:settings.stringBend, ...ab}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
 });
 
 function applyTest(v){
