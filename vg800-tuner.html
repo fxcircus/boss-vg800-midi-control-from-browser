@@ -285,24 +285,40 @@
   .pedal-badge.sb-dot { width: 13px; height: 13px; right: 14px; bottom: 13px; border-radius: 50%; opacity: 0.95; box-shadow: 0 0 8px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.25); }
   .pedal.sb.on .sb-dot { opacity: 1; box-shadow: 0 0 12px currentColor, inset 0 0 0 1px rgba(255,255,255,0.4); }
   .pedal.sb .pedal-moves .to { color: var(--amber); font-weight: 700; letter-spacing: 0.5px; }
-  /* Per-String mode — each pedal carries an inline semitone stepper (−/＋) that adjusts without engaging the pedal */
-  .pedal.ps { padding-bottom: 40px; }
-  .ps-stepper { position: absolute; left: 12px; right: 12px; bottom: 9px; display: flex; align-items: center; justify-content: space-between; gap: 6px; }
-  .ps-step { width: 26px; height: 24px; flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 15px; line-height: 1; background: var(--ink); color: var(--bone); border: 1px solid var(--edge); border-radius: 6px; cursor: pointer; touch-action: manipulation; transition: border-color .12s, background .12s, color .12s; }
-  .ps-step:hover:not(:disabled) { border-color: var(--brass-deep); background: var(--felt); color: var(--brass); }
-  .ps-step:disabled { opacity: 0.32; cursor: not-allowed; }
-  .ps-val { flex: 1 1 auto; text-align: center; font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--amber); letter-spacing: 0.5px; }
-  .pedal.ps.disabled .ps-val { color: var(--bone-faint); }
+  /* Per-String mode — one compact row per string: a pressable pad (bend trigger) + a −/＋ amount stepper (separate elements, never nested buttons) */
+  .ps-list { display: flex; flex-direction: column; gap: 8px; max-width: 560px; margin: 0 auto 8px; }
+  .ps-row { display: flex; align-items: stretch; gap: 8px; }
+  .ps-pad { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 9px; text-align: left; padding: 0 14px; min-height: 52px; background: var(--wood); border: 1px solid var(--edge-soft); border-radius: 11px; cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 3px 8px rgba(0,0,0,0.3); transition: transform .1s, border-color .12s, background .12s, box-shadow .12s; user-select: none; -webkit-user-select: none; touch-action: none; }
+  .ps-pad:hover:not(.disabled) { border-color: var(--brass-deep); background: var(--felt); }
+  .ps-pad.on { border-color: var(--brass); background: var(--felt); box-shadow: inset 0 0 0 1px var(--brass), 0 0 20px var(--brass-glow); transform: scale(0.99); }
+  .ps-pad.disabled { opacity: 0.44; cursor: not-allowed; filter: grayscale(0.4); box-shadow: none; }
+  .ps-dot { width: 13px; height: 13px; flex: 0 0 auto; border-radius: 50%; box-shadow: 0 0 7px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(255,255,255,0.28); }
+  .ps-pad.on .ps-dot { box-shadow: 0 0 10px currentColor, inset 0 0 0 1px rgba(255,255,255,0.45); }
+  .ps-lbl { font-family: var(--cond); font-weight: 700; font-size: 15px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--bone); flex: 0 0 auto; }
+  .ps-pad.on .ps-lbl { color: var(--brass); }
+  .ps-key { font-family: var(--mono); font-size: 9px; color: var(--bone-faint); border: 1px solid var(--edge); border-radius: 4px; padding: 1px 5px; flex: 0 0 auto; }
+  .ps-preview { margin-left: auto; font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--amber); letter-spacing: 0.3px; white-space: nowrap; padding-left: 8px; overflow: hidden; text-overflow: ellipsis; }
+  .ps-preview.dn { color: var(--steel-blue); }
+  .ps-preview.muted { color: var(--bone-faint); font-weight: 400; font-style: italic; }
+  .ps-adjust { flex: 0 0 auto; display: flex; align-items: stretch; background: var(--wood); border: 1px solid var(--edge-soft); border-radius: 11px; overflow: hidden; box-shadow: 0 3px 8px rgba(0,0,0,0.18); }
+  .ps-step { width: 42px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 22px; line-height: 1; background: none; border: none; color: var(--bone); cursor: pointer; touch-action: manipulation; transition: background .12s, color .12s; }
+  .ps-step:hover:not(:disabled) { background: var(--felt); color: var(--brass); }
+  .ps-step:active:not(:disabled) { background: var(--brass-glow); color: var(--brass); }
+  .ps-step:disabled { opacity: 0.28; cursor: not-allowed; }
+  .ps-step.dn { border-right: 1px solid var(--edge); }
+  .ps-step.up { border-left: 1px solid var(--edge); }
+  .ps-val { min-width: 46px; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 15px; font-weight: 700; color: var(--amber); letter-spacing: 0.5px; }
+  .ps-val.zero { color: var(--bone-faint); }
   /* Per-String presets bar — recall chips + Save, reusing the app's small-button voice */
-  .ps-presets { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; margin: 2px auto 12px; max-width: 560px; }
+  .ps-presets { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 7px; margin: 2px auto 14px; max-width: 560px; }
   .ps-presets-lbl { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--bone-faint); margin-right: 2px; }
   .ps-none { font-family: var(--mono); font-size: 11px; color: var(--bone-faint); font-style: italic; }
-  .ps-preset { display: inline-flex; align-items: stretch; border: 1px solid var(--edge); border-radius: 7px; overflow: hidden; background: var(--wood); }
-  .ps-preset-load { padding: 5px 10px; font-family: var(--cond); font-size: 12px; font-weight: 600; letter-spacing: 0.3px; background: none; border: none; color: var(--bone); cursor: pointer; transition: background .12s, color .12s; }
+  .ps-preset { display: inline-flex; align-items: stretch; border: 1px solid var(--edge); border-radius: 8px; overflow: hidden; background: var(--wood); }
+  .ps-preset-load { padding: 6px 11px; font-family: var(--cond); font-size: 12.5px; font-weight: 600; letter-spacing: 0.3px; background: none; border: none; color: var(--bone); cursor: pointer; transition: background .12s, color .12s; }
   .ps-preset-load:hover { background: var(--felt); color: var(--brass); }
-  .ps-preset-del { padding: 0 7px; font-size: 13px; line-height: 1; background: none; border: none; border-left: 1px solid var(--edge); color: var(--bone-faint); cursor: pointer; }
+  .ps-preset-del { padding: 0 8px; font-size: 13px; line-height: 1; background: none; border: none; border-left: 1px solid var(--edge); color: var(--bone-faint); cursor: pointer; }
   .ps-preset-del:hover { color: var(--err); background: var(--felt); }
-  .ps-save { padding: 5px 12px; font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.3px; background: var(--wood); border: 1px solid var(--brass-deep); border-radius: 7px; color: var(--brass); cursor: pointer; transition: background .12s; }
+  .ps-save { padding: 6px 13px; font-family: var(--cond); font-size: 12.5px; font-weight: 700; letter-spacing: 0.3px; background: var(--wood); border: 1px solid var(--brass-deep); border-radius: 8px; color: var(--brass); cursor: pointer; transition: background .12s; }
   .ps-save:hover { background: var(--felt); }
   /* Press animation: foot plate tilts down; knee lever swings left (LKL) / right (LKR) about its pivot */
   .pedal-badge .ap-plate, .pedal-badge .ap-lever { transform-box: view-box; transition: transform .2s cubic-bezier(.34,1.3,.5,1); }
@@ -1759,26 +1775,6 @@ function pedalBtnHTML(ctrl, label, sub, st){
       <span class="pedal-badge sb-dot" style="background:${STR_COLORS[c.string]}"></span>
     </button>`;
   }
-  if(c.perString){                                              // Per-String mode — string-dot pedal with an inline −/＋ semitone stepper
-    const mv=st.moves&&st.moves[0], amt=c.semis|0, dn=amt<0?' dn':'', dis=!st.avail;
-    const preview = amt===0 ? `<span class="mv off">no bend</span>`
-      : (dis||!mv) ? `<span class="mv off">${st.why||'out of range'}</span>`
-      : `<span class="mv"><span class="to${dn}">${nameOf(mv.from).name} → ${nameOf(mv.to).name}</span></span>`;
-    const sub = amt===0 ? 'set an amount' : `${Math.abs(amt)} st ${amt<0?'↓':'↑'}`;
-    const base=baseOffsets[c.string]|0, canDn=amt>Math.max(-12,-12-base), canUp=amt<Math.min(12,12-base);
-    const greyed = dis && amt!==0;                              // out-of-range on this tuning → not pressable (but the stepper still works)
-    return `<button class="pedal sb ps${greyed?' disabled':''}" data-ctrl="${c.id}"${greyed?' aria-disabled="true"':''}>
-      <span class="pedal-name">${label}${key?`<span class="pedal-key">${key}</span>`:''}</span>
-      <span class="pedal-do">${sub}</span>
-      <span class="pedal-moves">${preview}</span>
-      <span class="ps-stepper">
-        <button class="ps-step" data-psadj="${c.string}:-1"${canDn?'':' disabled'} aria-label="down">−</button>
-        <span class="ps-val">${amt>0?'+'+amt:amt}</span>
-        <button class="ps-step" data-psadj="${c.string}:1"${canUp?'':' disabled'} aria-label="up">＋</button>
-      </span>
-      <span class="pedal-badge sb-dot" style="background:${STR_COLORS[c.string]}"></span>
-    </button>`;
-  }
   if(c.semis!=null && c.string!=null){                          // tuning-declared fixed string bend — string-coloured dot, directional note→note preview
     const mv=st.moves&&st.moves[0], dn=c.semis<0?' dn':'';
     const body = dis ? `<span class="mv off">${st.why||'n/a'}</span>` : `<span class="mv"><span class="to${dn}">${nameOf(mv.from).name} → ${nameOf(mv.to).name}</span></span>`;
@@ -1809,6 +1805,29 @@ function pedalBtnHTML(ctrl, label, sub, st){
     <span class="pedal-moves">${body}</span>
     ${ico?`<span class="pedal-badge">${ico}</span>`:''}
   </button>`;
+}
+// Per-String mode row — a pressable pad (the bend trigger, a .pedal so the shared pointer/latch wiring drives it) plus a
+// sibling −/＋ stepper. Kept as separate elements so no <button> nests inside another (which the browser would eject).
+function perStringRowHTML(c, st){
+  const mv=st.moves&&st.moves[0], amt=c.semis|0, dis=!st.avail, greyed=dis&&amt!==0, key=(keyFor(c.id)||'').toUpperCase();
+  const base=baseOffsets[c.string]|0, canDn=amt>Math.max(-12,-12-base), canUp=amt<Math.min(12,12-base);
+  let preview, pcls;
+  if(amt===0){ preview='no bend'; pcls=' muted'; }
+  else if(greyed||!mv){ preview=st.why||'out of range'; pcls=' muted'; }
+  else { preview=`${nameOf(mv.from).name} → ${nameOf(mv.to).name}`; pcls=amt<0?' dn':''; }
+  return `<div class="ps-row">
+    <button class="pedal ps-pad${greyed?' disabled':''}" data-ctrl="${c.id}"${greyed?' aria-disabled="true"':''}>
+      <span class="ps-dot" style="background:${STR_COLORS[c.string]}"></span>
+      <span class="ps-lbl">${c.name}</span>
+      ${key?`<span class="ps-key">${key}</span>`:''}
+      <span class="ps-preview${pcls}">${preview}</span>
+    </button>
+    <div class="ps-adjust">
+      <button class="ps-step dn" data-psadj="${c.string}:-1"${canDn?'':' disabled'} aria-label="String ${SLBL[c.string]} down">−</button>
+      <span class="ps-val${amt===0?' zero':''}">${amt>0?'+'+amt:amt}</span>
+      <button class="ps-step up" data-psadj="${c.string}:1"${canUp?'':' disabled'} aria-label="String ${SLBL[c.string]} up">＋</button>
+    </div>
+  </div>`;
 }
 // Keyboard icon (used on the per-section "Map" buttons and could label the Settings group)
 const KBD_ICO='<svg class="km-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h.01M18 14h.01M9 14h6"/></svg>';
@@ -1873,7 +1892,7 @@ function renderPedals(){
     html+=`<div class="pedal-info">Each pedal bends <b>one string</b>. Set its semitones with <b>−</b>/<b>＋</b> — kept within one octave of standard, minus what the current tuning already uses — then hold or latch to bend.</div>`;
     html+=`<p class="bend-cap"><b>Latch</b> keeps a pedal engaged after one tap. Off = press &amp; hold. A pedal greys out if its amount would exceed ±12 on this tuning.</p>`;
     html+=`<div class="ps-presets"><span class="ps-presets-lbl">Presets</span>${chips}<button class="ps-save" data-pssave>Save…</button></div>`;
-    html+=`<div class="fam-name">Strings · one pedal each</div><div class="pedals">${controls.map(c=>pedalBtnHTML(c.id,c.name,'',ctrlStateCache[c.id])).join('')}</div>`;
+    html+=`<div class="fam-name">Strings · one pedal each</div><div class="ps-list">${controls.map(c=>perStringRowHTML(c, ctrlStateCache[c.id])).join('')}</div>`;
   } else {
     const info = curInfo.root==null
       ? 'No chord root here — pedals disabled.'
