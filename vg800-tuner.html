@@ -313,6 +313,8 @@
   .ps-presets { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 7px; margin: 2px auto 14px; max-width: 560px; }
   .ps-presets-lbl { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--bone-faint); margin-right: 2px; }
   .ps-none { font-family: var(--mono); font-size: 11px; color: var(--bone-faint); font-style: italic; }
+  .ps-preset-fac { padding: 6px 11px; font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: 0.4px; background: var(--wood); border: 1px solid var(--edge); border-radius: 8px; color: var(--bone-dim); cursor: pointer; transition: border-color .12s, color .12s, background .12s; }
+  .ps-preset-fac:hover { border-color: var(--brass-deep); color: var(--brass); background: var(--felt); }
   .ps-preset { display: inline-flex; align-items: stretch; border: 1px solid var(--edge); border-radius: 8px; overflow: hidden; background: var(--wood); }
   .ps-preset-load { padding: 6px 11px; font-family: var(--cond); font-size: 12.5px; font-weight: 600; letter-spacing: 0.3px; background: none; border: none; color: var(--bone); cursor: pointer; transition: background .12s, color .12s; }
   .ps-preset-load:hover { background: var(--felt); color: var(--brass); }
@@ -1655,6 +1657,16 @@ function customBendActive(){ return !!(activeBendPedals && activeBendPedals.leng
 // Per-String manual bends — a user-toggled mode that replaces the copedent: six pedals, each bending ONE string by a
 // saved semitone amount. Built fresh each render so the amount tracks settings.stringBend; keys a–h (DEFAULT_KEYS order).
 const PS_KEYS=['a','s','d','f','g','h'];
+// Factory Per-String presets — quick uniform bends shipped out of the box (each string bends the same amount, ±12).
+const FACTORY_PS=[
+  {name:'Clear', amounts:[0,0,0,0,0,0]},
+  {name:'+1',    amounts:[1,1,1,1,1,1]},
+  {name:'+2',    amounts:[2,2,2,2,2,2]},
+  {name:'−1',    amounts:[-1,-1,-1,-1,-1,-1]},
+  {name:'−2',    amounts:[-2,-2,-2,-2,-2,-2]},
+  {name:'Oct ↑', amounts:[12,12,12,12,12,12]},
+  {name:'Oct ↓', amounts:[-12,-12,-12,-12,-12,-12]},
+];
 function perStringControls(){ return [0,1,2,3,4,5].map(i=>({id:'PS'+(i+1), name:'String '+SLBL[i], group:'string', string:i, semis:settings.stringBend[i]|0, key:PS_KEYS[i], perString:true})); }
 function perStringActive(){ return !!settings.perStringOn && !customBendActive() && !modesBendActive() && !scaleBendActive(); }   // replaces only the copedent
 function pedalControls(){ return customBendActive() ? activeBendPedals : (modesBendActive() ? MODE_BEND.controls : (scaleBendActive() ? SCALE_BEND.controls : (perStringActive() ? perStringControls() : copedent.controls))); }
@@ -1671,7 +1683,9 @@ function savePerStringPreset(){
   if(ex>=0) strPresets[ex]=rec; else strPresets.push(rec);
   saveStrPresetsLS(); renderPedals(); toast('Saved "'+nm+'"');
 }
-function loadPerStringPreset(i){ const p=strPresets[i]; if(!p) return; settings.stringBend=p.amounts.map(x=>Math.max(-12,Math.min(12,x|0))); saveSettingsLS(); renderPedals(); psResend(); toast('“'+p.name+'”'); }
+function applyPsAmounts(amounts){ settings.stringBend=amounts.map(x=>Math.max(-12,Math.min(12,x|0))); saveSettingsLS(); renderPedals(); psResend(); }
+function loadPerStringPreset(i){ const p=strPresets[i]; if(!p) return; applyPsAmounts(p.amounts); toast('“'+p.name+'”'); }
+function loadFactoryPreset(i){ const p=FACTORY_PS[i]; if(!p) return; applyPsAmounts(p.amounts); toast(p.name); }
 function delPerStringPreset(i){ const p=strPresets[i]; if(!p) return; if(!confirm('Delete preset “'+p.name+'”?')) return; strPresets.splice(i,1); saveStrPresetsLS(); renderPedals(); }
 // Pedal steel tunings — 10 strings, midi low→high (index 0 = string 10 lowest, 9 = string 1 highest).
 const STEEL=[
@@ -1867,7 +1881,7 @@ function renderPedals(){
   ctrlStateCache={};
   controls.forEach(c=>{ ctrlStateCache[c.id]=controlState(c,curInfo,baseOffsets); });
   let html=`<div class="sec-tools"><button class="map-btn" data-mapjump="bends" title="Configure keyboard shortcuts">${KBD_ICO}Map</button></div>`;
-  if(copedentContext) html+=`<div class="latch-row"><div class="seg" id="psSeg" title="Switch the six pedals between the chord copedent and one-per-string manual bends"><button class="${!settings.perStringOn?'on':''}" data-ps="0">Copedent</button><button class="${settings.perStringOn?'on':''}" data-ps="1">Per-String</button></div></div>`;
+  if(copedentContext) html+=`<div class="latch-row"><div class="seg" id="psSeg" title="Switch the six pedals between the preset chord bends and one-per-string manual bends"><button class="${!settings.perStringOn?'on':''}" data-ps="0">Preset</button><button class="${settings.perStringOn?'on':''}" data-ps="1">Per-String</button></div></div>`;
   if(!sbMode) html+=`<div class="latch-row"><div class="seg latch-seg" id="latchSeg" title="Latch — tap a pedal on/off instead of holding it"><button class="${settings.latch?'on':''}" data-latch="1">Latch</button><button class="${!settings.latch?'on':''}" data-latch="0">Off</button></div></div>`;
   if(customMode){                                               // Tuning declares its own pedals (fixed per-string bends)
     const grp=g=> controls.filter(c=>c.group===g).map(c=>pedalBtnHTML(c.id,c.name,'',ctrlStateCache[c.id])).join('');
@@ -1886,12 +1900,12 @@ function renderPedals(){
     html+=`<div class="pedal-info">Chord held in <b>${settings.keyRoot} ${settings.keyScale}</b> — each pedal raises one string to the next scale tone. Hold to bend, release to return.</div>`;
     html+=`<div class="fam-name">Scale Bends · one string each</div><div class="pedals">${controls.map(c=>pedalBtnHTML(c.id,c.name,'',ctrlStateCache[c.id])).join('')}</div>`;
   } else if(psMode){                                            // Per-String — six pedals, one per string, each a saved semitone bend
-    const chips = strPresets.length
-      ? strPresets.map((p,i)=>`<span class="ps-preset"><button class="ps-preset-load" data-psload="${i}" title="Recall">${p.name}</button><button class="ps-preset-del" data-psdel="${i}" title="Delete preset">×</button></span>`).join('')
-      : '<span class="ps-none">none saved</span>';
+    const facChips = FACTORY_PS.map((p,i)=>`<button class="ps-preset-fac" data-psfac="${i}" title="Apply ${p.name} to every string">${p.name}</button>`).join('');
+    const userChips = strPresets.map((p,i)=>`<span class="ps-preset"><button class="ps-preset-load" data-psload="${i}" title="Recall">${p.name}</button><button class="ps-preset-del" data-psdel="${i}" title="Delete preset">×</button></span>`).join('');
     html+=`<div class="pedal-info">Each pedal bends <b>one string</b>. Set its semitones with <b>−</b>/<b>＋</b> — kept within one octave of standard, minus what the current tuning already uses — then hold or latch to bend.</div>`;
     html+=`<p class="bend-cap"><b>Latch</b> keeps a pedal engaged after one tap. Off = press &amp; hold. A pedal greys out if its amount would exceed ±12 on this tuning.</p>`;
-    html+=`<div class="ps-presets"><span class="ps-presets-lbl">Presets</span>${chips}<button class="ps-save" data-pssave>Save…</button></div>`;
+    html+=`<div class="ps-presets"><span class="ps-presets-lbl">Quick</span>${facChips}</div>`;
+    html+=`<div class="ps-presets"><span class="ps-presets-lbl">Saved</span>${userChips||'<span class="ps-none">none yet</span>'}<button class="ps-save" data-pssave>Save…</button></div>`;
     html+=`<div class="fam-name">Strings · one pedal each</div><div class="ps-list">${controls.map(c=>perStringRowHTML(c, ctrlStateCache[c.id])).join('')}</div>`;
   } else {
     const info = curInfo.root==null
@@ -1919,6 +1933,7 @@ function renderPedals(){
   wrap.querySelectorAll('#latchSeg [data-latch]').forEach(b=> b.addEventListener('click',()=>{ settings.latch=b.dataset.latch==='1'; saveSettingsLS(); updatePedalHint(); wrap.querySelectorAll('#latchSeg [data-latch]').forEach(x=> x.classList.toggle('on',(x.dataset.latch==='1')===settings.latch)); }));
   wrap.querySelectorAll('#psSeg [data-ps]').forEach(b=> b.addEventListener('click',()=>{ if(held.size){ held.clear(); if(midiOut) send(baseOffsets); renderStrings(baseOffsets); } settings.perStringOn=b.dataset.ps==='1'; saveSettingsLS(); rebuildKeymap(); renderPedals(); }));   // release any held bend when switching pedal mode
   wrap.querySelectorAll('.ps-step').forEach(b=> b.addEventListener('click', e=>{ e.stopPropagation(); const [s,d]=b.dataset.psadj.split(':').map(Number); adjustStringBend(s,d); }));
+  wrap.querySelectorAll('.ps-preset-fac').forEach(b=> b.addEventListener('click', ()=> loadFactoryPreset(+b.dataset.psfac)));
   wrap.querySelectorAll('.ps-preset-load').forEach(b=> b.addEventListener('click', ()=> loadPerStringPreset(+b.dataset.psload)));
   wrap.querySelectorAll('.ps-preset-del').forEach(b=> b.addEventListener('click', e=>{ e.stopPropagation(); delPerStringPreset(+b.dataset.psdel); }));
   const psSave=wrap.querySelector('[data-pssave]'); if(psSave) psSave.addEventListener('click', savePerStringPreset);
