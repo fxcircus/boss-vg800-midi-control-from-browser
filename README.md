@@ -30,6 +30,24 @@ Each of the six strings is driven by its own MIDI **CC number**. The app convert
 
 Panning works the same way, driving **STRING(A) · PAN 1–6** (default CC# 71–76, MIN `L50` / MAX `R50`).
 
+### Real Bend mode (alternate preset)
+
+**⚙ Settings → Bend engine** switches the app between two VG-800 presets:
+
+- **Classic** (default) — the setup described above. Bends write straight to **BEND DEPTH**, so the note *steps* to the target pitch.
+- **Real Bend** — targets a second preset where **ALT TUNE** (User mode, always ON) carries the tuning and every bend is the pedal's true two-step gesture: the app sets each string's **BEND DEPTH** (relative, −12 … +12), then sweeps **BEND CONTROL** 0→100 so the pitch **glides** into the note — and glides back on release.
+
+In Real Bend the panning assign slots are repurposed (the VG-800 has only 16), so the Panning section hides and CC# 71–76 drive **INST:ALT TUNE(A) · PITCH 1–6** with **MIN `−24` / MAX `+24`** — a different semitone→CC scaling (`0` st → CC `64` in both, but `+12` → CC `95` here instead of `127`). The Ethnic **+ Octave** lift is baked into the ALT TUNE base pitches (the ±24 range leaves room), and **ALT TUNE ON/OFF** (CC# 78) is held ON by the app since it carries the tuning.
+
+| ASSIGN | TARGET | SOURCE | MIN | MAX | MODE |
+|:------:|:-------|:-------|:---:|:---:|:-----|
+| 1–6 | INST:STR BEND(A) · DEPTH 1–6 | `CC# 30, 31, 64, 65, 66, 68` | −12 | +12 | MOMENT |
+| 7 | INST:STR BEND(A) · BEND CONTROL | `CC# 69` | 0 | 100 | MOMENT |
+| 8 | INST · INST LEVEL | `CC# 70` | 0 | 100 | MOMENT |
+| 9–14 | INST:ALT TUNE(A) · PITCH 1–6 | `CC# 71–76` | −24 | +24 | MOMENT |
+| 15 | INST:12STR · (A)ON/OFF | `CC# 77` | OFF | ON | MOMENT |
+| 16 | INST:ALT TUNE(A) · ON/OFF | `CC# 78` | OFF | ON | MOMENT |
+
 ---
 
 ## One-time VG-800 setup
@@ -94,7 +112,7 @@ Notes:
 - **Panning & auto-pan** — manual stereo modes (Center, Equal Spread, Split, Zig-Zag, Pairs…) glide each string to its new position; the **Pan glide** toggle sets the sweep time (Instant → Long). **Auto-pan** gives each string its own pan LFO with character presets (**Rotate, Leslie, Fan Breathe, Ping-Pong, Drift**), Width, Shape, Phase spread, and Free-rate or Tempo-synced timing.
 - **Current Tuning readout** — an always-on panel combining pitch and pan for all six strings: a **pan strip** up top over a **pitch neck** where each note slides flat↔sharp from standard. Updates and animates live from the current tuning, bends and panning (parks in the left sidebar on wide screens).
 - **Themes & display** — the pedal button (top-right) opens the theme picker: **DD500** (default), **GT1000, CS3, RC500, DS1**, each styled after a Boss pedal. **Compact mode** hides note/offset text on cards to fit more on screen.
-- **⚙ Settings** — MIDI Output (port + channel), CC numbers (per-string pitch + pan), and **Bend effect** (a scoop articulation that swells into each new tuning).
+- **⚙ Settings** — MIDI Output (port + channel), **Bend engine** (Classic ⟷ **Real Bend**, with its glide time), CC numbers (per-string pitch + pan/alt-tune), and **Bend effect** (a scoop articulation that swells into each new tuning).
 - **+ Custom tuning** — dial each string ±12 from standard, name it and save it.
 
 ![The Bends section](screenshots/bends.png)

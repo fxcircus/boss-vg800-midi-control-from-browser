@@ -11,6 +11,9 @@
 # Reference manual — large & copyrighted, not for redistribution
 *.pdf
 
+# Real Bend feature reference material (screenshots + .tsl presets) — local only
+new_bend_feature/
+
 # Node / misc (in case tooling is added later)
 node_modules/
 npm-debug.log*
