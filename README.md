@@ -22,22 +22,23 @@ Open in **Chrome or Edge**, allow MIDI, and pick your interface. (GitHub Pages s
 
 ## How it works
 
-Each of the six strings is driven by its own MIDI **CC number**. The app converts a per-string semitone offset (−12 … +12) into a CC value (0 … 127) and sends it on the VG-800's receive channel. On the VG-800, each CC is assigned to a **STR BEND → BEND DEPTH** parameter with a range of −12 … +12 semitones, so the CC value maps linearly onto the string's pitch shift.
+The app drives one of two VG-800 presets, switched with **⚙ Settings → Mode**:
 
-- Offset `0` → CC `64` → 0 semitones
-- Offset `−12` → CC `0` → one octave down
-- Offset `+12` → CC `127` → one octave up
+### Classic mode (the default)
 
-Panning works the same way, driving **STRING(A) · PAN 1–6** (default CC# 71–76, MIN `L50` / MAX `R50`).
+The tuning lives on **INST:ALT TUNE** (User mode, always ON — the app holds it on via CC# 78). Each string's base pitch is one **ALT TUNE · PITCH** assign with **MIN `−24` / MAX `+24`**, so a semitone offset maps to a CC value as `CC = round((st + 24) / 48 × 127)`:
 
-### Real Bend mode (alternate preset)
+- Offset `0` → CC `64` (the center is the same in every scaling)
+- Offset `+12` → CC `95` · Offset `−12` → CC `32`
+- Offset `+24` → CC `127` · Offset `−24` → CC `0`
 
-**⚙ Settings → Bend engine** switches the app between two VG-800 presets:
+Bends are the pedal's true two-step gesture: the app writes each string's **STR BEND · BEND DEPTH** (relative, −12 … +12, `CC = round((st + 12) / 24 × 127)`), then sweeps **BEND CONTROL** 0→100 so the pitch **glides** into the note — and glides back on release — exactly like working the knob by hand. Stereo panning is unavailable in this mode: the VG-800 has only 16 assign slots, and CC# 71–76 are spent on the ALT TUNE pitches.
 
-- **Classic** (default) — the setup described above. Bends write straight to **BEND DEPTH**, so the note *steps* to the target pitch.
-- **Real Bend** — targets a second preset where **ALT TUNE** (User mode, always ON) carries the tuning and every bend is the pedal's true two-step gesture: the app sets each string's **BEND DEPTH** (relative, −12 … +12), then sweeps **BEND CONTROL** 0→100 so the pitch **glides** into the note — and glides back on release.
+### Panning mode (alternate preset)
 
-In Real Bend the panning assign slots are repurposed (the VG-800 has only 16), so the Panning section hides and CC# 71–76 drive **INST:ALT TUNE(A) · PITCH 1–6** with **MIN `−24` / MAX `+24`** — a different semitone→CC scaling (`0` st → CC `64` in both, but `+12` → CC `95` here instead of `127`). The Ethnic **+ Octave** lift is baked into the ALT TUNE base pitches (the ±24 range leaves room), and **ALT TUNE ON/OFF** (CC# 78) is held ON by the app since it carries the tuning.
+The older, simpler preset: each string's full pitch offset (−12 … +12) writes straight to its **BEND DEPTH** (so notes *step* to pitch rather than glide, and **BEND CONTROL must sit at 100** on the pedal), and CC# 71–76 drive **STRING(A) · PAN 1–6** (MIN `L50` / MAX `R50`) for the stereo-spread and auto-pan features.
+
+### Classic-mode assign table
 
 | ASSIGN | TARGET | SOURCE | MIN | MAX | MODE |
 |:------:|:-------|:-------|:---:|:---:|:-----|
@@ -48,24 +49,32 @@ In Real Bend the panning assign slots are repurposed (the VG-800 has only 16), s
 | 15 | INST:12STR · (A)ON/OFF | `CC# 77` | OFF | ON | MOMENT |
 | 16 | INST:ALT TUNE(A) · ON/OFF | `CC# 78` | OFF | ON | MOMENT |
 
+In Classic the Ethnic **+ Octave** lift is baked into the ALT TUNE base pitches (the ±24 range leaves room), so a mandolin or ukulele sounds at real pitch on the open strings — play the "0 fret" instead of capoing the 12th. In Panning mode CC# 78 toggles the preset's fixed +12 as before.
+
 ---
 
 ## One-time VG-800 setup
 
 Configure the pedal once so it listens to the app.
 
-### 1. Turn on String Bend and set Bend Control to 100
+### 1. Set up ALT TUNE and String Bend
 
-In **INST → STR BEND** (Bend Control tab):
+For **Classic mode** (the default):
+
+- **INST → ALT TUNE**: MODE = `ALT TUNE`, TUNING TYPE = `USER`, switched **ON**. This carries the tuning — the app keeps it on via CC# 78 and writes the per-string PITCH values over MIDI.
+- **INST → STR BEND**: **STR BEND SW = ON**. Leave BEND CONTROL alone — the app drives it (resting at 0, swept to 100 for each bend so the pitch glides).
+- Map the full 16-slot assign table above (**CONTROL/ASSIGN → ASSIGN**).
+
+For **Panning mode** (the alternate preset), in **INST → STR BEND** (Bend Control tab):
 
 ![String Bend enabled](screenshots/str_bend_setup.png)
 
 - **STR BEND SW = ON**
 - **BEND CONTROL = 100**
 
-This is essential — the VG-800 only applies **BEND DEPTH** when **BEND CONTROL = 100**. At 0 (its normal default) the depth values are ignored and nothing changes, no matter what the app sends. The **BEND DEPTH** knobs are the per-string pitch shifts (DEPTH 1 = high E … DEPTH 6 = low E; DEPTH 7 is unused on a 6-string) — these are what the app drives over MIDI.
+This is essential in Panning mode — the VG-800 only applies **BEND DEPTH** when **BEND CONTROL = 100**. At 0 (its normal default) the depth values are ignored and nothing changes, no matter what the app sends. The **BEND DEPTH** knobs are the per-string pitch shifts (DEPTH 1 = high E … DEPTH 6 = low E; DEPTH 7 is unused on a 6-string).
 
-### 2. Map each string's BEND DEPTH to a CC number
+### 2. Map each string's BEND DEPTH to a CC number (both modes)
 
 Under **CONTROL/ASSIGN → ASSIGN**, create one assign per string:
 
@@ -108,11 +117,11 @@ Notes:
 - **Ethnic** — mandolin, Irish/Greek bouzouki, oud, charango, saz/bağlama, cavaquinho, balalaika, 5-string banjo. Each maps the instrument's pitches onto a chosen cluster of strings (pick the placement with the string-dot buttons). A **capo hint** says where to physically capo, since the VG-800 only bends ±12 semitones.
 - **Pedal Steel** — load a real steel tuning (**E9 Nashville**, **C6 Swing/Jazz**, **B6 Universal**) and choose which contiguous **6 of the 10** strings map onto the guitar; the **Bends** section reconfigures to that tuning's copedent.
 - **Bends** — hold the on-screen **Pedal A / B** and knee levers **LKL / LKR** (or keys <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> <kbd>F</kbd>) to bend the root / 3rd / 5th of the current tuning, pedal-steel style. They stack, the icons animate as they move, and any bend beyond ±12 greys out. **Combos** (A+B…) engage a whole grip at once. **Latch** toggles instead of holding; **Key Mapping** lets you rebind any control to a key.
-- **Per-String bends** — a **Copedent ⟷ Per-String** switch turns the six pedals into one-per-string manual benders (keys <kbd>A</kbd>–<kbd>H</kbd>). Dial each string up or down with **−/＋**, kept within one octave of standard *after* accounting for what the current tuning already uses (a pedal greys out if it would exceed ±12). Save the six amounts as named **presets** and recall them on any tuning.
-- **Panning & auto-pan** — manual stereo modes (Center, Equal Spread, Split, Zig-Zag, Pairs…) glide each string to its new position; the **Pan glide** toggle sets the sweep time (Instant → Long). **Auto-pan** gives each string its own pan LFO with character presets (**Rotate, Leslie, Fan Breathe, Ping-Pong, Drift**), Width, Shape, Phase spread, and Free-rate or Tempo-synced timing.
+- **Per-String bends** — a **Preset ⟷ Per-String** switch turns the six pedals into one-per-string manual benders (keys <kbd>A</kbd>–<kbd>H</kbd>). Dial each string up or down with **−/＋**, kept within one octave of standard *after* accounting for what the current tuning already uses (a pedal greys out if it would exceed ±12). Save the six amounts as named **presets** and recall them on any tuning — factory quick presets include uniform shifts (±1, ±2, 4th/5th/octave) plus **B-Bender**, **G-Bender**, **Drop Low** (instant Drop D) and **Nashville** (lower four strings up an octave).
+- **Panning & auto-pan** *(Panning mode)* — manual stereo modes (Center, Equal Spread, Split, Zig-Zag, Pairs…) glide each string to its new position; the **Pan glide** toggle sets the sweep time (Instant → Long). **Auto-pan** gives each string its own pan LFO with character presets (**Rotate, Leslie, Fan Breathe, Ping-Pong, Drift**), Width, Shape, Phase spread, and Free-rate or Tempo-synced timing. Hidden in Classic mode, where CC# 71–76 carry the ALT TUNE pitches instead.
 - **Current Tuning readout** — an always-on panel combining pitch and pan for all six strings: a **pan strip** up top over a **pitch neck** where each note slides flat↔sharp from standard. Updates and animates live from the current tuning, bends and panning (parks in the left sidebar on wide screens).
 - **Themes & display** — the pedal button (top-right) opens the theme picker: **DD500** (default), **GT1000, CS3, RC500, DS1**, each styled after a Boss pedal. **Compact mode** hides note/offset text on cards to fit more on screen.
-- **⚙ Settings** — MIDI Output (port + channel), **Bend engine** (Classic ⟷ **Real Bend**, with its glide time), CC numbers (per-string pitch + pan/alt-tune), and **Bend effect** (a scoop articulation that swells into each new tuning).
+- **⚙ Settings** — MIDI Output (port + channel), **Mode** (**Classic** ⟷ **Panning**, with the Classic glide time), CC numbers (per-string pitch + alt-tune/pan), and **Bend effect** (a scoop articulation that swells into each new tuning).
 - **+ Custom tuning** — dial each string ±12 from standard, name it and save it.
 
 ![The Bends section](screenshots/bends.png)
@@ -137,7 +146,7 @@ Then open **http://localhost:8765/vg800-tuner.html** in **Chrome or Edge**, allo
 
 ## Troubleshooting
 
-- **Nothing changes?** Check the **green dot** on ⚙ (MIDI connected), that **BEND CONTROL = 100** on the VG-800, and that the app's CC numbers match your assigns.
+- **Nothing changes?** Check the **green dot** on ⚙ (MIDI connected), that the app's **Mode** (⚙ Settings) matches the preset loaded on the VG-800 — Classic wants ALT TUNE ON with the 16-slot table; Panning wants **BEND CONTROL = 100** — and that the app's CC numbers match your assigns.
 - **Wrong strings move?** Confirm the DEPTH → CC mapping order (DEPTH 1 = high E) and that MODE is `MOMENT`.
 - **No sound / no MIDI?** Use Chrome or Edge over HTTPS or `localhost`, and select the correct output port in Settings.
 
