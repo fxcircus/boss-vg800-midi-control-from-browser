@@ -315,6 +315,10 @@
   .ps-none { font-family: var(--mono); font-size: 11px; color: var(--bone-faint); font-style: italic; }
   .ps-preset-fac { padding: 6px 11px; font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: 0.4px; background: var(--wood); border: 1px solid var(--edge); border-radius: 8px; color: var(--bone-dim); cursor: pointer; transition: border-color .12s, color .12s, background .12s; }
   .ps-preset-fac:hover { border-color: var(--brass-deep); color: var(--brass); background: var(--felt); }
+  /* The preset whose amounts match the current per-string values stays lit (drops as soon as a stepper diverges or Clear resets) */
+  .ps-preset-fac.on { border-color: var(--brass); color: var(--brass); background: var(--felt); box-shadow: inset 0 0 0 1px var(--brass-glow); }
+  .ps-preset.on { border-color: var(--brass); box-shadow: inset 0 0 0 1px var(--brass-glow); }
+  .ps-preset.on .ps-preset-load { color: var(--brass); background: var(--felt); }
   .ps-preset { display: inline-flex; align-items: stretch; border: 1px solid var(--edge); border-radius: 8px; overflow: hidden; background: var(--wood); }
   .ps-preset-load { padding: 6px 11px; font-family: var(--cond); font-size: 12.5px; font-weight: 600; letter-spacing: 0.3px; background: none; border: none; color: var(--bone); cursor: pointer; transition: background .12s, color .12s; }
   .ps-preset-load:hover { background: var(--felt); color: var(--brass); }
@@ -1215,7 +1219,7 @@
         <li><b>Latch</b> — the toggle in the <b>Bends</b> header switches pedals to tap on/off instead of holding.</li>
         <li><b>Rebind</b> any control in <em>Settings → Keyboard Mapping</em> (or the <b>⌨ Map</b> button in the header): click a chip, press a key. <em>Reset</em> restores defaults.</li>
         <li>In <b>Chords</b> key mode the pedals switch to <b>scale-tone bends</b> — see the Chords help above.</li>
-        <li>Any bend that would exceed ±12 semitones greys out.</li>
+        <li>In <b>Panning</b> mode a bend greys out if base + bend would exceed ±12 (they share one BEND&nbsp;DEPTH parameter). In <b>Classic</b> every bend — pedals, per-string, scale and mode bends alike — rides on top of the ALT&nbsp;TUNE base as its own relative depth, so bends never grey out for range: the full ±12 is available on any tuning.</li>
       </ul></div>
     </details>
 
@@ -1694,7 +1698,7 @@ function renderStrings(offsets){
     const dir=s<0?'flat':s>0?'sharp':''; const sign=s>0?'+':'';
     const row=wrap.children[i];
     row.className='str'+(s!==0?' shifted '+dir:'');
-    row.querySelector('.slide').style.left=(50+(s/12)*44)+'%';
+    row.querySelector('.slide').style.left=(50+(Math.max(-12,Math.min(12,s))/12)*44)+'%';   // Classic can stack base+bend past ±12 — pin the slide at the wire's edge (name + offset text stay truthful)
     row.querySelector('.sl-name').textContent=name;
     let deg=null;
     if(degMap){ const iv=((((STD_MIDI[i]+s)%12)+12)%12 - activeChord.r + 12)%12; deg=degMap[iv]; }
@@ -1779,7 +1783,7 @@ function perStringControls(){
   const singles=[0,1,2,3,4,5].map(i=>({id:'PS'+(i+1), name:'String '+SLBL[i], group:'string', string:i, semis:settings.stringBend[i]|0, key:PS_KEYS[i], perString:true}));
   // "All Strings" — one pedal that engages every AVAILABLE per-string bend at once (e.g. the whole guitar up a 4th).
   // parts = the singles it lights up while held (same mechanism as the copedent combos).
-  const avail=[0,1,2,3,4,5].filter(i=>{ const a=settings.stringBend[i]|0; if(!a) return false; const off=(baseOffsets[i]|0)+a; return off>=-12&&off<=12; });
+  const avail=[0,1,2,3,4,5].filter(i=>{ const a=settings.stringBend[i]|0; if(!a) return false; const off=(baseOffsets[i]|0)+a; return settings.realBend||(off>=-12&&off<=12); });
   singles.push({id:'PSALL', name:'All Strings', group:'combo', allStrings:true, act:'every set bender · one press', key:DEFAULT_KEYS.PSALL, parts:avail.map(i=>'PS'+(i+1)), perString:true});
   return singles;
 }
@@ -1797,13 +1801,15 @@ function psResend(){
   if(midiOut){ if(settings.realBend) rbApply(bends); else send(eff); }
   renderStrings(eff);
 }
-function adjustStringBend(s, d){   // step one string's amount, clamped so the amount stays within ±12 AND base+amount stays within one octave
-  const lo=Math.max(-12, -12-baseOffsets[s]), hi=Math.min(12, 12-baseOffsets[s]);
+function adjustStringBend(s, d){   // step one string's amount. Classic: the depth is RELATIVE to the ALT TUNE base → always the full ±12. Panning: base+amount share one ±12 BEND DEPTH param, so the tuning eats into the range.
+  const rb=!!settings.realBend;
+  const lo=rb?-12:Math.max(-12, -12-baseOffsets[s]), hi=rb?12:Math.min(12, 12-baseOffsets[s]);
   const v=Math.max(lo, Math.min(hi, (settings.stringBend[s]|0)+d));
   if(v===(settings.stringBend[s]|0)) return;
   settings.stringBend[s]=v; saveSettingsLS(); renderPedals(); psResend();
 }
 function savePerStringPreset(){
+  if(!settings.stringBend.some(x=>x|0)){ toast('Set at least one bend first', true); return; }   // an all-zero preset is just Clear — and it would sit lit whenever the amounts are cleared
   const nm=(prompt('Name this per-string preset:')||'').trim().slice(0,24); if(!nm) return;
   const ex=strPresets.findIndex(p=>p.name===nm), rec={name:nm, amounts:[...settings.stringBend]};
   if(ex>=0) strPresets[ex]=rec; else strPresets.push(rec);
@@ -1856,9 +1862,9 @@ function chordInfo(base, name){
 // One control = one or more degree moves, aggregated to per-string bends.
 // Greys out if the root is unknown, a target degree is absent from the window, or any string exceeds ±12.
 function controlState(ctrl, info, base){
-  if(ctrl.allStrings){                                          // Per-String "All Strings": every available bender at once (skips 0-amount and out-of-range strings)
+  if(ctrl.allStrings){                                          // Per-String "All Strings": every available bender at once (skips 0-amount strings; Panning also skips out-of-range ones)
     const moves=[];
-    for(let i=0;i<6;i++){ const a=settings.stringBend[i]|0; if(!a) continue; const m=STD_MIDI[i]+base[i], off=base[i]+a; if(off<-12||off>12) continue; moves.push({i, from:m, to:m+a, off, bend:a, ok:true}); }
+    for(let i=0;i<6;i++){ const a=settings.stringBend[i]|0; if(!a) continue; const m=STD_MIDI[i]+base[i], off=base[i]+a; if(!settings.realBend && (off<-12||off>12)) continue; moves.push({i, from:m, to:m+a, off, bend:a, ok:true}); }
     if(!moves.length) return {avail:false, why:'no bends set', moves:[]};
     return {avail:true, why:'', moves};
   }
@@ -1868,26 +1874,26 @@ function controlState(ctrl, info, base){
     const i=ctrl.string, m=STD_MIDI[i]+base[i], dir=ctrl.seventhDir;
     let d=1; while(d<=12 && (((m+dir*d)%12)+12)%12 !== sev) d++;   // nearest 7th-degree pitch in the pedal's direction
     if(d>12) return {avail:false, why:'no 7th', moves:[]};
-    const to=m+dir*d, bend=dir*d, off=base[i]+bend, ok=off>=-12&&off<=12;
+    const to=m+dir*d, bend=dir*d, off=base[i]+bend, ok=settings.realBend||(off>=-12&&off<=12);   // Classic: relative depth → base never eats the range
     return {avail:ok, why: ok?'':'out of range', moves:[{i, from:m, to, off, bend, ok}]};
   }
-  if(ctrl.semis!=null && ctrl.string!=null){                    // tuning-declared fixed bend: move this string by a set number of semitones
-    const i=ctrl.string, m=STD_MIDI[i]+base[i], off=base[i]+ctrl.semis, ok=off>=-12&&off<=12;
+  if(ctrl.semis!=null && ctrl.string!=null){                    // fixed single-string bend (per-string pedals + tuning-declared pedals). Classic: the depth is relative to the ALT TUNE base, so ±12 always fits; Panning: base+bend share one ±12 param.
+    const i=ctrl.string, m=STD_MIDI[i]+base[i], off=base[i]+ctrl.semis, ok=settings.realBend||(off>=-12&&off<=12);
     return {avail:ok, why: ok?'':'out of range', moves:[{i, from:m, to:m+ctrl.semis, off, bend:ctrl.semis, ok}]};
   }
   if(ctrl.string!=null){                                        // scale-tone bend: raise this string to the next scale tone up (ignores the chord root)
     const S=scalePcSet(); if(!S) return {avail:false, why:'no scale', moves:[]};
     const i=ctrl.string, m=STD_MIDI[i]+base[i]; let d=1; while(d<=11 && !S.has((((m+d)%12)+12)%12)) d++;
     if(d>11) return {avail:false, why:'no scale', moves:[]};
-    const off=base[i]+d, ok=off>=-12&&off<=12;
+    const off=base[i]+d, ok=settings.realBend||(off>=-12&&off<=12);   // Classic: relative depth → base never eats the range
     return {avail:ok, why: ok?'':'out of range', moves:[{i, from:m, to:m+d, off, bend:d, ok}]};
   }
   if(info.root==null) return {avail:false, why:'no root', moves:[]};
   const bends=[0,0,0,0,0,0]; let missing='';
   ctrl.moves.forEach(mv=>{ const tPc=(info.root+DEG_INT[mv.deg])%12; let hit=false; info.pc.forEach((x,i)=>{ if(x===tPc){ bends[i]+=mv.semis; hit=true; } }); if(!hit) missing='no '+DEG_NM[mv.deg]; });
   if(missing) return {avail:false, why:missing, moves:[]};
-  const moves=[]; let ok=true;
-  bends.forEach((b,i)=>{ if(b!==0){ const off=base[i]+b; if(off<-12||off>12) ok=false; moves.push({i, from:STD_MIDI[i]+base[i], to:STD_MIDI[i]+base[i]+b, off, bend:b, ok:off>=-12&&off<=12}); } });
+  const moves=[]; let ok=true, rb=!!settings.realBend;   // Classic: every bend is a relative depth on the ALT TUNE base → base+bend never limits it
+  bends.forEach((b,i)=>{ if(b!==0){ const off=base[i]+b; if(!rb && (off<-12||off>12)) ok=false; moves.push({i, from:STD_MIDI[i]+base[i], to:STD_MIDI[i]+base[i]+b, off, bend:b, ok:rb||(off>=-12&&off<=12)}); } });
   return {avail:ok, why: ok?'':'out of range', moves};
 }
 function bendsFromEngaged(){
@@ -1957,7 +1963,8 @@ function pedalBtnHTML(ctrl, label, sub, st){
 // sibling −/＋ stepper. Kept as separate elements so no <button> nests inside another (which the browser would eject).
 function perStringRowHTML(c, st){
   const mv=st.moves&&st.moves[0], amt=c.semis|0, dis=!st.avail, greyed=dis&&amt!==0, key=(keyFor(c.id)||'').toUpperCase();
-  const base=baseOffsets[c.string]|0, canDn=amt>Math.max(-12,-12-base), canUp=amt<Math.min(12,12-base);
+  const base=baseOffsets[c.string]|0, rb=!!settings.realBend;   // Classic: full ±12 always (relative depth); Panning: base+amount share one ±12 param
+  const canDn=amt>(rb?-12:Math.max(-12,-12-base)), canUp=amt<(rb?12:Math.min(12,12-base));
   let preview, pcls;
   if(amt===0){ preview='no bend'; pcls=' muted'; }
   else if(greyed||!mv){ preview=st.why||'out of range'; pcls=' muted'; }
@@ -2034,10 +2041,13 @@ function renderPedals(){
     html+=`<div class="pedal-info">Chord held in <b>${settings.keyRoot} ${settings.keyScale}</b> — each pedal raises one string to the next scale tone. Hold to bend, release to return.</div>`;
     html+=`<div class="fam-name">Scale Bends · one string each</div><div class="pedals">${controls.map(c=>pedalBtnHTML(c.id,c.name,'',ctrlStateCache[c.id])).join('')}</div>`;
   } else if(psMode){                                            // Per-String — six pedals, one per string, each a saved semitone bend
-    const facChips = FACTORY_PS.map((p,i)=>`<button class="ps-preset-fac" data-psfac="${i}" title="${p.tip||p.name}">${p.name}</button>`).join('');
-    const userChips = strPresets.map((p,i)=>`<span class="ps-preset"><button class="ps-preset-load" data-psload="${i}" title="Recall">${p.name}</button><button class="ps-preset-del" data-psdel="${i}" title="Delete preset">×</button></span>`).join('');
-    html+=`<div class="pedal-info">Each pedal bends <b>one string</b>. Set its semitones with <b>−</b>/<b>＋</b> — kept within one octave of standard, minus what the current tuning already uses — then hold or latch to bend. <b>All Strings</b> pushes every set bender in one press.</div>`;
-    html+=`<p class="bend-cap"><b>Latch</b> keeps a pedal engaged after one tap. Off = press &amp; hold. A pedal greys out if its amount would exceed ±12 on this tuning.</p>`;
+    const psEq=a=>Array.isArray(a)&&a.length===6&&a.every((v,i)=>(v|0)===(settings.stringBend[i]|0));   // does a preset match the live amounts? (drives the lit chip)
+    const facChips = FACTORY_PS.map((p,i)=>`<button class="ps-preset-fac${p.name!=='Clear'&&psEq(p.amounts)?' on':''}" data-psfac="${i}" title="${p.tip||p.name}">${p.name}</button>`).join('');
+    const userChips = strPresets.map((p,i)=>`<span class="ps-preset${p.amounts.some(x=>x|0)&&psEq(p.amounts)?' on':''}"><button class="ps-preset-load" data-psload="${i}" title="Recall">${p.name}</button><button class="ps-preset-del" data-psdel="${i}" title="Delete preset">×</button></span>`).join('');   // pre-existing all-zero presets never light (that state is "cleared", not "loaded")
+    html+= settings.realBend
+      ? `<div class="pedal-info">Each pedal bends <b>one string</b>. Set its semitones with <b>−</b>/<b>＋</b> — the full octave either way on every tuning (the bend rides on top of the ALT&nbsp;TUNE base) — then hold or latch to bend. <b>All Strings</b> pushes every set bender in one press.</div>`
+      : `<div class="pedal-info">Each pedal bends <b>one string</b>. Set its semitones with <b>−</b>/<b>＋</b> — kept within one octave of standard, minus what the current tuning already uses — then hold or latch to bend. <b>All Strings</b> pushes every set bender in one press.</div>`;
+    html+=`<p class="bend-cap"><b>Latch</b> keeps a pedal engaged after one tap. Off = press &amp; hold.${settings.realBend?'':' A pedal greys out if its amount would exceed ±12 on this tuning.'}</p>`;
     html+=`<div class="ps-presets"><span class="ps-presets-lbl">Quick</span>${facChips}</div>`;
     html+=`<div class="ps-presets"><span class="ps-presets-lbl">Saved</span>${userChips||'<span class="ps-none">none yet</span>'}<button class="ps-save" data-pssave>Save…</button></div>`;
     const psAll=controls.find(c=>c.allStrings), psSingles=controls.filter(c=>!c.allStrings);
