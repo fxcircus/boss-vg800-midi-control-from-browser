@@ -22,7 +22,12 @@ Open in **Chrome or Edge**, allow MIDI, and pick your interface. (GitHub Pages s
 
 ## How it works
 
-The app drives one of two VG-800 presets, switched with **⚙ Settings → Mode**:
+The app drives one of two VG-800 presets, switched with **⚙ Settings → Mode**. Each spends the pedal's 16 assign slots differently, so each mode is *for* something different:
+
+- **Classic** (default) — *for expressive playing*: bends that actually **glide** into pitch (pedal-steel moves, per-string benders, scale bends), and Ethnic instruments at **true pitch** with no capo. The trade-off: no stereo panning.
+- **Panning** — *for the stereo field*: per-string placement and the auto-pan LFO engine. Bends still work but *step* instantly to pitch instead of gliding.
+
+Ready-made hardware presets for both live in [`presets/`](presets/) — see [Ready-made presets](#ready-made-presets-the-fast-way) below.
 
 ### Classic mode (the default)
 
@@ -57,7 +62,21 @@ In Classic the Ethnic **+ Octave** lift is baked into the ALT TUNE base pitches 
 
 Configure the pedal once so it listens to the app.
 
-### 1. Set up ALT TUNE and String Bend
+### Ready-made presets (the fast way)
+
+Skip the manual mapping below — import a preset that already has every assign wired:
+
+| Mode | Preset file | Direct download |
+|:-----|:------------|:----------------|
+| **Classic** (default) | [`presets/royClassic.tsl`](presets/royClassic.tsl) | [royClassic.tsl](https://fxcircus.github.io/boss-vg800-midi-control-from-browser/presets/royClassic.tsl) |
+| **Panning** | [`presets/royPanning.tsl`](presets/royPanning.tsl) | [royPanning.tsl](https://fxcircus.github.io/boss-vg800-midi-control-from-browser/presets/royPanning.tsl) |
+
+1. Download the `.tsl` for the mode you want (or clone the repo — they're in `presets/`).
+2. Open **Boss Tone Studio for VG-800** → **LIBRARIAN** → import the `.tsl` liveset.
+3. Write the patch to the pedal and select it.
+4. Make sure the app's **⚙ Settings → Mode** matches the preset you loaded, and **MIDI → RX CHANNEL** matches the app's channel. Done.
+
+### 1. Set up ALT TUNE and String Bend (manual alternative)
 
 For **Classic mode** (the default):
 
@@ -117,7 +136,7 @@ Notes:
 - **Ethnic** — mandolin, Irish/Greek bouzouki, oud, charango, saz/bağlama, cavaquinho, balalaika, 5-string banjo. Each maps the instrument's pitches onto a chosen cluster of strings (pick the placement with the string-dot buttons). A **capo hint** says where to physically capo, since the VG-800 only bends ±12 semitones.
 - **Pedal Steel** — load a real steel tuning (**E9 Nashville**, **C6 Swing/Jazz**, **B6 Universal**) and choose which contiguous **6 of the 10** strings map onto the guitar; the **Bends** section reconfigures to that tuning's copedent.
 - **Bends** — hold the on-screen **Pedal A / B** and knee levers **LKL / LKR** (or keys <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> <kbd>F</kbd>) to bend the root / 3rd / 5th of the current tuning, pedal-steel style. They stack, the icons animate as they move, and any bend beyond ±12 greys out. **Combos** (A+B…) engage a whole grip at once. **Latch** toggles instead of holding; **Key Mapping** lets you rebind any control to a key.
-- **Per-String bends** — a **Preset ⟷ Per-String** switch turns the six pedals into one-per-string manual benders (keys <kbd>A</kbd>–<kbd>H</kbd>). Dial each string up or down with **−/＋**, kept within one octave of standard *after* accounting for what the current tuning already uses (a pedal greys out if it would exceed ±12). Save the six amounts as named **presets** and recall them on any tuning — factory quick presets include uniform shifts (±1, ±2, 4th/5th/octave) plus **B-Bender**, **G-Bender**, **Drop Low** (instant Drop D) and **Nashville** (lower four strings up an octave).
+- **Per-String bends** — a **Preset ⟷ Per-String** switch turns the six pedals into one-per-string manual benders (keys <kbd>A</kbd>–<kbd>H</kbd>). Dial each string up or down with **−/＋**, kept within one octave of standard *after* accounting for what the current tuning already uses (a pedal greys out if it would exceed ±12). Save the six amounts as named **presets** and recall them on any tuning — factory quick presets include uniform shifts (±1, ±2, 4th/5th/octave) plus **B-Bender**, **G-Bender**, **Drop Low** (instant Drop D) and **Nashville** (lower four strings up an octave). An **All Strings** pedal (<kbd>J</kbd>, rebindable) pushes every set bender in one press — load *4th ↑* and glide the whole guitar up a fourth on one key.
 - **Panning & auto-pan** *(Panning mode)* — manual stereo modes (Center, Equal Spread, Split, Zig-Zag, Pairs…) glide each string to its new position; the **Pan glide** toggle sets the sweep time (Instant → Long). **Auto-pan** gives each string its own pan LFO with character presets (**Rotate, Leslie, Fan Breathe, Ping-Pong, Drift**), Width, Shape, Phase spread, and Free-rate or Tempo-synced timing. Hidden in Classic mode, where CC# 71–76 carry the ALT TUNE pitches instead.
 - **Current Tuning readout** — an always-on panel combining pitch and pan for all six strings: a **pan strip** up top over a **pitch neck** where each note slides flat↔sharp from standard. Updates and animates live from the current tuning, bends and panning (parks in the left sidebar on wide screens).
 - **Themes & display** — the pedal button (top-right) opens the theme picker: **DD500** (default), **GT1000, CS3, RC500, DS1**, each styled after a Boss pedal. **Compact mode** hides note/offset text on cards to fit more on screen.

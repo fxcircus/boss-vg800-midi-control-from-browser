@@ -1129,7 +1129,8 @@
     <details class="docgrp">
       <summary>One-time VG-800 setup</summary>
       <div class="docgrp-body">
-        <p>Configure the pedal once so it listens to the app. The default <b>Classic</b> mode uses all 16 assign slots:</p>
+        <p><b>The fast way — import a ready-made preset.</b> Download <a href="presets/royClassic.tsl" download>royClassic.tsl</a> (for the default Classic mode) or <a href="presets/royPanning.tsl" download>royPanning.tsl</a> (for Panning mode), open <b>Boss Tone Studio for VG-800</b> → <em>LIBRARIAN</em> → import the .tsl, and write the patch to the pedal. Every assign below is already mapped.</p>
+        <p>Or configure it by hand. The default <b>Classic</b> mode uses all 16 assign slots:</p>
         <ul>
           <li><b>INST → ALT TUNE:</b> MODE <em>ALT&nbsp;TUNE</em>, TUNING TYPE <em>USER</em>, switched <em>ON</em> — this carries the tuning (the app keeps it on via CC&nbsp;78).</li>
           <li><b>INST → STR BEND:</b> <em>STR BEND SW = ON</em>. The app drives <em>BEND&nbsp;CONTROL</em> itself — resting at 0, swept to 100 for each bend.</li>
@@ -1143,10 +1144,13 @@
     <details class="docgrp">
       <summary>Classic vs Panning mode</summary>
       <div class="docgrp-body">
-        <p><b>Classic</b> (the default — <em>⚙ Settings → Mode</em>) drives the VG-800 preset where the tuning lives on <em>ALT&nbsp;TUNE</em> (User mode, always ON) and every bend is the pedal's true two-step gesture: the app sets each string's <em>BEND&nbsp;DEPTH</em>, then sweeps <em>BEND&nbsp;CONTROL</em> 0→100 so the pitch <b>glides</b> into the note — and glides back on release. <b>Panning</b> drives the older preset: bends write straight to BEND&nbsp;DEPTH (the note steps to pitch) and CC 71–76 pan the strings instead.</p>
+        <p>The <em>⚙ Settings → Mode</em> toggle picks which of two VG-800 presets the app drives — each spends the pedal's 16 assign slots differently, so each mode is <b>for</b> something different:</p>
         <ul>
-          <li><b>Panning is unavailable in Classic</b>: its CC slots drive <em>ALT&nbsp;TUNE PITCH 1–6</em> instead (the VG-800 has only 16 assign slots), so the Panning section hides.</li>
-          <li>The Ethnic <b>+ Octave</b> lift is baked into the ALT&nbsp;TUNE base pitches in Classic (the ±24 range leaves room), so a mandolin or ukulele sounds at real pitch on the open strings — no capo. In Panning mode CC 78 toggles the preset's fixed +12 as before.</li>
+          <li><b>Classic</b> (default) — <b>for expressive playing</b>: bends that actually <em>glide</em>. The tuning lives on <em>ALT&nbsp;TUNE</em> (User mode, always ON) and every bend is the pedal's true two-step gesture — set the target <em>BEND&nbsp;DEPTH</em>, sweep <em>BEND&nbsp;CONTROL</em> 0→100 — so pedal-steel moves, per-string benders and scale bends slide into pitch like a real mechanical bender instead of stepping. It's also what lets Ethnic instruments sound at <b>true pitch</b>: the ±24 ALT&nbsp;TUNE range absorbs the <em>+ Octave</em> lift, so a mandolin plays from the open strings with no capo. The trade-off: <b>no stereo panning</b> — CC 71–76 are spent on the ALT&nbsp;TUNE pitches. Hardware preset: <a href="presets/royClassic.tsl" download>royClassic.tsl</a>.</li>
+          <li><b>Panning</b> — <b>for the stereo field</b>: per-string placement (Spread, Split, Zig-Zag…) and the auto-pan LFO engine (Rotate, Leslie, Drift…), with CC 71–76 driving <em>STRING · PAN 1–6</em>. Bends still work but write straight to BEND&nbsp;DEPTH, so notes <em>step</em> to pitch instantly rather than glide, and the Ethnic octave rides the preset's fixed +12 on CC 78. Hardware preset: <a href="presets/royPanning.tsl" download>royPanning.tsl</a>.</li>
+        </ul>
+        <p>Pick <b>Classic</b> when the bend gesture matters; pick <b>Panning</b> when the mix does. Match the toggle to whichever preset is loaded on the pedal — the CC numbers overlap, so the wrong mode sends real (wrong) commands.</p>
+        <ul>
           <li>The Bends <b>Swell</b> (INST&nbsp;LEVEL, CC 70) works the same in both modes.</li>
           <li><em>Bend time</em> (in the same settings group) sets how long the Classic glide takes.</li>
         </ul>
@@ -1207,6 +1211,7 @@
       <div class="docgrp-body"><ul>
         <li>Hold the on-screen <b>Pedal&nbsp;A / B</b> and knee levers <b>LKL / LKR</b> (or keys <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> <kbd>F</kbd>) to bend the root / 3rd / 5th of the current tuning, pedal-steel style. They stack, and the icons animate as they move.</li>
         <li><b>Combos</b> (A+B…) engage a whole grip at once and light up the pedals they include.</li>
+        <li><b>Per-String</b> — the Preset ⟷ Per-String switch turns the six pedals into one-per-string manual benders (keys <kbd>A</kbd>–<kbd>H</kbd>), with factory quick presets (B-Bender, 4th ↑, Nashville…) and savable custom ones. <b>All Strings</b> (<kbd>J</kbd>, rebindable) pushes every set bender in one press — e.g. glide the whole guitar up a fourth.</li>
         <li><b>Latch</b> — the toggle in the <b>Bends</b> header switches pedals to tap on/off instead of holding.</li>
         <li><b>Rebind</b> any control in <em>Settings → Keyboard Mapping</em> (or the <b>⌨ Map</b> button in the header): click a chip, press a key. <em>Reset</em> restores defaults.</li>
         <li>In <b>Chords</b> key mode the pedals switch to <b>scale-tone bends</b> — see the Chords help above.</li>
@@ -1299,7 +1304,7 @@ function toCC(s){ const c=Math.max(-12,Math.min(12,s)); return Math.round((c+12)
 // Center is unchanged (0 st → CC 64 in both): −24→0, −12→32, 0→64, +12→95, +24→127.
 function toAltCC(s){ const c=Math.max(-24,Math.min(24,s)); return Math.round((c+24)/48*127); }
 const RB_MS_OPTS=[[120,'Fast'],[300,'Medium'],[700,'Slow']];   // Classic-mode glide time — how long the BEND CONTROL sweep takes
-const DEFAULT_KEYS={A:'a',B:'s',LKL:'d',LKR:'f',AB:'g',ABR:'h'};  // ergonomic left-hand cluster
+const DEFAULT_KEYS={A:'a',B:'s',LKL:'d',LKR:'f',AB:'g',ABR:'h',PSALL:'j'};  // ergonomic left-hand cluster; PSALL = Per-String "All Strings" pedal
 // Chords keyboard — rebindable, stored as KeyboardEvent.code (layout-independent, so Shift+degree stays robust)
 const CHORD_KEYS_DEFAULT={deg1:'Digit1',deg2:'Digit2',deg3:'Digit3',deg4:'Digit4',deg5:'Digit5',deg6:'Digit6',deg7:'Digit7',voice3:'Minus',voice4:'Equal',clusterDown:'BracketLeft',clusterUp:'BracketRight',recenter:'Digit0'};
 // Played history — mode (rolling window vs manual session), N (rolling size), timeline (trim-on-copy modal), fmt (copy format)
@@ -1770,10 +1775,28 @@ const FACTORY_PS=[
   {name:'Drop Low', amounts:[0,0,0,0,0,-2],    tip:'Low E down to D — instant Drop D'},
   {name:'Nashville', amounts:[0,0,12,12,12,12], tip:'Strings 3–6 up an octave — high-strung shimmer while held'},
 ];
-function perStringControls(){ return [0,1,2,3,4,5].map(i=>({id:'PS'+(i+1), name:'String '+SLBL[i], group:'string', string:i, semis:settings.stringBend[i]|0, key:PS_KEYS[i], perString:true})); }
+function perStringControls(){
+  const singles=[0,1,2,3,4,5].map(i=>({id:'PS'+(i+1), name:'String '+SLBL[i], group:'string', string:i, semis:settings.stringBend[i]|0, key:PS_KEYS[i], perString:true}));
+  // "All Strings" — one pedal that engages every AVAILABLE per-string bend at once (e.g. the whole guitar up a 4th).
+  // parts = the singles it lights up while held (same mechanism as the copedent combos).
+  const avail=[0,1,2,3,4,5].filter(i=>{ const a=settings.stringBend[i]|0; if(!a) return false; const off=(baseOffsets[i]|0)+a; return off>=-12&&off<=12; });
+  singles.push({id:'PSALL', name:'All Strings', group:'combo', allStrings:true, act:'every set bender · one press', key:DEFAULT_KEYS.PSALL, parts:avail.map(i=>'PS'+(i+1)), perString:true});
+  return singles;
+}
 function perStringActive(){ return !!settings.perStringOn && !customBendActive() && !modesBendActive() && !scaleBendActive(); }   // replaces only the copedent
 function pedalControls(){ return customBendActive() ? activeBendPedals : (modesBendActive() ? MODE_BEND.controls : (scaleBendActive() ? SCALE_BEND.controls : (perStringActive() ? perStringControls() : copedent.controls))); }
-function psResend(){ if(!held.size) return; const bends=bendsFromEngaged(); const eff=baseOffsets.map((o,i)=>o+bends[i]); if(midiOut){ if(settings.realBend) rbApply(bends); else send(eff); } renderStrings(eff); }   // push a live change to any held pedal
+// Amounts changed: first drop any latched per-string pedal that's no longer available (a disabled button gets no
+// pointer listeners, so it would be stuck lit and mouse-dead — and silently re-fire when a later preset re-enables it),
+// then push the new bend state for whatever is still held.
+function psResend(){
+  let dropped=false;
+  held.forEach(id=>{ if(/^PS/.test(id)){ const st=ctrlStateCache[id]; if(!st||!st.avail){ held.delete(id); dropped=true; } } });
+  if(dropped) document.querySelectorAll('#pedalWrap .pedal').forEach(b=> b.classList.toggle('on', ctrlEngaged(b.dataset.ctrl)));
+  if(!held.size && !dropped) return;
+  const bends=bendsFromEngaged(); const eff=baseOffsets.map((o,i)=>o+bends[i]);
+  if(midiOut){ if(settings.realBend) rbApply(bends); else send(eff); }
+  renderStrings(eff);
+}
 function adjustStringBend(s, d){   // step one string's amount, clamped so the amount stays within ±12 AND base+amount stays within one octave
   const lo=Math.max(-12, -12-baseOffsets[s]), hi=Math.min(12, 12-baseOffsets[s]);
   const v=Math.max(lo, Math.min(hi, (settings.stringBend[s]|0)+d));
@@ -1833,6 +1856,12 @@ function chordInfo(base, name){
 // One control = one or more degree moves, aggregated to per-string bends.
 // Greys out if the root is unknown, a target degree is absent from the window, or any string exceeds ±12.
 function controlState(ctrl, info, base){
+  if(ctrl.allStrings){                                          // Per-String "All Strings": every available bender at once (skips 0-amount and out-of-range strings)
+    const moves=[];
+    for(let i=0;i<6;i++){ const a=settings.stringBend[i]|0; if(!a) continue; const m=STD_MIDI[i]+base[i], off=base[i]+a; if(off<-12||off>12) continue; moves.push({i, from:m, to:m+a, off, bend:a, ok:true}); }
+    if(!moves.length) return {avail:false, why:'no bends set', moves:[]};
+    return {avail:true, why:'', moves};
+  }
   if(ctrl.seventhDir!=null){                                    // Modes bend: move this string to the mode's 7th degree (up for A, down for B)
     const sev = activeModeTuning ? activeModeTuning.seventh : null;
     if(sev==null) return {avail:false, why:'no mode', moves:[]};
@@ -1863,7 +1892,8 @@ function controlState(ctrl, info, base){
 }
 function bendsFromEngaged(){
   const bends=[0,0,0,0,0,0];
-  held.forEach(ctrl=>{ const st=ctrlStateCache[ctrl]; if(st&&st.avail) st.moves.forEach(m=> bends[m.i]+=m.bend); });
+  const allOn = held.has('PSALL') && ctrlStateCache['PSALL'] && ctrlStateCache['PSALL'].avail;   // "All Strings" already includes every set per-string bend — skip held singles so nothing double-counts
+  held.forEach(ctrl=>{ if(allOn && /^PS[1-6]$/.test(ctrl)) return; const st=ctrlStateCache[ctrl]; if(st&&st.avail) st.moves.forEach(m=> bends[m.i]+=m.bend); });
   return bends;
 }
 function movesHTML(moves){
@@ -1956,9 +1986,10 @@ const CLEAR_ICO='<svg class="hist-ico" viewBox="0 0 24 24" fill="none" stroke="c
 const EYE_ICO='<svg class="hist-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
 const EYE_OFF_ICO='<svg class="hist-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.9 5.1A10.6 10.6 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.3 4M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7a10.6 10.6 0 0 0 4-.8M3 3l18 18M9.5 9.5a3 3 0 0 0 4.2 4.2"/></svg>';
 // Key mapping now lives in Settings (moved out of the Bends panel). Bends = rebindable pedal/swell chips; Chords = fixed number-key reference.
+function bindableCtrls(){ return [...copedent.controls, {id:'PSALL', name:'All Strings · Per-String', key:DEFAULT_KEYS.PSALL}]; }   // rebindable pedal keys: the copedent + the Per-String "All Strings" pedal
 function renderKeymap(){
   const box=document.getElementById('keymapSettings'); if(!box) return;
-  const chips=copedent.controls.map(c=>{ const k=(keyFor(c.id)||'').toUpperCase(), L=bindingCtrl===c.id;
+  const chips=bindableCtrls().map(c=>{ const k=(keyFor(c.id)||'').toUpperCase(), L=bindingCtrl===c.id;
     return `<button class="kb-chip${L?' listening':''}" data-bind="${c.id}"><span class="kb-cname">${c.name}</span><span class="kb-key">${L?'press…':(k||'—')}</span></button>`; }).join('');
   const kb=chordKeyOn(), CK=settings.chordKeys||{};
   const degRN=i=> kb ? romanNumeral(i, SCALES[settings.keyScale].quals[i]) : RN_BASE[i];
@@ -1974,7 +2005,7 @@ function renderKeymap(){
     <div class="subhd">Chords · voicing</div>
     <div class="kb-chips">${voiceChips}</div>`;
   box.querySelectorAll('.kb-chip[data-bind]').forEach(b=> b.addEventListener('click', ()=>{ bindingCtrl=b.dataset.bind; renderKeymap(); }));
-  const rb=box.querySelector('.kb-chip[data-reset]'); if(rb) rb.addEventListener('click', ()=>{ copedent.controls.forEach(c=> settings.keys[c.id]=c.key); settings.chordKeys={...CHORD_KEYS_DEFAULT}; rebuildKeymap(); saveSettingsLS(); bindingCtrl=null; renderKeymap(); renderPedals(); });
+  const rb=box.querySelector('.kb-chip[data-reset]'); if(rb) rb.addEventListener('click', ()=>{ bindableCtrls().forEach(c=> settings.keys[c.id]=c.key); settings.chordKeys={...CHORD_KEYS_DEFAULT}; rebuildKeymap(); saveSettingsLS(); bindingCtrl=null; renderKeymap(); renderPedals(); });
 }
 function renderPedals(){
   const wrap=document.getElementById('pedalWrap'); if(!wrap) return;
@@ -2005,11 +2036,13 @@ function renderPedals(){
   } else if(psMode){                                            // Per-String — six pedals, one per string, each a saved semitone bend
     const facChips = FACTORY_PS.map((p,i)=>`<button class="ps-preset-fac" data-psfac="${i}" title="${p.tip||p.name}">${p.name}</button>`).join('');
     const userChips = strPresets.map((p,i)=>`<span class="ps-preset"><button class="ps-preset-load" data-psload="${i}" title="Recall">${p.name}</button><button class="ps-preset-del" data-psdel="${i}" title="Delete preset">×</button></span>`).join('');
-    html+=`<div class="pedal-info">Each pedal bends <b>one string</b>. Set its semitones with <b>−</b>/<b>＋</b> — kept within one octave of standard, minus what the current tuning already uses — then hold or latch to bend.</div>`;
+    html+=`<div class="pedal-info">Each pedal bends <b>one string</b>. Set its semitones with <b>−</b>/<b>＋</b> — kept within one octave of standard, minus what the current tuning already uses — then hold or latch to bend. <b>All Strings</b> pushes every set bender in one press.</div>`;
     html+=`<p class="bend-cap"><b>Latch</b> keeps a pedal engaged after one tap. Off = press &amp; hold. A pedal greys out if its amount would exceed ±12 on this tuning.</p>`;
     html+=`<div class="ps-presets"><span class="ps-presets-lbl">Quick</span>${facChips}</div>`;
     html+=`<div class="ps-presets"><span class="ps-presets-lbl">Saved</span>${userChips||'<span class="ps-none">none yet</span>'}<button class="ps-save" data-pssave>Save…</button></div>`;
-    html+=`<div class="fam-name">Strings · one pedal each</div><div class="ps-list">${controls.map(c=>perStringRowHTML(c, ctrlStateCache[c.id])).join('')}</div>`;
+    const psAll=controls.find(c=>c.allStrings), psSingles=controls.filter(c=>!c.allStrings);
+    html+=`<div class="fam-name">Strings · one pedal each</div><div class="ps-list">${psSingles.map(c=>perStringRowHTML(c, ctrlStateCache[c.id])).join('')}</div>`;
+    if(psAll) html+=`<div class="fam-name">All at once</div><div class="pedals" style="grid-template-columns:minmax(185px,560px)">${pedalBtnHTML(psAll.id, psAll.name, psAll.act, ctrlStateCache[psAll.id])}</div>`;
   } else {
     const info = curInfo.root==null
       ? 'No chord root here — pedals disabled.'
@@ -2097,8 +2130,16 @@ document.addEventListener('keydown', e=>{                 // rebind capture (chi
   }
   if((e.key||'').length!==1) return;                      // pedal: wait for a printable key
   const k=e.key.toLowerCase();
-  copedent.controls.forEach(c=>{ if(c.id!==bindingCtrl && keyFor(c.id)===k) settings.keys[c.id]=''; });  // no dupes
-  settings.keys[bindingCtrl]=k; bindingCtrl=null; rebuildKeymap(); saveSettingsLS(); renderKeymap(); renderPedals();   // chips (Settings) + key badges (Bends)
+  // Dupe rules are per-context: PSALL lives only in the Per-String keymap (alongside the fixed A–H string keys),
+  // the copedent pedals only in theirs — so the two never conflict with each other and must not clear each other.
+  if(bindingCtrl==='PSALL'){
+    if(PS_KEYS.includes(k)){ toast('“'+k.toUpperCase()+'” already drives a string pedal', true); return; }   // keep listening for another key
+    settings.keys.PSALL=k;
+  } else {
+    copedent.controls.forEach(c=>{ if(c.id!==bindingCtrl && keyFor(c.id)===k) settings.keys[c.id]=''; });  // no dupes within the copedent
+    settings.keys[bindingCtrl]=k;
+  }
+  bindingCtrl=null; rebuildKeymap(); saveSettingsLS(); renderKeymap(); renderPedals();   // chips (Settings) + key badges (Bends)
 });
 document.addEventListener('keydown', e=>{                 // pedal engage
   if(e.repeat || e.metaKey || e.ctrlKey || e.altKey || bindingCtrl) return;
