@@ -519,8 +519,9 @@
   @media (min-width: 1280px) {
     /* Full-width header band: the title bar spans the whole screen; both columns start BELOW it */
     body { padding-top: 0; }
-    header { position: fixed; top: 0; left: 0; right: 0; margin: 0; padding: 13px 26px; background: var(--bg); background-attachment: fixed; border-bottom: 1px solid var(--edge-soft); }
+    header { position: fixed; top: 0; left: 0; right: 0; margin: 0; padding: 13px 26px; background: var(--bg); background-attachment: fixed; border-bottom: 1px solid var(--edge-soft); justify-content: flex-end; }
     header.stuck { box-shadow: none; }
+    header .mast { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }   /* title centered in the band; the buttons keep the right edge */
     .wrap { padding-top: calc(var(--hdr-h, 74px) + 22px); }
     #sideNav {
       display: block; position: fixed; top: calc(var(--hdr-h, 74px) + 20px); left: calc(50% - 626px); width: 192px;
