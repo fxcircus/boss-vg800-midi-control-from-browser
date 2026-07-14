@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VG800 — Pedal-bend review</title>
+<style>
+  :root { --ink:#2e2820; --dim:#5c5341; --faint:#8a7f66; --wood:#e7dec8; --felt:#efe7d4; --edge:#c2b493; --edge-soft:rgba(150,135,100,.45); --blue:#2f6fb0; --blue-deep:#23568a; --amber:#c47a1e; --ok:#3f9e6a; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:linear-gradient(180deg,#f2ead7 0%,#e9e0cb 100%); color:var(--ink); font-family:ui-monospace,'Space Mono',Menlo,monospace; padding:34px 20px 90px; min-height:100vh; }
+  .wrap { max-width:860px; margin:0 auto; }
+  h1 { font-family:ui-sans-serif,system-ui,'Barlow Semi Condensed',sans-serif; font-weight:800; font-size:30px; text-transform:uppercase; letter-spacing:.5px; }
+  h1 em { font-style:normal; color:var(--blue); }
+  .sub { font-size:12px; color:var(--dim); margin:8px 0 26px; line-height:1.6; }
+  .sub b { color:var(--blue); }
+  .grp { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue-deep); margin:30px 2px 12px; display:flex; align-items:center; gap:12px; }
+  .grp::before,.grp::after { content:""; flex:1; height:1px; background:var(--edge-soft); }
+  .card { background:var(--wood); border:1px solid var(--edge); border-radius:12px; padding:16px 18px; margin-bottom:12px; transition:border-color .15s, background .15s; }
+  .card.on { border-color:var(--blue); background:var(--felt); box-shadow:inset 0 0 0 1px rgba(47,111,176,.25); }
+  .head { display:flex; align-items:flex-start; gap:12px; cursor:pointer; user-select:none; }
+  .head input[type=checkbox] { appearance:none; width:20px; height:20px; flex-shrink:0; margin-top:1px; border:2px solid var(--edge); border-radius:6px; background:#fff8; cursor:pointer; position:relative; transition:all .15s; }
+  .head input[type=checkbox]:checked { border-color:var(--blue); background:var(--blue); }
+  .head input[type=checkbox]:checked::after { content:""; position:absolute; left:5px; top:1px; width:5px; height:10px; border:solid #fff; border-width:0 2.5px 2.5px 0; transform:rotate(45deg); }
+  .pid { font-weight:700; color:var(--blue); flex-shrink:0; font-size:14px; margin-top:2px; }
+  .tit { font-family:ui-sans-serif,system-ui,sans-serif; font-weight:700; font-size:15px; line-height:1.35; }
+  .body { margin:10px 0 0 32px; font-size:12px; line-height:1.65; color:var(--dim); }
+  .body b { color:var(--ink); }
+  .lbl { color:var(--faint); text-transform:uppercase; font-size:9.5px; letter-spacing:1px; }
+  code { display:block; background:#00000010; border:1px solid var(--edge-soft); border-radius:8px; padding:8px 11px; font-size:11px; margin:7px 0; white-space:pre-wrap; word-break:break-word; color:var(--ink); }
+  .radios { display:flex; gap:8px; margin-top:10px; margin-left:32px; }
+  .radios label { display:inline-flex; align-items:center; gap:7px; font-size:12px; border:1px solid var(--edge); border-radius:8px; padding:7px 13px; cursor:pointer; background:#fff5; }
+  .radios input { accent-color:var(--blue); }
+  .radios label:has(input:checked) { border-color:var(--blue); background:var(--felt); color:var(--blue-deep); font-weight:700; }
+  .tweak { margin:10px 0 0 32px; }
+  .tweak input { width:100%; border:1px solid var(--edge); border-radius:8px; background:#fff8; padding:8px 11px; font:inherit; font-size:12px; color:var(--ink); }
+  .tweak input:focus { outline:none; border-color:var(--blue); }
+  textarea { width:100%; min-height:90px; border:1px solid var(--edge); border-radius:10px; background:#fff8; padding:11px 13px; font:inherit; font-size:12px; color:var(--ink); resize:vertical; }
+  textarea:focus { outline:none; border-color:var(--blue); }
+  .bar { position:fixed; left:0; right:0; bottom:0; background:var(--felt); border-top:1px solid var(--edge); padding:12px 20px; display:flex; align-items:center; gap:12px; z-index:10; }
+  .bar .count { font-size:12px; color:var(--dim); margin-right:auto; }
+  .bar .count b { color:var(--blue); font-size:14px; }
+  button.act { font:inherit; font-size:12px; font-weight:700; letter-spacing:.5px; padding:10px 18px; border-radius:9px; border:1px solid var(--edge); background:var(--wood); color:var(--ink); cursor:pointer; }
+  button.act.go { background:var(--blue); border-color:var(--blue-deep); color:#fff; }
+  button.act:hover { filter:brightness(1.05); }
+  .saved { font-size:11px; color:var(--ok); opacity:0; transition:opacity .3s; }
+  .saved.show { opacity:1; }
+  table { border-collapse:collapse; width:100%; font-size:11px; margin:6px 0 2px; }
+  th,td { border:1px solid var(--edge-soft); padding:5px 7px; text-align:left; }
+  th { color:var(--blue-deep); text-transform:uppercase; font-size:9.5px; letter-spacing:.5px; }
+  details { margin-bottom:8px; }
+  summary { cursor:pointer; font-size:12px; color:var(--dim); font-weight:700; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Pedal-bend review · <em>decisions</em></h1>
+  <p class="sub">Check what you approve — everything <b>auto-saves in this browser</b> as you click.
+  When you're done, hit <b>Download decisions</b> (drop the file in the repo) or <b>Copy summary</b> and paste it to Claude.
+  Tweak fields accept free text (different key, different amount…). Nothing changes in the app until Claude applies this.</p>
+
+  <details><summary>Current inventory (reference)</summary>
+    <table>
+      <tr><th>System</th><th>Applies to</th><th>Controls today</th></tr>
+      <tr><td><b>Generic copedent</b></td><td>every regular tuning with a major-triad root</td><td>A: 5th +2 · B: 3rd +1 · LKL: root +1 · LKR: root −1 (maj7) · A+B · A+B+LKR</td></tr>
+      <tr><td><b>E9 copedent</b></td><td>E9 Nashville / Lanois, B6 Universal</td><td>A, B, C (5th+2 & root+2), LKL (root+1), LKR (root−1), VERT (5th−1), A+B</td></tr>
+      <tr><td><b>C6 copedent</b></td><td>C6 Swing/Jazz</td><td>P5 (5th−1), P6 (root+1), P8 Boo-wah (root−3), LWR (3rd−1)</td></tr>
+      <tr><td><b>Modes pedals</b></td><td>Modes section</td><td>high string ↑ to the 7th · low string ↓ to the 7th</td></tr>
+      <tr><td><b>Custom pedals</b></td><td>Radiohead, Sitar</td><td>intentional designs — untouched</td></tr>
+      <tr><td><b>Factory presets</b></td><td>Per-String</td><td>Clear, ±1, ±2, 4th ↑, 5th ↑, Oct ↑/↓, B-Bender, G-Bender, Drop Low, Nashville</td></tr>
+    </table>
+  </details>
+
+  <div class="grp">Generic copedent — every regular tuning</div>
+
+  <div class="card" data-p="P1">
+    <label class="head"><input type="checkbox" id="P1"><span class="pid">P1</span>
+      <span class="tit">LKL: root +1 → <b>3rd −1</b> — an instant parallel-minor lever</span></label>
+    <div class="body">
+      <span class="lbl">Current</span> LKL raises the root a half step — a harsh standalone sus♭2 (the real E9 F-lever only shines in string-layout combos this degree model doesn't have).<br>
+      <span class="lbl">Proposed</span>
+      <code>{id:'LKL', name:'LKL', group:'knee', key:'d', act:'3rd −½ (minor)', moves:[{deg:'3',semis:-1}]}</code>
+      <span class="lbl">Why</span> Hold one lever and every open-major tuning becomes its minor — the most-used move on a real steel. The C6 copedent's LWR already proves it in this app.
+    </div>
+    <div class="tweak"><input data-tweak="P1" placeholder="tweaks (optional)…"></div>
+  </div>
+
+  <div class="card" data-p="P2">
+    <label class="head"><input type="checkbox" id="P2"><span class="pid">P2</span>
+      <span class="tit">New combo <b>A + LKL = minor 6th</b> <span style="color:var(--faint)">(needs P1)</span></span></label>
+    <div class="body">
+      <code>{id:'AL', name:'A + LKL', group:'combo', parts:['A','LKL'], key:'j', act:'the m6 grip', moves:[{deg:'5',semis:2},{deg:'3',semis:-1}]}</code>
+      <span class="lbl">Math</span> root stays, 3rd −1, 5th +2 → <b>R ♭3 6</b> (C → C E♭ A), the classic steel/jazz m6 color. Key <b>J</b> is free in copedent context.
+    </div>
+    <div class="tweak"><input data-tweak="P2" placeholder="tweaks (optional)…"></div>
+  </div>
+
+  <div class="card" data-p="P3">
+    <div class="head" style="cursor:default"><span class="pid">P3</span>
+      <span class="tit">A+B+LKR combo — keep or retire?</span></div>
+    <div class="body"><span class="lbl">Current</span> 5th +2, 3rd +1, root −1 → a maj7-over-IV color. Usable, least idiomatic of the combos.</div>
+    <div class="radios">
+      <label><input type="radio" name="P3" value="keep" checked> Keep as-is</label>
+      <label><input type="radio" name="P3" value="retire"> Retire it</label>
+    </div>
+  </div>
+
+  <div class="grp">E9 copedent — pedal-steel section</div>
+
+  <div class="card" data-p="P4">
+    <label class="head"><input type="checkbox" id="P4"><span class="pid">P4</span>
+      <span class="tit">Add the classic <b>B + C combo = the ii chord</b></span></label>
+    <div class="body">
+      <code>{id:'BC', name:'B + C', group:'combo', parts:['B','C'], key:'h', act:'the ii chord', moves:[{deg:'3',semis:1},{deg:'5',semis:2},{deg:'1',semis:2}]}</code>
+      <span class="lbl">Math</span> C E G → <b>D F A = the ii</b> — the second-most-used grip on a real E9 after A+B. Key H is free in the e9 set.
+    </div>
+    <div class="tweak"><input data-tweak="P4" placeholder="tweaks (optional)…"></div>
+  </div>
+
+  <div class="card" data-p="P5">
+    <div class="head" style="cursor:default"><span class="pid">P5</span>
+      <span class="tit">E9 LKL (root +1) — keep authentic, or match P1?</span></div>
+    <div class="body">Recommendation: <b>keep</b> — it's the real F-lever; the steel section should stay faithful even if the generic copedent changes.</div>
+    <div class="radios">
+      <label><input type="radio" name="P5" value="keep" checked> Keep root +1 (authentic)</label>
+      <label><input type="radio" name="P5" value="change"> Change to 3rd −1 too</label>
+    </div>
+  </div>
+
+  <div class="grp">C6 copedent</div>
+
+  <div class="card" data-p="P6">
+    <label class="head"><input type="checkbox" id="P6"><span class="pid">P6</span>
+      <span class="tit">Add combo <b>P5 + LWR = diminished</b></span></label>
+    <div class="body">
+      <code>{id:'DIM', name:'P5 + LWR', group:'combo', parts:['P5','LWR'], key:'g', act:'diminished', moves:[{deg:'5',semis:-1},{deg:'3',semis:-1}]}</code>
+      <span class="lbl">Math</span> C E G → <b>C E♭ G♭ = C°</b> — the swing passing-chord staple.
+    </div>
+    <div class="tweak"><input data-tweak="P6" placeholder="tweaks (optional)…"></div>
+  </div>
+
+  <div class="grp">Modes section</div>
+
+  <div class="card" data-p="P7">
+    <label class="head"><input type="checkbox" id="P7"><span class="pid">P7</span>
+      <span class="tit">Third pedal: bend to the mode's <b>characteristic tone</b></span></label>
+    <div class="body">A Pedal C that pulls an inner string to the defining color note (Lydian ♯4, Dorian 6, Phrygian ♭2, Mixolydian ♭7…), retargeting per mode like the 7th pedals. <b>Note:</b> a small engine extension, not just data.</div>
+    <div class="tweak"><input data-tweak="P7" placeholder="tweaks (optional)…"></div>
+  </div>
+
+  <div class="grp">Tuning-specific custom pedals (the Radiohead / Sitar mechanism)</div>
+
+  <div class="card" data-p="P8">
+    <label class="head"><input type="checkbox" id="P8"><span class="pid">P8</span>
+      <span class="tit"><b>DADGAD</b> — the sus-resolution pedal (G → A into pure fifths)</span></label>
+    <div class="body">
+      <code>pedals:[{id:'A', name:'Sus · resolve', group:'foot', key:'a', string:2, semis:2}]</code>
+      D A D <b>G</b> A D → D A D <b>A</b> A D — <i>the</i> DADGAD gesture, gliding in Classic mode.
+    </div>
+    <div class="tweak"><input data-tweak="P8" placeholder="tweaks (optional)…"></div>
+  </div>
+
+  <div class="card" data-p="P9">
+    <label class="head"><input type="checkbox" id="P9"><span class="pid">P9</span>
+      <span class="tit"><b>Nashville</b> — shimmer-drop pedals (octave strings fall back to standard)</span></label>
+    <div class="body">Two pedals dropping the octave strings 3 and 4 by −12 (high-strung → standard core) — a reverse-shimmer reveal. The mechanism supports them as two single-string pedals.</div>
+    <div class="tweak"><input data-tweak="P9" placeholder="tweaks (optional)…"></div>
+  </div>
+
+  <div class="card" data-p="P10">
+    <label class="head"><input type="checkbox" id="P10"><span class="pid">P10</span>
+      <span class="tit"><b>Open G Dobro / Open G low</b> — minor conversion (B → B♭)</span></label>
+    <div class="body">One pedal lowering the B string −1 → open <b>G minor</b> for slide, on both open-G cards.</div>
+    <div class="tweak"><input data-tweak="P10" placeholder="tweaks (optional)…"></div>
+  </div>
+
+  <div class="grp">Per-String factory presets</div>
+
+  <div class="card" data-p="P11">
+    <label class="head"><input type="checkbox" id="P11"><span class="pid">P11</span>
+      <span class="tit">Add <b>4th ↓</b> <span style="color:var(--faint)">[−5 ×6]</span> to the Jump row</span></label>
+    <div class="body">Down-jump partner to 4th ↑ — drone drops, half-time feels.</div>
+  </div>
+
+  <div class="card" data-p="P12">
+    <label class="head"><input type="checkbox" id="P12"><span class="pid">P12</span>
+      <span class="tit">Add <b>Drop Hi</b> <span style="color:var(--faint)">[−2,0,0,0,0,0]</span> to the Benders row</span></label>
+    <div class="body">High E → D — the palm-bender / Hipshot drop, companion to Drop Low.</div>
+  </div>
+
+  <div class="grp">Notes</div>
+  <textarea id="notes" placeholder="Anything else — different keys, amounts, tunings that deserve their own pedals…"></textarea>
+</div>
+
+<div class="bar">
+  <span class="count"><b id="nOn">0</b> approved · auto-saved <span class="saved" id="savedTick">✓ saved</span></span>
+  <button class="act" id="copyBtn">Copy summary</button>
+  <button class="act go" id="dlBtn">Download decisions</button>
+</div>
+
+<script>
+const CHECKS=['P1','P2','P4','P6','P7','P8','P9','P10','P11','P12'];
+const RADIOS=['P3','P5'];
+const KEY='vg800_bends_review_v1';
+function state(){
+  const s={checks:{},radios:{},tweaks:{},notes:document.getElementById('notes').value};
+  CHECKS.forEach(id=>s.checks[id]=document.getElementById(id).checked);
+  RADIOS.forEach(n=>s.radios[n]=(document.querySelector(`input[name=${n}]:checked`)||{}).value||'keep');
+  document.querySelectorAll('[data-tweak]').forEach(i=>{ if(i.value.trim()) s.tweaks[i.dataset.tweak]=i.value.trim(); });
+  return s;
+}
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(state())); }catch(e){}
+  document.querySelectorAll('.card').forEach(c=>{ const cb=c.querySelector('input[type=checkbox]'); if(cb) c.classList.toggle('on', cb.checked); });
+  document.getElementById('nOn').textContent=CHECKS.filter(id=>document.getElementById(id).checked).length;
+  const t=document.getElementById('savedTick'); t.classList.add('show'); clearTimeout(save._t); save._t=setTimeout(()=>t.classList.remove('show'),1200);
+}
+function restore(){
+  let s; try{ s=JSON.parse(localStorage.getItem(KEY)); }catch(e){}
+  if(!s) return;
+  CHECKS.forEach(id=>{ if(s.checks && id in s.checks) document.getElementById(id).checked=!!s.checks[id]; });
+  RADIOS.forEach(n=>{ const v=s.radios&&s.radios[n]; if(v){ const el=document.querySelector(`input[name=${n}][value=${v}]`); if(el) el.checked=true; } });
+  if(s.tweaks) document.querySelectorAll('[data-tweak]').forEach(i=>{ if(s.tweaks[i.dataset.tweak]) i.value=s.tweaks[i.dataset.tweak]; });
+  if(s.notes) document.getElementById('notes').value=s.notes;
+}
+function summary(){
+  const s=state();
+  const L=['# Bends review — decisions ('+new Date().toISOString().slice(0,10)+')',''];
+  const NAMES={P1:'generic LKL → 3rd −1 (minor lever)',P2:'generic combo A+LKL = m6',P4:'E9 combo B+C = ii',P6:'C6 combo P5+LWR = diminished',P7:'Modes characteristic-tone pedal',P8:'DADGAD sus-resolve pedal',P9:'Nashville shimmer-drop pedals',P10:'Open G minor-conversion pedal',P11:'factory preset 4th ↓',P12:'factory preset Drop Hi'};
+  CHECKS.forEach(id=>L.push(`- ${id} ${NAMES[id]}: ${s.checks[id]?'**APPROVED**':'no'}${s.tweaks[id]?'  · tweak: '+s.tweaks[id]:''}`));
+  L.push(`- P3 A+B+LKR combo: ${s.radios.P3}`);
+  L.push(`- P5 E9 LKL: ${s.radios.P5==='keep'?'keep root +1 (authentic)':'change to 3rd −1'}`);
+  if(s.notes.trim()) L.push('','## Notes','',s.notes.trim());
+  return L.join('\n');
+}
+document.getElementById('dlBtn').addEventListener('click',()=>{
+  const blob=new Blob([summary()],{type:'text/markdown'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='bends-review-decisions.md';
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+});
+document.getElementById('copyBtn').addEventListener('click',async()=>{
+  const txt=summary();
+  try{ await navigator.clipboard.writeText(txt); document.getElementById('copyBtn').textContent='Copied ✓'; }
+  catch(e){ const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); document.getElementById('copyBtn').textContent='Copied ✓'; }
+  setTimeout(()=>document.getElementById('copyBtn').textContent='Copy summary',1500);
+});
+document.addEventListener('input',save);
+document.addEventListener('change',save);
+restore(); save();
+</script>
+</body>
+</html>

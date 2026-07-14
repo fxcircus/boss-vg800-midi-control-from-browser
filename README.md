@@ -77,8 +77,6 @@ Model CC values (an even 0–127 spread — centralized in the app as `EGTR_MODE
 
 In Classic the Ethnic **+ Octave** lift is baked into the ALT TUNE base pitches (the ±24 range leaves room), so a mandolin or ukulele sounds at real pitch on the open strings — play the "0 fret" instead of capoing the 12th. In Panning mode CC# 78 toggles the preset's fixed +12 as before.
 
-> ⚠️ `presets/royClassic.tsl` still carries the previous mapping (INST LEVEL / 12STR / ALT TUNE ON on CC# 70/77/78). Re-export it from the pedal after rewiring assigns 8/15/16 for the model control.
-
 ---
 
 ## One-time VG-800 setup

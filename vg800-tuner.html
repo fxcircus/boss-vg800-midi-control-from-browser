@@ -358,7 +358,8 @@
   .kb-chip.static { cursor: default; }
   .kb-chip.static:hover { border-color: var(--edge); background: var(--wood); }
   /* Per-section "Map ⌨" header button (Bends + Chords) */
-  .sec-tools { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin: 0 0 8px; }
+  .sec-tools { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; }
+  .sec-tools [data-mapjump] { margin-left: auto; }   /* Map holds the right corner; the Latch button (when present) holds the left */
   .map-btn.on { color: var(--brass); border-color: var(--brass); background: var(--felt); box-shadow: inset 0 0 0 1px var(--brass-glow); }   /* the Latch button's engaged state */
   /* Pedal Latch — a centered Latch | Off segmented toggle, same style as the app's other .seg switches */
   .latch-row { display: flex; justify-content: center; margin: 2px 0 12px; }
@@ -378,8 +379,8 @@
   .km-plus, .km-dash { color: var(--bone-faint); }
   .km-flash { animation: kmFlash 1.5s ease; }
   @keyframes kmFlash { 0%,100% { color: var(--brass-deep); } 30% { color: var(--brass); text-shadow: 0 0 12px var(--brass-glow); } }
-  /* ===== Played history — live strip (under Current Tuning) + settings rows + trim-timeline modal ===== */
-  /* Detached "Played" bubble — its own bench-styled panel that sits right under the workbench (moves with it via placeBench) */
+  /* ===== Clipboard (played history) — live strip + settings rows + trim-timeline modal ===== */
+  /* Detached "Clipboard" bubble — its own bench-styled panel that sits right under the workbench (moves with it via placeBench) */
   .hist-bubble { margin-top: 14px; padding: 16px 8px 15px; }
   .hist-bubble > .fam-name { margin-top: 0; margin-bottom: 12px; }
   #sideNav .hist-bubble { margin-top: 12px; }
@@ -458,7 +459,7 @@
   .sel-item.on::before { content: "✓ "; }
   .sel-item.dis { opacity: 0.45; cursor: not-allowed; color: var(--bone-faint); font-style: italic; }
 
-  /* Right rail — on very wide screens the workbench + Played + the whole Bends panel park here, always in view.
+  /* Right rail — the acting column (the Bends panel), below the header band.
      Everything inside is scaled for the narrow column: a medium-size workbench (between the tiny sidebar version
      and the full inline one) and a single-column Bends panel with tightened type. */
   #rightRail { display: none; }
@@ -470,10 +471,10 @@
     #rightRail .panel, #rightRail .ps-adjust, #rightRail .map-btn, #rightRail .seg button.on { box-shadow: none; }
     #rightRail .pedal:not(.on), #rightRail .ps-pad:not(.on) { box-shadow: none; }
     /* Bends — same layout and cluster grouping, one notch more air than the packed version */
-    #rightRail #sec-pedals { margin: 0 0 12px; padding: 8px 14px 14px; position: relative; }
+    #rightRail #sec-pedals { margin: 0 0 12px; padding: 8px 14px 14px 14px; position: relative; }
+    #rightRail #pedalWrap { padding-top: 26px; }   /* clearance for the absolute Latch/Map row */
     #rightRail #sec-pedals .panel-hd { font-size: 15px; letter-spacing: 1.5px; }
-    #rightRail #sec-pedals .panel-sub { font-size: 9px; margin: 6px 0 12px; }
-    #rightRail .sec-tools { position: absolute; top: 8px; right: 12px; margin: 0; }   /* Latch + Map ride the header row */
+    #rightRail .sec-tools { position: absolute; top: 8px; left: 12px; right: 12px; margin: 0; }   /* Latch left corner, Map right corner — symmetric around the legend */
     #rightRail .map-btn { padding: 4px 9px; font-size: 9.5px; }
     #rightRail #pedalWrap { text-align: center; }
     #rightRail .latch-row { display: inline-flex; vertical-align: middle; margin: 0 3px 10px; }
@@ -503,7 +504,7 @@
     #rightRail .ps-chips { gap: 5px; }
     #rightRail .ps-preset-fac, #rightRail .ps-preset-load { padding: 4px 9px; font-size: 11px; }
     #rightRail .ps-save { padding: 4px 10px; font-size: 11px; }
-    /* Left column at this width — nav, Random, Played, Current Tuning as distinct FLAT panels with breathing room */
+    /* Left column at this width — nav, Random, Current Tuning, Clipboard as distinct FLAT panels with breathing room */
     #sideNav .bench { box-shadow: none; background: var(--wood); margin-top: 18px; }
     #sideNav .str .wire::before { background: var(--chrome-dim); }
     #sideNav .str.shifted .wire::before { background: var(--brass-deep); filter: none; }
@@ -1050,7 +1051,6 @@
 
   <fieldset class="panel" id="sec-pedals">
     <legend class="panel-hd">Bends</legend>
-    <div class="panel-sub" id="pedalHint">Hold to bend</div>
     <div id="pedalWrap"></div>
   </fieldset>
 
@@ -1075,8 +1075,8 @@
   </div>
 
   <div class="bench hist-bubble" id="sec-history">
-    <button class="hist-hide" id="histHide" aria-label="Show or hide the played history"></button>
-    <div class="fam-name">Played</div>
+    <button class="hist-hide" id="histHide" aria-label="Show or hide the clipboard"></button>
+    <div class="fam-name">Clipboard</div>
     <div id="histWrap"></div>
   </div>
 </div>
@@ -1167,10 +1167,10 @@
     </details>
 
     <details class="settgrp" data-grp="history">
-      <summary>Played history</summary>
+      <summary>Clipboard</summary>
       <div class="settgrp-body">
         <div id="histSettings"></div>
-        <p class="note-hint"><b>Rolling</b> always tracks the last N selections. <b>Manual</b> waits for Start, then captures until you Copy. <b>Trim on copy</b> (Rolling only) makes Copy open a draggable timeline so you can copy just part of the log. The live strip sits under the <em>Current Tuning</em> readout — tunings, chords, instruments and transposes are all logged.</p>
+        <p class="note-hint"><b>Rolling</b> always tracks the last N selections. <b>Manual</b> waits for Start, then captures until you Copy. <b>Trim on copy</b> (Rolling only) makes Copy open a draggable timeline so you can copy just part of the log. The <em>Clipboard</em> strip sits under the <em>Current Tuning</em> readout — tunings, chords, instruments and transposes are all logged.</p>
       </div>
     </details>
 
@@ -1206,7 +1206,6 @@
       <summary>One-time VG-800 setup</summary>
       <div class="docgrp-body">
         <p><b>The fast way — import a ready-made preset.</b> Download <a href="presets/royClassic.tsl" download>royClassic.tsl</a> (for the default Classic mode) or <a href="presets/royPanning.tsl" download>royPanning.tsl</a> (for Panning mode), open <b>Boss Tone Studio for VG-800</b> → <em>LIBRARIAN</em> → import the .tsl, and write the patch to the pedal.</p>
-        <p><b>⚠ royClassic.tsl currently predates the model-control mapping</b> — its assigns 8/15/16 still carry INST&nbsp;LEVEL / 12STR / ALT&nbsp;TUNE&nbsp;ON. Until it's re-exported with the assigns below, either rewire those three by hand or set <em>⚙ Settings → Mode → Guitar model</em> to <em>Off</em>.</p>
         <p>Or configure it by hand. The default <b>Classic</b> mode uses all 16 assign slots:</p>
         <ul>
           <li><b>INST → ALT TUNE:</b> MODE <em>ALT&nbsp;TUNE</em>, TUNING TYPE <em>USER</em>, switched <em>ON</em> — save it ON in the patch; it carries the tuning (there is no CC for it in this preset).</li>
@@ -1288,7 +1287,7 @@
       <summary>Bends — pedals &amp; knee levers</summary>
       <div class="docgrp-body"><ul>
         <li>Hold the on-screen <b>Pedal&nbsp;A / B</b> and knee levers <b>LKL / LKR</b> (or keys <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> <kbd>F</kbd>) to bend the root / 3rd / 5th of the current tuning, pedal-steel style. They stack, and the icons animate as they move.</li>
-        <li><b>Combos</b> (A+B…) engage a whole grip at once and light up the pedals they include.</li>
+        <li><b>Combos</b> — <b>A+B</b> (the I → IV cry) and <b>A+LKL</b> (the m6 grip) engage a whole grip at once and light up the pedals they include. The <b>LKL</b> lever alone turns any major tuning <b>minor</b>; the open-major tunings add <b>IV / V</b> whole-neck pedals that glide the entire chord.</li>
         <li><b>Per-String</b> — the Preset ⟷ Per-String switch turns the six pedals into one-per-string manual benders (keys <kbd>A</kbd>–<kbd>H</kbd>), with factory quick presets (B-Bender, 4th ↑, Nashville…) and savable custom ones. <b>All Strings</b> (<kbd>J</kbd>, rebindable) pushes every set bender in one press — e.g. glide the whole guitar up a fourth.</li>
         <li><b>Latch</b> — the small <b>Latch</b> button beside <b>⌨ Map</b> switches pedals to tap on/off instead of holding.</li>
         <li><b>Rebind</b> any control in <em>Settings → Keyboard Mapping</em> (or the <b>⌨ Map</b> button in the header): click a chip, press a key. <em>Reset</em> restores defaults.</li>
@@ -1427,7 +1426,7 @@ function toCC(s){ const c=Math.max(-12,Math.min(12,s)); return Math.round((c+12)
 // Center is unchanged (0 st → CC 64 in both): −24→0, −12→32, 0→64, +12→95, +24→127.
 function toAltCC(s){ const c=Math.max(-24,Math.min(24,s)); return Math.round((c+24)/48*127); }
 const RB_MS_OPTS=[[120,'Fast'],[300,'Medium'],[700,'Slow']];   // Classic-mode glide time — how long the BEND CONTROL sweep takes
-const DEFAULT_KEYS={A:'a',B:'s',LKL:'d',LKR:'f',AB:'g',ABR:'h',PSALL:'j'};  // ergonomic left-hand cluster; PSALL = Per-String "All Strings" pedal
+const DEFAULT_KEYS={A:'a',B:'s',LKL:'d',LKR:'f',AB:'g',AL:'j',PSALL:'j'};  // ergonomic left-hand cluster; AL and PSALL share J (they live in different pedal contexts); PSALL = Per-String "All Strings" pedal
 // Chords keyboard — rebindable, stored as KeyboardEvent.code (layout-independent, so Shift+degree stays robust)
 const CHORD_KEYS_DEFAULT={deg1:'Digit1',deg2:'Digit2',deg3:'Digit3',deg4:'Digit4',deg5:'Digit5',deg6:'Digit6',deg7:'Digit7',voice3:'Minus',voice4:'Equal',clusterDown:'BracketLeft',clusterUp:'BracketRight',recenter:'Digit0'};
 // Played history — mode (rolling window vs manual session), N (rolling size), timeline (trim-on-copy modal), fmt (copy format)
@@ -1443,8 +1442,12 @@ const AP_DEFAULTS={mode:'free', rate:15, bpm:120, div:'1/2 bar', width:0.65, sha
 const FAMILIES = [
   { family:'Common', tunings:[
     {name:'Standard', notes:'E A D G B E', offsets:[0,0,0,0,0,0]},
-    {name:'DADGAD', notes:'D A D G A D', offsets:[-2,-2,0,0,0,-2]},       // D-modal
-    {name:'Nashville', notes:'E A D G B E', offsets:[0,0,12,12,12,12]},   // high-strung: low 4 up an octave
+    {name:'DADGAD', notes:'D A D G A D', offsets:[-2,-2,0,0,0,-2],       // D-modal
+      pedals:[{id:'A', name:'Sus · resolve', group:'foot', key:'a', string:2, semis:2}],
+      pedalInfo:'<b>Sus · resolve</b> — the DADGAD move: the G lifts to <b>A</b>, the suspended 4th melting into pure fifths (D A D A A D). Glides in Classic mode.'},
+    {name:'Nashville', notes:'E A D G B E', offsets:[0,0,12,12,12,12],   // high-strung: low 4 up an octave
+      extraPedals:[{id:'ND3', name:'Drop G', group:'foot', key:'h', string:2, semis:-12},
+                   {id:'ND4', name:'Drop D', group:'foot', key:'k', string:3, semis:-12}]},   // shimmer-drop: octave strings fall back to standard (bends-review P9)
     {name:'Baritone', notes:'B E A D F# B', offsets:[-5,-5,-5,-5,-5,-5]},  // B Standard: whole guitar down a 4th
     {name:'Bass VI', notes:'E A D G B E', offsets:[-12,-12,-12,-12,-12,-12]},   // whole guitar down an octave (= Transpose −12)
     {name:'Hendrix', notes:'Eb Ab Db Gb Bb Eb', offsets:[-1,-1,-1,-1,-1,-1]},   // Eb / half-step down (= Transpose −1)
@@ -1463,13 +1466,16 @@ const FAMILIES = [
     {name:'B11', notes:'B D# F# A C# E', offsets:[0,2,2,4,-6,-5]},
     {name:'Cyrus Hybrid', notes:'G B D F# A D', offsets:[-2,-2,-1,0,2,3]},
   ]},
-  { family:'Open Majors', tunings:[
-    {name:'Open E', notes:'E B E G# B E', offsets:[0,0,1,2,2,0]},
-    {name:'Open D', notes:'D A D F# A D', offsets:[-2,-2,-1,0,0,-2]},
-    {name:'Open G Dobro', notes:'G B D G B D', offsets:[-2,0,0,0,2,3]},
-    {name:'Open G low', notes:'D G D G B D', offsets:[-2,0,0,0,-2,-2]},
-    {name:'Open A high', notes:'A C# E A C# E', offsets:[0,2,2,2,4,5]},
-  ]},
+  { family:'Open Majors', tunings:(()=>{   // every open tuning gets IV / V whole-neck shift pedals (bends-review P1 tweak)
+    const IV_V=[{id:'SH4', name:'IV', group:'shift', key:'h', act:'whole neck +5', shift:5},
+                {id:'SH5', name:'V',  group:'shift', key:'k', act:'whole neck +7', shift:7}];
+    return [
+    {name:'Open E', notes:'E B E G# B E', offsets:[0,0,1,2,2,0], extraPedals:IV_V},
+    {name:'Open D', notes:'D A D F# A D', offsets:[-2,-2,-1,0,0,-2], extraPedals:IV_V},
+    {name:'Open G Dobro', notes:'G B D G B D', offsets:[-2,0,0,0,2,3], extraPedals:IV_V},
+    {name:'Open G low', notes:'D G D G B D', offsets:[-2,0,0,0,-2,-2], extraPedals:IV_V},
+    {name:'Open A high', notes:'A C# E A C# E', offsets:[0,2,2,2,4,5], extraPedals:IV_V},
+  ];})()},
   { family:'Drop', tunings:[
     {name:'Drop D', notes:'D A D G B E', offsets:[0,0,0,0,0,-2]},
     {name:'Drop Db', notes:'Db Ab Db Gb Bb Eb', offsets:[-1,-1,-1,-1,-1,-3]},
@@ -1505,14 +1511,14 @@ const BUILTIN = FAMILIES.flatMap(f=>f.tunings);
 // so C Mixolydian comes out identical to C Ionian (and to the White Keys base). offsets are string1→6 (high→low),
 // all within ±12. `seventh` = pitch-class of the mode's 7th degree (11 = maj7 B, 10 = ♭7 B♭) — drives the Bends pedals.
 const MODES=[
-  {name:'White Keys',   notes:'C D E F G A',    offsets:[-7,-4,-2,2,5,8], modes:true, seventh:11, base:true},   // the natural-note set (= C Ionian)
-  {name:'C Lydian',     notes:'C D E F# G A',   offsets:[-7,-4,-1,2,5,8], modes:true, seventh:11},   // brightest — ♯4
-  {name:'C Ionian',     notes:'C D E F G A',    offsets:[-7,-4,-2,2,5,8], modes:true, seventh:11},   // major
-  {name:'C Mixolydian', notes:'C D E F G A',    offsets:[-7,-4,-2,2,5,8], modes:true, seventh:10},   // ♭7 (B absent → same shape as Ionian)
-  {name:'C Dorian',     notes:'C D Eb F G A',   offsets:[-7,-4,-2,1,5,8], modes:true, seventh:10},   // ♭3 ♭7
-  {name:'C Aeolian',    notes:'C D Eb F G Ab',  offsets:[-8,-4,-2,1,5,8], modes:true, seventh:10},   // natural minor — ♭3 ♭6 ♭7
-  {name:'C Phrygian',   notes:'C Db Eb F G Ab', offsets:[-8,-4,-2,1,4,8], modes:true, seventh:10},   // ♭2 ♭3 ♭6 ♭7
-  {name:'C Locrian',    notes:'C Db Eb F Gb Ab',offsets:[-8,-5,-2,1,4,8], modes:true, seventh:10},   // darkest — ♭2 ♭3 ♭5 ♭6 ♭7
+  {name:'White Keys',   notes:'C D E F G A',    offsets:[-7,-4,-2,2,5,8], modes:true, seventh:11, charIv:5, base:true},   // the natural-note set (= C Ionian); colour tone = the 4th
+  {name:'C Lydian',     notes:'C D E F# G A',   offsets:[-7,-4,-1,2,5,8], modes:true, seventh:11, charIv:6},   // brightest — ♯4 (the colour tone)
+  {name:'C Ionian',     notes:'C D E F G A',    offsets:[-7,-4,-2,2,5,8], modes:true, seventh:11, charIv:5},   // major — colour tone 4
+  {name:'C Mixolydian', notes:'C D E F G A',    offsets:[-7,-4,-2,2,5,8], modes:true, seventh:10, charIv:10},  // ♭7 (B absent → same shape as Ionian)
+  {name:'C Dorian',     notes:'C D Eb F G A',   offsets:[-7,-4,-2,1,5,8], modes:true, seventh:10, charIv:9},   // ♭3 ♭7 — colour tone the natural 6
+  {name:'C Aeolian',    notes:'C D Eb F G Ab',  offsets:[-8,-4,-2,1,5,8], modes:true, seventh:10, charIv:8},   // natural minor — colour tone ♭6
+  {name:'C Phrygian',   notes:'C Db Eb F G Ab', offsets:[-8,-4,-2,1,4,8], modes:true, seventh:10, charIv:1},   // ♭2 ♭3 ♭6 ♭7 — colour tone ♭2
+  {name:'C Locrian',    notes:'C Db Eb F Gb Ab',offsets:[-8,-5,-2,1,4,8], modes:true, seventh:10, charIv:6},   // darkest — colour tone ♭5
 ];
 
 let settings = loadSettings();
@@ -1526,8 +1532,9 @@ let curOffsets=[0,0,0,0,0,0], glideTimer=null;
 let baseOffsets=[0,0,0,0,0,0], held=new Set(), curInfo=null, pedalStateCache={}, ctrlStateCache={};
 let ethnicInst=null, ethnicStart=0;
 let activeModeTuning=null;   // the active Modes-section tuning (drives the 7th-degree Bends pedals), else null
-let activeBendPedals=null;   // a tuning's own custom Bends pedals (fixed per-string bends declared on the tuning), else null
+let activeBendPedals=null;   // a tuning's own custom Bends pedals (REPLACE the copedent), else null
 let activeBendInfo='';       // caption for that tuning's custom pedals
+let activeExtraPedals=null;  // a tuning's ADD-ON pedals (append to the copedent — e.g. the open tunings' IV/V whole-neck shifts)
 const ETHNIC=[
   {name:'Mandolin', pitches:[55,62,69,76], notes:'G D A E', ref:'Traditional Irish / Bluegrass', courses:true},
   {name:'Irish Bouzouki', pitches:[43,50,57,62], notes:'G D A D', ref:'Irish Traditional Music', courses:true},
@@ -1827,10 +1834,10 @@ const COPEDENTS={
   generic:{ controls:[
     {id:'A',   name:'Pedal A', group:'foot', key:'a', act:'5th +1 step',    moves:[{deg:'5',semis:2}]},
     {id:'B',   name:'Pedal B', group:'foot', key:'s', act:'3rd +½ step',    moves:[{deg:'3',semis:1}]},
-    {id:'LKL', name:'LKL',     group:'knee', key:'d', act:'root +½',         moves:[{deg:'1',semis:1}]},
+    {id:'LKL', name:'LKL',     group:'knee', key:'d', act:'3rd −½ (minor)',  moves:[{deg:'3',semis:-1}]},   // parallel-minor lever — hits EVERY string carrying the 3rd (bends-review P1; covers P10 for the open-G cards)
     {id:'LKR', name:'LKR',     group:'knee', key:'f', act:'root −½ (maj7)',  moves:[{deg:'1',semis:-1}]},
     {id:'AB',  name:'A + B',   group:'combo',parts:['A','B'],key:'g', act:'the I → IV cry',  moves:[{deg:'5',semis:2},{deg:'3',semis:1}]},
-    {id:'ABR', name:'A+B+LKR', group:'combo',parts:['A','B','LKR'],key:'h', act:'IV, maj-7th',     moves:[{deg:'5',semis:2},{deg:'3',semis:1},{deg:'1',semis:-1}]},
+    {id:'AL',  name:'A + LKL', group:'combo',parts:['A','LKL'],key:'j', act:'the m6 grip',   moves:[{deg:'5',semis:2},{deg:'3',semis:-1}]},   // R ♭3 6 (bends-review P2; A+B+LKR retired per P3)
   ]},
   e9:{ controls:[   // standard Emmons E9
     {id:'A',   name:'Pedal A', group:'foot', key:'a', act:'5th +1 step',     moves:[{deg:'5',semis:2}]},
@@ -1840,12 +1847,14 @@ const COPEDENTS={
     {id:'LKR', name:'LKR',     group:'knee', key:'f', act:'root −½ (maj7)',   moves:[{deg:'1',semis:-1}]},
     {id:'VERT',name:'Vertical',group:'knee', key:'e', act:'5th −½',           moves:[{deg:'5',semis:-1}]},
     {id:'AB',  name:'A + B',   group:'combo',parts:['A','B'],key:'g', act:'the I → IV cry',   moves:[{deg:'5',semis:2},{deg:'3',semis:1}]},
+    {id:'BC',  name:'B + C',   group:'combo',parts:['B','C'],key:'h', act:'the ii chord',     moves:[{deg:'3',semis:1},{deg:'5',semis:2},{deg:'1',semis:2}]},   // C E G → D F A (bends-review P4)
   ]},
   c6:{ controls:[   // C6 mechanism set (distinct from E9)
     {id:'P5', name:'P5',      group:'foot', key:'a', act:'5th −½ (9th)',     moves:[{deg:'5',semis:-1}]},
     {id:'P6', name:'P6',      group:'foot', key:'s', act:'root +½ (alt)',    moves:[{deg:'1',semis:1}]},
     {id:'P8', name:'Boo-wah', group:'foot', key:'d', act:'root −3 (→ 6th)',  moves:[{deg:'1',semis:-3}]},
     {id:'LWR',name:'Min 3rd', group:'knee', key:'f', act:'3rd −½ (minor)',   moves:[{deg:'3',semis:-1}]},
+    {id:'DIM',name:'P5 + LWR',group:'combo',parts:['P5','LWR'],key:'g', act:'diminished',     moves:[{deg:'5',semis:-1},{deg:'3',semis:-1}]},   // C E G → C E♭ G♭ (bends-review P6)
   ]},
 };
 // Scale-tone bends (Area 1) — a Chords-mode pedal set: six string-pedals, each raising ONE string to the next scale tone up.
@@ -1866,6 +1875,7 @@ function scaleBendActive(){ return !!activeChord && chordKeyOn(); }   // a chord
 const MODE_BEND={ controls:[
   {id:'MA', name:'Pedal A', group:'foot', key:'a', string:0, seventhDir:1},    // high E → 7th above
   {id:'MB', name:'Pedal B', group:'foot', key:'s', string:5, seventhDir:-1},   // low E  → 7th below
+  {id:'MC', name:'Pedal C', group:'foot', key:'d', string:2, charTone:true},   // string 3 → the mode's characteristic colour tone (bends-review P7)
 ]};
 function modesBendActive(){ return !!activeModeTuning; }              // a Modes-section tuning is loaded
 function customBendActive(){ return !!(activeBendPedals && activeBendPedals.length); }   // the tuning declares its own pedals
@@ -1881,11 +1891,13 @@ const FACTORY_PS=[   // group → the labeled cluster row each chip renders unde
   {name:'−2',    amounts:[-2,-2,-2,-2,-2,-2],  group:'shift',  tip:'Every string down a whole step'},
   {name:'4th ↑', amounts:[5,5,5,5,5,5],        group:'jump',   tip:'Every string up a fourth — drone / power-chord jump'},
   {name:'5th ↑', amounts:[7,7,7,7,7,7],        group:'jump',   tip:'Every string up a fifth'},
+  {name:'4th ↓', amounts:[-5,-5,-5,-5,-5,-5],  group:'jump',   tip:'Every string down a fourth — drone drops, half-time feels'},
   {name:'Oct ↑', amounts:[12,12,12,12,12,12],  group:'jump',   tip:'Every string up an octave'},
   {name:'Oct ↓', amounts:[-12,-12,-12,-12,-12,-12], group:'jump', tip:'Every string down an octave'},
   {name:'B-Bender', amounts:[0,2,0,0,0,0],     group:'bender', tip:'B string up a whole step (B → C#) — Telecaster B-bender'},
   {name:'G-Bender', amounts:[0,0,2,0,0,0],     group:'bender', tip:'G string up a whole step (G → A) — Clarence White style'},
   {name:'Drop Low', amounts:[0,0,0,0,0,-2],    group:'bender', tip:'Low E down to D — instant Drop D'},
+  {name:'Drop Hi', amounts:[-2,0,0,0,0,0],     group:'bender', tip:'High E down to D — the palm-bender / Hipshot drop'},
   {name:'Nashville', amounts:[0,0,12,12,12,12], group:'bender', tip:'Strings 3–6 up an octave — high-strung shimmer while held'},
 ];
 function perStringControls(){
@@ -1897,7 +1909,7 @@ function perStringControls(){
   return singles;
 }
 function perStringActive(){ return !!settings.perStringOn && !customBendActive() && !modesBendActive() && !scaleBendActive(); }   // replaces only the copedent
-function pedalControls(){ return customBendActive() ? activeBendPedals : (modesBendActive() ? MODE_BEND.controls : (scaleBendActive() ? SCALE_BEND.controls : (perStringActive() ? perStringControls() : copedent.controls))); }
+function pedalControls(){ return customBendActive() ? activeBendPedals : (modesBendActive() ? MODE_BEND.controls : (scaleBendActive() ? SCALE_BEND.controls : (perStringActive() ? perStringControls() : (activeExtraPedals ? copedent.controls.concat(activeExtraPedals) : copedent.controls)))); }
 // Amounts changed: first drop any latched per-string pedal that's no longer available (a disabled button gets no
 // pointer listeners, so it would be stuck lit and mouse-dead — and silently re-fire when a later preset re-enables it),
 // then push the new bend state for whatever is still held.
@@ -1943,7 +1955,7 @@ const WINDOWS=[   // contiguous 6-of-10; i0 = lowest midi index of the window
 ];
 let copedent=COPEDENTS.generic, steelInst=null, steelWin=0, steelRoot=null;
 let KEYMAP={}, bindingCtrl=null;
-function ctrlById(id){ return (activeBendPedals&&activeBendPedals.find(c=>c.id===id)) || (perStringActive()&&perStringControls().find(c=>c.id===id)) || copedent.controls.find(c=>c.id===id) || SCALE_BEND.controls.find(c=>c.id===id) || MODE_BEND.controls.find(c=>c.id===id) || null; }   // a tuning's own pedals win over the copedent on id clashes (e.g. 'A')
+function ctrlById(id){ return (activeBendPedals&&activeBendPedals.find(c=>c.id===id)) || (activeExtraPedals&&activeExtraPedals.find(c=>c.id===id)) || (perStringActive()&&perStringControls().find(c=>c.id===id)) || copedent.controls.find(c=>c.id===id) || SCALE_BEND.controls.find(c=>c.id===id) || MODE_BEND.controls.find(c=>c.id===id) || null; }   // a tuning's own pedals win over the copedent on id clashes (e.g. 'A')
 function keyFor(id){ const c=ctrlById(id), ov=settings.keys[id]; return (ov!==undefined?ov:(c?c.key:'')); }
 function rebuildKeymap(){ KEYMAP={}; pedalControls().forEach(c=>{ const k=keyFor(c.id); if(k) KEYMAP[k]=c.id; }); }   // in Chords key mode a–h drive the scale-bend string-pedals; otherwise the copedent
 rebuildKeymap();
@@ -1976,6 +1988,19 @@ function controlState(ctrl, info, base){
     for(let i=0;i<6;i++){ const a=settings.stringBend[i]|0; if(!a) continue; const m=STD_MIDI[i]+base[i], off=base[i]+a; if(!settings.realBend && (off<-12||off>12)) continue; moves.push({i, from:m, to:m+a, off, bend:a, ok:true}); }
     if(!moves.length) return {avail:false, why:'no bends set', moves:[]};
     return {avail:true, why:'', moves};
+  }
+  if(ctrl.shift!=null){                                         // whole-neck shift pedal: bend ALL six strings by the same amount (the open tunings' I → IV / V)
+    const moves=[]; let ok=true;
+    for(let i=0;i<6;i++){ const m=STD_MIDI[i]+base[i], off=base[i]+ctrl.shift, o=settings.realBend||(off>=-12&&off<=12); if(!o) ok=false; moves.push({i, from:m, to:m+ctrl.shift, off, bend:ctrl.shift, ok:o}); }
+    return {avail:ok, why: ok?'':'out of range', moves};
+  }
+  if(ctrl.charTone){                                            // Modes Pedal C: lift an inner string to the mode's characteristic colour tone
+    const mt=activeModeTuning; if(!mt||mt.charIv==null) return {avail:false, why:'no mode', moves:[]};
+    const pc=((((mt.root||0)+mt.charIv)%12)+12)%12;
+    const i=ctrl.string, m=STD_MIDI[i]+base[i]; let d=1; while(d<=12 && (((m+d)%12)+12)%12!==pc) d++;
+    if(d>12) return {avail:false, why:'n/a', moves:[]};
+    const off=base[i]+d, ok=settings.realBend||(off>=-12&&off<=12);
+    return {avail:ok, why: ok?'':'out of range', moves:[{i, from:m, to:m+d, off, bend:d, ok}]};
   }
   if(ctrl.seventhDir!=null){                                    // Modes bend: move this string to the mode's 7th degree (up for A, down for B)
     const sev = activeModeTuning ? activeModeTuning.seventh : null;
@@ -2026,6 +2051,16 @@ const PEDAL_ICONS={
 };
 function pedalBtnHTML(ctrl, label, sub, st){
   const dis=!st.avail, key=(keyFor(ctrl)||'').toUpperCase(), c=ctrlById(ctrl)||{};
+  if(c.shift!=null){                                            // whole-neck shift pedal — plays like a foot pedal, moves every string
+    const dis=!st.avail;
+    const body = dis ? `<span class="mv off">${st.why||'n/a'}</span>` : `<span class="mv"><span class="to">all six strings ${c.shift<0?'↓':'↑'}${Math.abs(c.shift)}</span></span>`;
+    return `<button class="pedal${dis?' disabled':''}" data-ctrl="${ctrl}"${dis?' aria-disabled="true"':''}>
+      <span class="pedal-name">${label}${key?`<span class="pedal-key">${key}</span>`:''}</span>
+      <span class="pedal-do">${c.act||''}</span>
+      <span class="pedal-moves">${body}</span>
+      <span class="pedal-badge">${PEDAL_ICONS.foot}</span>
+    </button>`;
+  }
   if(c.seventhDir!=null){                                       // Modes 7th-degree pedal — string-coloured dot, directional note→note preview
     const mv=st.moves&&st.moves[0], dn=c.seventhDir<0?' dn':'';
     const body = dis ? `<span class="mv off">${st.why||'n/a'}</span>` : `<span class="mv"><span class="to${dn}">${nameOf(mv.from).name} → ${nameOf(mv.to).name}</span></span>`;
@@ -2051,7 +2086,7 @@ function pedalBtnHTML(ctrl, label, sub, st){
   if(c.string!=null){                                           // scale-tone string pedal — string-coloured dot, note→note preview
     const mv=st.moves&&st.moves[0];
     const body = dis ? `<span class="mv off">${st.why||'n/a'}</span>` : `<span class="mv"><span class="to">${nameOf(mv.from).name} → ${nameOf(mv.to).name}</span></span>`;
-    const subtxt = (dis||!mv) ? '' : (mv.bend===1?'½ step ↑':'whole step ↑');
+    const subtxt = (dis||!mv) ? '' : (mv.bend===1?'½ step ↑':mv.bend===2?'whole step ↑':mv.bend+' st ↑');
     return `<button class="pedal sb${dis?' disabled':''}" data-ctrl="${ctrl}"${dis?' aria-disabled="true"':''}>
       <span class="pedal-name">${label}${key?`<span class="pedal-key">${key}</span>`:''}</span>
       <span class="pedal-do">${subtxt}</span>
@@ -2142,7 +2177,8 @@ function renderPedals(){
     if(combo) html+=`<div class="fam-name">Combos</div><div class="pedals">${combo}</div>`;
   } else if(modesMode){                                         // Modes section — two foot pedals bend to the mode's 7th from opposite ends
     const mn=activeModeTuning.name, sev=NOTE[activeModeTuning.seventh], kind=(((activeModeTuning.seventh-(activeModeTuning.root||0))+12)%12)===11?'major 7th':'♭7';   // quality judged relative to the mode's root, not C
-    html+=`<div class="pedal-info">Bends to the 7th of <b>${mn}</b> — the <b>${sev}</b> (${kind}). <b>Pedal A</b> lifts the high E up to it; <b>Pedal B</b> drops the low E down to it. Retargets with each mode.</div>`;
+    const chNote=activeModeTuning.charIv!=null?NOTE[((((activeModeTuning.root||0)+activeModeTuning.charIv)%12)+12)%12]:null;
+    html+=`<div class="pedal-info">Bends to the 7th of <b>${mn}</b> — the <b>${sev}</b> (${kind}). <b>Pedal A</b> lifts the high E up to it; <b>Pedal B</b> drops the low E down to it${chNote?`; <b>Pedal C</b> lifts string 3 to the mode's colour tone (<b>${chNote}</b>)`:''}. Retargets with each mode.</div>`;
     html+=`<p class="bend-cap"><b>Latch</b> keeps a pedal engaged after one tap — sustain the bend hands-free. Off = press &amp; hold.</p>`;
     html+=`<div class="fam-name">Foot Pedals · to the 7th</div><div class="pedals">${controls.map(c=>pedalBtnHTML(c.id,c.name,'',ctrlStateCache[c.id])).join('')}</div>`;
   } else if(sbMode){                                            // Chords key mode — six string-pedals raise each string to the next scale tone
@@ -2168,12 +2204,13 @@ function renderPedals(){
       ? 'No chord root here — pedals disabled.'
       : `Chord: root <b>${NOTE[curInfo.root]}</b> · 3rd <b>${NOTE[(curInfo.root+4)%12]}</b> · 5th <b>${NOTE[(curInfo.root+7)%12]}</b>`;
     const grp=g=> controls.filter(c=>c.group===g).map(c=>pedalBtnHTML(c.id,c.name,c.act,ctrlStateCache[c.id])).join('');
-    const foot=grp('foot'), knee=grp('knee'), combo=grp('combo');
+    const foot=grp('foot'), knee=grp('knee'), combo=grp('combo'), shifts=grp('shift');
     html+=`<div class="pedal-info">${info}</div>`;
     if(curInfo.root!=null) html+=`<p class="bend-cap"><b>Latch</b> keeps a pedal engaged after one tap — sustain a bend hands-free. Off = press &amp; hold.</p>`;
     if(foot)  html+=`<div class="fam-name">Foot Pedals</div><div class="pedals">${foot}</div>`;
     if(knee)  html+=`<div class="fam-name">Knee Levers</div><div class="pedals">${knee}</div>`;
     if(combo) html+=`<div class="fam-name">Combos</div><div class="pedals">${combo}</div>`;
+    if(shifts) html+=`<div class="fam-name">Whole Neck · I → IV → V</div><div class="pedals">${shifts}</div>`;
   }
   html+=bendTimeHTML();
   wrap.innerHTML=html;
@@ -2186,7 +2223,7 @@ function renderPedals(){
     b.addEventListener('lostpointercapture', ()=> releaseCtrl(ctrl));
   });
   wrap.querySelectorAll('.pedal').forEach(b=> b.classList.toggle('on', ctrlEngaged(b.dataset.ctrl)));  // keep latched state after re-render
-  const lt=wrap.querySelector('[data-latchtog]'); if(lt) lt.addEventListener('click',()=>{ settings.latch=!settings.latch; saveSettingsLS(); updatePedalHint(); renderPedals(); });
+  const lt=wrap.querySelector('[data-latchtog]'); if(lt) lt.addEventListener('click',()=>{ settings.latch=!settings.latch; saveSettingsLS(); renderPedals(); });
   wrap.querySelectorAll('#psSeg [data-ps]').forEach(b=> b.addEventListener('click',()=>{ if(held.size){ held.clear(); if(midiOut) send(baseOffsets); renderStrings(baseOffsets); } settings.perStringOn=b.dataset.ps==='1'; saveSettingsLS(); rebuildKeymap(); renderPedals(); }));   // release any held bend when switching pedal mode
   wrap.querySelectorAll('.ps-step').forEach(b=> b.addEventListener('click', e=>{ e.stopPropagation(); const [s,d]=b.dataset.psadj.split(':').map(Number); adjustStringBend(s,d); }));
   wrap.querySelectorAll('.ps-preset-fac').forEach(b=> b.addEventListener('click', ()=> loadFactoryPreset(+b.dataset.psfac)));
@@ -2217,7 +2254,6 @@ function bendTimeHTML(){
     +`<p class="bend-cap">How long each bend takes to <b>glide</b> into pitch — and back out on release.</p>`
     +`<div class="latch-row"><div class="seg latch-seg" id="btSeg">${seg}</div></div>`;
 }
-function updatePedalHint(){ const el=document.getElementById('pedalHint'); if(el) el.textContent=(settings.latch?'TAP TO LATCH':'HOLD TO BEND')+(settings.realBend?'':' · PANNING MODE'); }   // Classic is the default — only the alternate mode gets a badge
 document.addEventListener('keydown', e=>{                 // rebind capture (chips live in Settings now)
   if(!bindingCtrl) return;
   e.preventDefault();
@@ -2302,7 +2338,7 @@ function modesRootFits(r){ const d=modeRootDelta(r); return MODES.every(m=> m.ba
 function transposedModes(){
   const r=settings.modesRoot|0; if(!r) return MODES;
   const d=modeRootDelta(r), rn=NOTE[r];
-  return MODES.filter(m=>!m.base).map(m=>({ name: rn+m.name.slice(1), offsets: m.offsets.map(o=>o+d), modes:true, seventh:(m.seventh+r)%12, root:r, tipKey:m.name }));
+  return MODES.filter(m=>!m.base).map(m=>({ name: rn+m.name.slice(1), offsets: m.offsets.map(o=>o+d), modes:true, seventh:(m.seventh+r)%12, charIv:m.charIv, root:r, tipKey:m.name }));
 }
 function renderModes(){
   const wrap=document.getElementById('modesWrap'); if(!wrap) return;
@@ -2389,10 +2425,10 @@ function placeBench(){
   const bench=document.getElementById('sec-current'), hist=document.getElementById('sec-history'), nav=document.getElementById('sideNav'), rail=document.getElementById('rightRail'), wrap=document.querySelector('.wrap'), pedals=document.getElementById('sec-pedals'), pan=document.getElementById('sec-pan');
   if(!bench||!nav||!wrap) return;
   const wide=window.matchMedia('(min-width:1500px)').matches, mid=window.matchMedia('(min-width:1280px)').matches;
-  if(mid){   // ≥1280: the left column stacks nav links → Played → Current Tuning as distinct panels (browse & monitor left, act right)
-    if(hist && hist.parentElement!==nav) nav.appendChild(hist);
+  if(mid){   // ≥1280: the left column stacks nav links → Current Tuning → Clipboard as distinct panels (browse & monitor left, act right)
     if(bench.parentElement!==nav) nav.appendChild(bench);
-    if(hist && hist.nextElementSibling!==bench) nav.insertBefore(hist, bench);
+    if(hist && hist.parentElement!==nav) nav.appendChild(hist);
+    if(hist && bench.nextElementSibling!==hist) nav.insertBefore(bench, hist);
   } else {   // mobile: inline at the bottom of the main column, as always
     if(bench.parentElement!==wrap) wrap.appendChild(bench);
     if(hist && (hist.parentElement!==wrap || bench.nextElementSibling!==hist)) bench.after(hist);
@@ -2446,7 +2482,7 @@ function applyInst(inst, start){
   const N=inst.pitches.length; start=Math.max(0, Math.min(6-N, start));
   const res=computeCluster(inst.pitches, start);
   if(!res.ok){ toast(inst.name+' can’t fit those strings', true); return; }
-  active=inst.name; activeChord=null; lastVoiced=null; baseOffsets=[...res.offsets]; held.clear(); ethnicInst=inst; ethnicStart=start; clearSteel(); activeModeTuning=null; activeBendPedals=inst.pedals||null; activeBendInfo=inst.pedalInfo||'';   // an instrument can bring its own pedals (Sitar meend)
+  active=inst.name; activeChord=null; lastVoiced=null; baseOffsets=[...res.offsets]; held.clear(); ethnicInst=inst; ethnicStart=start; clearSteel(); activeModeTuning=null; activeBendPedals=inst.pedals||null; activeBendInfo=inst.pedalInfo||''; activeExtraPedals=null;   // an instrument can bring its own pedals (Sitar meend)
   const n=document.getElementById('nowName'); n.textContent=inst.name; n.classList.remove('std');
   renderStrings(res.offsets); renderGrid(); renderModes(); renderPedals(); renderEthnic(); renderSteel(); renderChords();
   lastModelName=TUNING_MODELS[inst.name]||'NYLON'; sendModel(lastModelName);   // ethnic default: nylon-string
@@ -2543,7 +2579,7 @@ function applySteel(t, win){
   const res=computeCluster(t.midi.slice(WINDOWS[win].i0, WINDOWS[win].i0+6), 0);
   if(!res.ok){ toast(t.name+' — that window won’t fit', true); return; }
   active=t.name; activeChord=null; lastVoiced=null; baseOffsets=[...res.offsets]; held.clear();   // steel is not ethnic → sendInstFx() sends both off
-  ethnicInst=null; steelInst=t; steelWin=win; steelRoot=t.root; copedent=COPEDENTS[t.copedent]||COPEDENTS.generic; activeModeTuning=null; activeBendPedals=null; activeBendInfo="";
+  ethnicInst=null; steelInst=t; steelWin=win; steelRoot=t.root; copedent=COPEDENTS[t.copedent]||COPEDENTS.generic; activeModeTuning=null; activeBendPedals=null; activeBendInfo=""; activeExtraPedals=null;
   const n=document.getElementById('nowName'); n.textContent=t.name; n.classList.remove('std');
   renderStrings(res.offsets); renderGrid(); renderModes(); renderEthnic(); renderSteel(); renderPedals(); renderChords();
   lastModelName=TUNING_MODELS[t.name]||null; sendModel(lastModelName);
@@ -3078,6 +3114,7 @@ function apply(t){
   baseOffsets=[...t.offsets]; held.clear(); ethnicInst=null; clearSteel();   // not ethnic → sendInstFx() sends both off
   activeModeTuning = t.modes ? t : null;   // Modes tuning → Bends section becomes the 7th-degree pedals (targets track this mode)
   activeBendPedals = t.pedals || null; activeBendInfo = t.pedalInfo || '';   // tuning-declared custom pedals (else the copedent)
+  activeExtraPedals = t.extraPedals || null;                                  // add-on pedals appended to the copedent
   if(t.bends&&t.bends.keys){ settings.keys={...DEFAULT_KEYS, ...t.bends.keys}; rebuildKeymap(); saveSettingsLS(); }   // user preset carries its own pedal key mapping
   const n=document.getElementById('nowName'); n.textContent=t.name; n.classList.toggle('std',t.name==='Standard');
   renderStrings(t.offsets); renderGrid(); renderModes(); renderPedals(); renderEthnic(); renderSteel(); renderChords();
@@ -3111,7 +3148,7 @@ function renderEd(){
 /* ===== User tunings — create / edit / import / export (file-based, localStorage) ===== */
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 const TUNE_FMT='vg800-tunings', TUNE_VER=1;
-const USER_CTRLS=[['A','Pedal A'],['B','Pedal B'],['LKL','LKL'],['LKR','LKR'],['AB','A + B'],['ABR','A+B+LKR']];
+const USER_CTRLS=[['A','Pedal A'],['B','Pedal B'],['LKL','LKL'],['LKR','LKR'],['AB','A + B'],['AL','A + LKL']];
 function tuneSig(t){ return JSON.stringify([t.offsets, t.bends&&t.bends.keys?USER_CTRLS.map(([id])=>t.bends.keys[id]||''):null]); }   // name-independent content signature
 function userUniqueName(base, taken){ const names=taken||new Set(customs.map(t=>t.name)); let n=base, k=2; while(names.has(n)){ n=base+' ('+k+')'; k++; } return n; }
 function badgesFor(t){ return '<span class="ubadge on">Pitch</span>'+(t.bends?'<span class="ubadge on">Bends</span>':''); }
@@ -3314,7 +3351,7 @@ function setRealBend(on){
       midiOut.send([0xB0|((settings.channel-1)&0x0F), (settings.bendCC||69)&0x7F, 127]);   // Panning mode rests at BEND CONTROL 100 — essential, or its depth writes are ignored
       sendInstFx(); send(baseOffsets); applyPan(activePan); }             // base back on the BEND DEPTH CCs + restore the chosen pan placement
   }
-  updatePedalHint(); renderPedals(); renderPan(); renderModes(); renderEthnic();   // the Modes root picker gates F/F#/G on the active engine; Ethnic swaps its 12-string control
+  renderPedals(); renderPan(); renderModes(); renderEthnic();   // the Modes root picker gates F/F#/G on the active engine; Ethnic swaps its 12-string control
   toast((on ? 'Classic mode — glide bends' : 'Panning mode — stereo panning')+resetNote);
 }
 document.querySelectorAll('#rbSeg button').forEach(b=> b.addEventListener('click',()=>{ const on=b.dataset.rb==='1'; if(on===!!settings.realBend) return; setRealBend(on); renderRbSettings(); renderPanCcRows(); updateAbLock(); }));   // re-clicking the active mode is a no-op; a real flip swaps only the pan/alt CC rows (pitch-row edits survive) + refreshes the scoop-control lock
@@ -3424,7 +3461,7 @@ document.getElementById('saveSettings').addEventListener('click',()=>{
 });
 
 function applyTest(v){
-  active=''; activeChord=null; lastVoiced=null; baseOffsets=[v,v,v,v,v,v]; held.clear(); ethnicInst=null; clearSteel(); activeModeTuning=null; activeBendPedals=null; activeBendInfo="";   // transpose is not ethnic → sendInstFx() sends both off
+  active=''; activeChord=null; lastVoiced=null; baseOffsets=[v,v,v,v,v,v]; held.clear(); ethnicInst=null; clearSteel(); activeModeTuning=null; activeBendPedals=null; activeBendInfo=""; activeExtraPedals=null;   // transpose is not ethnic → sendInstFx() sends both off
   const n=document.getElementById('nowName'); n.textContent='TEST '+(v>0?'+'+v:''+v); n.classList.remove('std');
   renderStrings([v,v,v,v,v,v]); renderGrid(); renderModes(); renderPedals(); renderEthnic(); renderSteel(); renderChords();
   sendInstFx(); tuningSend([v,v,v,v,v,v]);   // display always updates; push INST fx (off) + MIDI when connected
@@ -3494,11 +3531,11 @@ function renderHistory(){
   const cb=wrap.querySelector('[data-hist="copy"]'); if(cb) cb.addEventListener('click', histCopyAction);
   const strip=wrap.querySelector('.hist-strip'); if(strip) strip.scrollLeft=strip.scrollWidth;   // keep the newest chip in view
 }
-function applyHistHidden(){                         // the eye toggle next to "Played" collapses the strip + controls (tracking keeps running)
+function applyHistHidden(){                         // the eye toggle next to "Clipboard" collapses the strip + controls (tracking keeps running)
   const sec=document.getElementById('sec-history'), btn=document.getElementById('histHide'); if(!sec) return;
   const hidden=!!(settings.hist && settings.hist.hidden);
   sec.classList.toggle('collapsed', hidden);
-  if(btn){ btn.innerHTML = hidden ? EYE_OFF_ICO : EYE_ICO; btn.title = hidden ? 'Show played history' : 'Hide played history'; }
+  if(btn){ btn.innerHTML = hidden ? EYE_OFF_ICO : EYE_ICO; btn.title = hidden ? 'Show the clipboard' : 'Hide the clipboard'; }
 }
 document.getElementById('histHide').addEventListener('click', ()=>{ settings.hist.hidden=!settings.hist.hidden; saveSettingsLS(); applyHistHidden(); });
 function histCopyAction(){
@@ -3571,7 +3608,6 @@ renderPan();
 renderHistory();
 applyHistHidden();
 placeBench();
-updatePedalHint();
 initMIDI();
 </script>
 </body>
