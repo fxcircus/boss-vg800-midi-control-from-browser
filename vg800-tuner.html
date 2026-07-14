@@ -462,36 +462,64 @@
      and the full inline one) and a single-column Bends panel with tightened type. */
   #rightRail { display: none; }
   @media (min-width: 1500px) {
-    #rightRail { display: block; position: fixed; top: 30px; left: calc(50% + 430px); width: min(400px, calc(50vw - 430px - 18px)); max-height: calc(100vh - 52px); overflow-y: auto; z-index: 40; padding: 2px 2px 12px; scrollbar-width: none; }
+    #rightRail { display: block; position: fixed; top: 24px; left: calc(50% + 430px); width: min(400px, calc(50vw - 430px - 18px)); max-height: calc(100vh - 38px); overflow-y: auto; z-index: 40; padding: 2px 2px 8px; scrollbar-width: none; }
     #rightRail::-webkit-scrollbar { width: 0; height: 0; }
+    /* FLAT — no drop shadows anywhere in the rail (state glows on engaged pedals stay) */
+    #rightRail .bench, #rightRail .panel, #rightRail .ps-adjust, #rightRail .map-btn, #rightRail .seg button.on { box-shadow: none; }
+    #rightRail .pedal:not(.on), #rightRail .ps-pad:not(.on) { box-shadow: none; }
     /* Workbench — medium scale */
-    #rightRail .bench { margin-top: 0; padding: 15px 6px 12px; border-radius: 12px; }
-    #rightRail .hist-bubble { margin-top: 12px; padding: 14px 8px 13px; }
-    #rightRail .bench-head { padding: 0 10px 9px; }
-    #rightRail .bench-head .name { font-size: 18px; }
-    #rightRail .bench-head .name.long { font-size: 15px; }
+    #rightRail .bench { margin-top: 0; padding: 12px 6px 9px; border-radius: 12px; }
+    #rightRail .bench-head { padding: 0 10px 7px; }
+    #rightRail .bench-head .name { font-size: 17px; }
+    #rightRail .bench-head .name.long { font-size: 14px; }
     #rightRail .bench-head .name.xlong { font-size: 12px; }
     #rightRail .bench-head .lbl { display: none; }
-    #rightRail .bench .fam-name { margin: 2px 6px 10px; }
-    #rightRail .str { grid-template-columns: 32px 1fr 32px; height: 31px; padding: 0 12px; }
+    #rightRail .bench .fam-name { margin: 0 6px 7px; }
+    #rightRail .str { grid-template-columns: 30px 1fr 30px; height: 27px; padding: 0 12px; }
     #rightRail .str-lbl { font-size: 9px; letter-spacing: 0; }
-    #rightRail .slide { min-width: 27px; height: 20px; font-size: 12.5px; padding: 0 5px; border-radius: 4px; }
+    #rightRail .slide { min-width: 26px; height: 19px; font-size: 12px; padding: 0 5px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.6); }
     #rightRail .slide .oct { font-size: 7.5px; }
     #rightRail .str-off { font-size: 11px; }
-    #rightRail .cv-pan { margin: 2px 10px 12px; }
-    #rightRail .cv-panfield { height: 46px; }
-    #rightRail .cv-dot { width: 15px; height: 15px; font-size: 9px; }
-    /* Bends panel — one full-width column, compact captions */
-    #rightRail #sec-pedals { margin: 12px 0 0; padding: 8px 14px 14px; }
-    #rightRail #sec-pedals .panel-hd { font-size: 16px; letter-spacing: 1.2px; }
-    #rightRail #sec-pedals .panel-sub { font-size: 9px; margin: 6px 0 10px; }
-    #rightRail .sec-tools { margin-bottom: 2px; }
-    #rightRail .pedal-info { font-size: 10px; margin: 0 0 12px; }
-    #rightRail .bend-cap { font-size: 9.5px; margin: -4px auto 12px; }
-    #rightRail .pedals { grid-template-columns: 1fr; gap: 8px; }
-    #rightRail .pedal { padding: 10px 12px; }
-    #rightRail .latch-row { margin: 0 0 10px; }
+    #rightRail .cv-pan { margin: 0 10px 10px; }
+    #rightRail .cv-panfield { height: 44px; box-shadow: none; }
+    #rightRail .cv-dot { width: 14px; height: 14px; font-size: 8.5px; }
+    /* Bends — compact two-column layout that fits the viewport without scrolling.
+       Teaching captions are hidden here (they live in About); the animated pedal badges stay. */
+    #rightRail #sec-pedals { margin: 12px 0 0; padding: 4px 12px 10px; position: relative; }
+    #rightRail #sec-pedals .panel-hd { font-size: 14px; letter-spacing: 1.5px; }
+    #rightRail #sec-pedals .panel-sub { font-size: 8.5px; margin: 4px 0 6px; }
+    #rightRail .sec-tools { position: absolute; top: 7px; right: 10px; margin: 0; }   /* MAP rides the header row */
+    #rightRail .map-btn { padding: 4px 8px; font-size: 9px; }
+    #rightRail #pedalWrap { text-align: center; }
+    #rightRail .latch-row { display: inline-flex; vertical-align: middle; margin: 0 3px 7px; }   /* both segs share one line */
+    #rightRail .latch-seg button { padding: 6px 14px; }
+    #rightRail .pedal-info { display: none; }
+    #rightRail #sec-pedals .bend-cap { display: none; }
+    #rightRail #sec-pedals .fam-name { margin: 0 2px 5px; letter-spacing: 2px; }
+    #rightRail .pedals { grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px; }
+    #rightRail .pedal { padding: 8px 10px; }
+    #rightRail .pedal-name { font-size: 14px; }
+    #rightRail .pedal-key { font-size: 8px; padding: 1px 4px; }
+    #rightRail .pedal-do { font-size: 9px; margin: 2px 0 6px; }
+    #rightRail .pedal-moves { font-size: 10px; gap: 2px 8px; padding-right: 22px; }
+    #rightRail .pedal-badge { width: 19px; height: 19px; right: 8px; bottom: 7px; }
+    #rightRail .pedal-badge.sb-dot { width: 11px; height: 11px; right: 10px; bottom: 10px; }
+    /* per-string rows + preset chips */
     #rightRail .ps-list, #rightRail .ps-presets { max-width: none; }
+    #rightRail .ps-list { gap: 5px; margin-bottom: 3px; }
+    #rightRail .ps-row { gap: 5px; }
+    #rightRail .ps-pad { min-height: 30px; padding: 0 10px; gap: 6px; }
+    #rightRail .ps-lbl { font-size: 12.5px; }
+    #rightRail .ps-preview { font-size: 11px; }
+    #rightRail .ps-step { width: 30px; font-size: 16px; }
+    #rightRail .ps-val { min-width: 32px; font-size: 12.5px; }
+    #rightRail .ps-presets { gap: 4px; margin: 0 auto 6px; }
+    #rightRail .ps-presets-lbl { font-size: 9px; }
+    #rightRail .ps-preset-fac, #rightRail .ps-preset-load { padding: 3px 7px; font-size: 10px; }
+    #rightRail .ps-save { padding: 3px 9px; font-size: 10.5px; }
+    #rightRail .swell-row { margin-bottom: 2px; }
+    /* Played parks under the left menu at this width (same width as the menu, flat) */
+    #sideNav .hist-bubble { box-shadow: none; }
     #sideNav a.group[href="#sec-pedals"], #jumpMenu a.group[href="#sec-pedals"] { display: none; }   /* Bends is permanently on screen here (a.group carries the specificity to actually win) */
   }
 
@@ -2353,9 +2381,12 @@ function placeBench(){
   const wide=window.matchMedia('(min-width:1500px)').matches, mid=window.matchMedia('(min-width:1280px)').matches;
   const target = (wide&&rail) ? rail : (mid ? nav : wrap);   // very wide → right rail; desktop → left sidebar; else main column
   if(bench.parentElement!==target) target.appendChild(bench);
-  if(hist && (hist.parentElement!==target || bench.nextElementSibling!==hist)) bench.after(hist);   // the Played bubble always sits right under the workbench
-  if(pedals && pan && hist){   // the whole Bends panel joins the rail on very wide screens (no more scrolling to reach it); otherwise it returns to its spot before Panning
-    if(wide&&rail){ if(pedals.parentElement!==rail || hist.nextElementSibling!==pedals) hist.after(pedals); }
+  if(hist){
+    if(wide&&rail){ if(hist.parentElement!==nav || nav.lastElementChild!==hist) nav.appendChild(hist); }   // very wide → Played parks under the left menu
+    else if(hist.parentElement!==target || bench.nextElementSibling!==hist) bench.after(hist);             // otherwise it sits right under the workbench
+  }
+  if(pedals && pan){   // the whole Bends panel joins the rail on very wide screens (no more scrolling to reach it); otherwise it returns to its spot before Panning
+    if(wide&&rail){ if(pedals.parentElement!==rail || bench.nextElementSibling!==pedals) bench.after(pedals); }
     else if(pedals.parentElement!==wrap) wrap.insertBefore(pedals, pan);
   }
 }
