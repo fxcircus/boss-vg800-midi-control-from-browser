@@ -357,8 +357,8 @@
   .kb-chip.static { cursor: default; }
   .kb-chip.static:hover { border-color: var(--edge); background: var(--wood); }
   /* Per-section "Map ⌨" header button (Bends + Chords) */
-  .sec-tools { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; }
-  .sec-tools .map-btn { margin-left: auto; }
+  .sec-tools { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin: 0 0 8px; }
+  .map-btn.on { color: var(--brass); border-color: var(--brass); background: var(--felt); box-shadow: inset 0 0 0 1px var(--brass-glow); }   /* the Latch button's engaged state */
   /* Pedal Latch — a centered Latch | Off segmented toggle, same style as the app's other .seg switches */
   .latch-row { display: flex; justify-content: center; margin: 2px 0 12px; }
   .latch-seg { flex: 0 0 auto; }
@@ -462,13 +462,19 @@
      and the full inline one) and a single-column Bends panel with tightened type. */
   #rightRail { display: none; }
   @media (min-width: 1500px) {
-    #rightRail { display: block; position: fixed; top: 24px; left: calc(50% + 430px); width: min(400px, calc(50vw - 430px - 18px)); max-height: calc(100vh - 38px); overflow-y: auto; z-index: 40; padding: 2px 2px 8px; scrollbar-width: none; }
+    #rightRail { display: flex; flex-direction: column; position: fixed; top: 24px; left: calc(50% + 430px); width: min(400px, calc(50vw - 430px - 18px)); height: calc(100vh - 38px); overflow-y: auto; z-index: 40; padding: 2px 2px 8px; scrollbar-width: none; }
+    #rightRail > * { flex: 0 0 auto; }
     #rightRail::-webkit-scrollbar { width: 0; height: 0; }
     /* FLAT — no drop shadows anywhere in the rail (state glows on engaged pedals stay) */
     #rightRail .bench, #rightRail .panel, #rightRail .ps-adjust, #rightRail .map-btn, #rightRail .seg button.on { box-shadow: none; }
     #rightRail .pedal:not(.on), #rightRail .ps-pad:not(.on) { box-shadow: none; }
-    /* Workbench — medium scale */
-    #rightRail .bench { margin-top: 0; padding: 12px 6px 9px; border-radius: 12px; }
+    /* Workbench — medium scale, flat (no gradient), pinned to the rail's bottom */
+    #rightRail .bench { margin-top: auto; background: var(--wood); padding: 12px 6px 9px; border-radius: 12px; }
+    #rightRail .str .wire::before { background: var(--chrome-dim); }
+    #rightRail .str.shifted .wire::before { background: var(--brass-deep); filter: none; }
+    #rightRail .str .slide { background: #e6e0d2; }
+    #rightRail .str.shifted.sharp .slide { background: #f2b871; }
+    #rightRail .str.shifted.flat .slide { background: #a8c6de; }
     #rightRail .bench-head { padding: 0 10px 7px; }
     #rightRail .bench-head .name { font-size: 17px; }
     #rightRail .bench-head .name.long { font-size: 14px; }
@@ -485,7 +491,7 @@
     #rightRail .cv-dot { width: 14px; height: 14px; font-size: 8.5px; }
     /* Bends — compact two-column layout that fits the viewport without scrolling.
        Teaching captions are hidden here (they live in About); the animated pedal badges stay. */
-    #rightRail #sec-pedals { margin: 12px 0 0; padding: 4px 12px 10px; position: relative; }
+    #rightRail #sec-pedals { margin: 0 0 12px; padding: 4px 12px 10px; position: relative; }
     #rightRail #sec-pedals .panel-hd { font-size: 14px; letter-spacing: 1.5px; }
     #rightRail #sec-pedals .panel-sub { font-size: 8.5px; margin: 4px 0 6px; }
     #rightRail .sec-tools { position: absolute; top: 7px; right: 10px; margin: 0; }   /* MAP rides the header row */
@@ -513,13 +519,13 @@
     #rightRail .ps-preview { font-size: 11px; }
     #rightRail .ps-step { width: 30px; font-size: 16px; }
     #rightRail .ps-val { min-width: 32px; font-size: 12.5px; }
-    #rightRail .ps-presets { gap: 4px; margin: 0 auto 6px; }
+    #rightRail .ps-presets { gap: 4px; margin: 0 auto 4px; }
     #rightRail .ps-presets-lbl { font-size: 9px; }
     #rightRail .ps-preset-fac, #rightRail .ps-preset-load { padding: 3px 7px; font-size: 10px; }
     #rightRail .ps-save { padding: 3px 9px; font-size: 10.5px; }
     #rightRail .swell-row { margin-bottom: 2px; }
     /* Played parks under the left menu at this width (same width as the menu, flat) */
-    #sideNav .hist-bubble { box-shadow: none; }
+    #sideNav .hist-bubble { box-shadow: none; background: var(--wood); }
     #sideNav a.group[href="#sec-pedals"], #jumpMenu a.group[href="#sec-pedals"] { display: none; }   /* Bends is permanently on screen here (a.group carries the specificity to actually win) */
   }
 
@@ -1294,7 +1300,7 @@
         <li>Hold the on-screen <b>Pedal&nbsp;A / B</b> and knee levers <b>LKL / LKR</b> (or keys <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> <kbd>F</kbd>) to bend the root / 3rd / 5th of the current tuning, pedal-steel style. They stack, and the icons animate as they move.</li>
         <li><b>Combos</b> (A+B…) engage a whole grip at once and light up the pedals they include.</li>
         <li><b>Per-String</b> — the Preset ⟷ Per-String switch turns the six pedals into one-per-string manual benders (keys <kbd>A</kbd>–<kbd>H</kbd>), with factory quick presets (B-Bender, 4th ↑, Nashville…) and savable custom ones. <b>All Strings</b> (<kbd>J</kbd>, rebindable) pushes every set bender in one press — e.g. glide the whole guitar up a fourth.</li>
-        <li><b>Latch</b> — the toggle in the <b>Bends</b> header switches pedals to tap on/off instead of holding.</li>
+        <li><b>Latch</b> — the small <b>Latch</b> button beside <b>⌨ Map</b> switches pedals to tap on/off instead of holding.</li>
         <li><b>Rebind</b> any control in <em>Settings → Keyboard Mapping</em> (or the <b>⌨ Map</b> button in the header): click a chip, press a key. <em>Reset</em> restores defaults.</li>
         <li>In <b>Chords</b> key mode the pedals switch to <b>scale-tone bends</b> — see the Chords help above.</li>
         <li>In <b>Panning</b> mode a bend greys out if base + bend would exceed ±12 (they share one BEND&nbsp;DEPTH parameter). In <b>Classic</b> every bend — pedals, per-string, scale and mode bends alike — rides on top of the ALT&nbsp;TUNE base as its own relative depth, so bends never grey out for range: the full ±12 is available on any tuning.</li>
@@ -1844,20 +1850,20 @@ function customBendActive(){ return !!(activeBendPedals && activeBendPedals.leng
 // saved semitone amount. Built fresh each render so the amount tracks settings.stringBend; keys a–h (DEFAULT_KEYS order).
 const PS_KEYS=['a','s','d','f','g','h'];
 // Factory Per-String presets — quick bends shipped out of the box (amounts index 0 = string 1 high E … 5 = low E, ±12).
-const FACTORY_PS=[
-  {name:'Clear', amounts:[0,0,0,0,0,0],        tip:'Reset all six strings to no bend'},
-  {name:'+1',    amounts:[1,1,1,1,1,1],        tip:'Every string up a half step'},
-  {name:'+2',    amounts:[2,2,2,2,2,2],        tip:'Every string up a whole step'},
-  {name:'−1',    amounts:[-1,-1,-1,-1,-1,-1],  tip:'Every string down a half step'},
-  {name:'−2',    amounts:[-2,-2,-2,-2,-2,-2],  tip:'Every string down a whole step'},
-  {name:'4th ↑', amounts:[5,5,5,5,5,5],        tip:'Every string up a fourth — drone / power-chord jump'},
-  {name:'5th ↑', amounts:[7,7,7,7,7,7],        tip:'Every string up a fifth'},
-  {name:'Oct ↑', amounts:[12,12,12,12,12,12],  tip:'Every string up an octave'},
-  {name:'Oct ↓', amounts:[-12,-12,-12,-12,-12,-12], tip:'Every string down an octave'},
-  {name:'B-Bender', amounts:[0,2,0,0,0,0],     tip:'B string up a whole step (B → C#) — Telecaster B-bender'},
-  {name:'G-Bender', amounts:[0,0,2,0,0,0],     tip:'G string up a whole step (G → A) — Clarence White style'},
-  {name:'Drop Low', amounts:[0,0,0,0,0,-2],    tip:'Low E down to D — instant Drop D'},
-  {name:'Nashville', amounts:[0,0,12,12,12,12], tip:'Strings 3–6 up an octave — high-strung shimmer while held'},
+const FACTORY_PS=[   // group → the labeled cluster row each chip renders under
+  {name:'Clear', amounts:[0,0,0,0,0,0],        group:'shift',  tip:'Reset all six strings to no bend'},
+  {name:'+1',    amounts:[1,1,1,1,1,1],        group:'shift',  tip:'Every string up a half step'},
+  {name:'+2',    amounts:[2,2,2,2,2,2],        group:'shift',  tip:'Every string up a whole step'},
+  {name:'−1',    amounts:[-1,-1,-1,-1,-1,-1],  group:'shift',  tip:'Every string down a half step'},
+  {name:'−2',    amounts:[-2,-2,-2,-2,-2,-2],  group:'shift',  tip:'Every string down a whole step'},
+  {name:'4th ↑', amounts:[5,5,5,5,5,5],        group:'jump',   tip:'Every string up a fourth — drone / power-chord jump'},
+  {name:'5th ↑', amounts:[7,7,7,7,7,7],        group:'jump',   tip:'Every string up a fifth'},
+  {name:'Oct ↑', amounts:[12,12,12,12,12,12],  group:'jump',   tip:'Every string up an octave'},
+  {name:'Oct ↓', amounts:[-12,-12,-12,-12,-12,-12], group:'jump', tip:'Every string down an octave'},
+  {name:'B-Bender', amounts:[0,2,0,0,0,0],     group:'bender', tip:'B string up a whole step (B → C#) — Telecaster B-bender'},
+  {name:'G-Bender', amounts:[0,0,2,0,0,0],     group:'bender', tip:'G string up a whole step (G → A) — Clarence White style'},
+  {name:'Drop Low', amounts:[0,0,0,0,0,-2],    group:'bender', tip:'Low E down to D — instant Drop D'},
+  {name:'Nashville', amounts:[0,0,12,12,12,12], group:'bender', tip:'Strings 3–6 up an octave — high-strung shimmer while held'},
 ];
 function perStringControls(){
   const singles=[0,1,2,3,4,5].map(i=>({id:'PS'+(i+1), name:'String '+SLBL[i], group:'string', string:i, semis:settings.stringBend[i]|0, key:PS_KEYS[i], perString:true}));
@@ -2101,9 +2107,8 @@ function renderPedals(){
   rebuildKeymap();
   ctrlStateCache={};
   controls.forEach(c=>{ ctrlStateCache[c.id]=controlState(c,curInfo,baseOffsets); });
-  let html=`<div class="sec-tools"><button class="map-btn" data-mapjump="bends" title="Configure keyboard shortcuts">${KBD_ICO}Map</button></div>`;
+  let html=`<div class="sec-tools">${!sbMode?`<button class="map-btn latch-btn${settings.latch?' on':''}" data-latchtog title="Latch — tap a pedal on/off instead of holding it">Latch</button>`:''}<button class="map-btn" data-mapjump="bends" title="Configure keyboard shortcuts">${KBD_ICO}Map</button></div>`;
   if(copedentContext) html+=`<div class="latch-row"><div class="seg" id="psSeg" title="Switch the six pedals between the preset chord bends and one-per-string manual bends"><button class="${!settings.perStringOn?'on':''}" data-ps="0">Preset</button><button class="${settings.perStringOn?'on':''}" data-ps="1">Per-String</button></div></div>`;
-  if(!sbMode) html+=`<div class="latch-row"><div class="seg latch-seg" id="latchSeg" title="Latch — tap a pedal on/off instead of holding it"><button class="${settings.latch?'on':''}" data-latch="1">Latch</button><button class="${!settings.latch?'on':''}" data-latch="0">Off</button></div></div>`;
   if(customMode){                                               // Tuning declares its own pedals (fixed per-string bends)
     const grp=g=> controls.filter(c=>c.group===g).map(c=>pedalBtnHTML(c.id,c.name,'',ctrlStateCache[c.id])).join('');
     const foot=grp('foot'), knee=grp('knee'), combo=grp('combo');
@@ -2122,13 +2127,15 @@ function renderPedals(){
     html+=`<div class="fam-name">Scale Bends · one string each</div><div class="pedals">${controls.map(c=>pedalBtnHTML(c.id,c.name,'',ctrlStateCache[c.id])).join('')}</div>`;
   } else if(psMode){                                            // Per-String — six pedals, one per string, each a saved semitone bend
     const psEq=a=>Array.isArray(a)&&a.length===6&&a.every((v,i)=>(v|0)===(settings.stringBend[i]|0));   // does a preset match the live amounts? (drives the lit chip)
-    const facChips = FACTORY_PS.map((p,i)=>`<button class="ps-preset-fac${p.name!=='Clear'&&psEq(p.amounts)?' on':''}" data-psfac="${i}" title="${p.tip||p.name}">${p.name}</button>`).join('');
+    const facChip=(p,i)=>`<button class="ps-preset-fac${p.name!=='Clear'&&psEq(p.amounts)?' on':''}" data-psfac="${i}" title="${p.tip||p.name}">${p.name}</button>`;
+    const facRows=[['shift','Shift'],['jump','Jump'],['bender','Benders']].map(([g,label])=>
+      `<div class="ps-presets"><span class="ps-presets-lbl">${label}</span>${FACTORY_PS.map((p,i)=>p.group===g?facChip(p,i):'').join('')}</div>`).join('');
     const userChips = strPresets.map((p,i)=>`<span class="ps-preset${p.amounts.some(x=>x|0)&&psEq(p.amounts)?' on':''}"><button class="ps-preset-load" data-psload="${i}" title="Recall">${p.name}</button><button class="ps-preset-del" data-psdel="${i}" title="Delete preset">×</button></span>`).join('');   // pre-existing all-zero presets never light (that state is "cleared", not "loaded")
     html+= settings.realBend
       ? `<div class="pedal-info">Each pedal bends <b>one string</b>. Set its semitones with <b>−</b>/<b>＋</b> — the full octave either way on every tuning (the bend rides on top of the ALT&nbsp;TUNE base) — then hold or latch to bend. <b>All Strings</b> pushes every set bender in one press.</div>`
       : `<div class="pedal-info">Each pedal bends <b>one string</b>. Set its semitones with <b>−</b>/<b>＋</b> — kept within one octave of standard, minus what the current tuning already uses — then hold or latch to bend. <b>All Strings</b> pushes every set bender in one press.</div>`;
     html+=`<p class="bend-cap"><b>Latch</b> keeps a pedal engaged after one tap. Off = press &amp; hold.${settings.realBend?'':' A pedal greys out if its amount would exceed ±12 on this tuning.'}</p>`;
-    html+=`<div class="ps-presets"><span class="ps-presets-lbl">Quick</span>${facChips}</div>`;
+    html+=facRows;
     html+=`<div class="ps-presets"><span class="ps-presets-lbl">Saved</span>${userChips||'<span class="ps-none">none yet</span>'}<button class="ps-save" data-pssave>Save…</button></div>`;
     const psAll=controls.find(c=>c.allStrings), psSingles=controls.filter(c=>!c.allStrings);
     html+=`<div class="fam-name">Strings · one pedal each</div><div class="ps-list">${psSingles.map(c=>perStringRowHTML(c, ctrlStateCache[c.id])).join('')}</div>`;
@@ -2156,7 +2163,7 @@ function renderPedals(){
     b.addEventListener('lostpointercapture', ()=> releaseCtrl(ctrl));
   });
   wrap.querySelectorAll('.pedal').forEach(b=> b.classList.toggle('on', ctrlEngaged(b.dataset.ctrl)));  // keep latched state after re-render
-  wrap.querySelectorAll('#latchSeg [data-latch]').forEach(b=> b.addEventListener('click',()=>{ settings.latch=b.dataset.latch==='1'; saveSettingsLS(); updatePedalHint(); wrap.querySelectorAll('#latchSeg [data-latch]').forEach(x=> x.classList.toggle('on',(x.dataset.latch==='1')===settings.latch)); }));
+  const lt=wrap.querySelector('[data-latchtog]'); if(lt) lt.addEventListener('click',()=>{ settings.latch=!settings.latch; saveSettingsLS(); updatePedalHint(); renderPedals(); });
   wrap.querySelectorAll('#psSeg [data-ps]').forEach(b=> b.addEventListener('click',()=>{ if(held.size){ held.clear(); if(midiOut) send(baseOffsets); renderStrings(baseOffsets); } settings.perStringOn=b.dataset.ps==='1'; saveSettingsLS(); rebuildKeymap(); renderPedals(); }));   // release any held bend when switching pedal mode
   wrap.querySelectorAll('.ps-step').forEach(b=> b.addEventListener('click', e=>{ e.stopPropagation(); const [s,d]=b.dataset.psadj.split(':').map(Number); adjustStringBend(s,d); }));
   wrap.querySelectorAll('.ps-preset-fac').forEach(b=> b.addEventListener('click', ()=> loadFactoryPreset(+b.dataset.psfac)));
@@ -2385,8 +2392,8 @@ function placeBench(){
     if(wide&&rail){ if(hist.parentElement!==nav || nav.lastElementChild!==hist) nav.appendChild(hist); }   // very wide → Played parks under the left menu
     else if(hist.parentElement!==target || bench.nextElementSibling!==hist) bench.after(hist);             // otherwise it sits right under the workbench
   }
-  if(pedals && pan){   // the whole Bends panel joins the rail on very wide screens (no more scrolling to reach it); otherwise it returns to its spot before Panning
-    if(wide&&rail){ if(pedals.parentElement!==rail || bench.nextElementSibling!==pedals) bench.after(pedals); }
+  if(pedals && pan){   // the whole Bends panel joins the rail on very wide screens (Bends on top, workbench pinned to the bottom); otherwise it returns to its spot before Panning
+    if(wide&&rail){ if(pedals.parentElement!==rail || pedals.nextElementSibling!==bench) rail.insertBefore(pedals, bench); }
     else if(pedals.parentElement!==wrap) wrap.insertBefore(pedals, pan);
   }
 }
