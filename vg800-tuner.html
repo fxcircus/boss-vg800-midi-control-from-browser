@@ -1417,7 +1417,7 @@ const TUNING_MODELS={
   // Ethnic (steel-course instruments get the small steel body; gut/nylon families get NYLON)
   'Mandolin':'GB SML', 'Irish Bouzouki':'GB SML', 'Greek Bouzouki':'GB SML', 'Oud':'NYLON', 'Charango':'NYLON',
   'Saz / Bağlama':'NYLON', 'Cavaquinho':'GB SML', 'Ukulele':'NYLON', 'Baritone Uke':'NYLON', 'Cuatro':'NYLON',
-  'Balalaika':'NYLON', 'Banjo':'BANJO',
+  'Balalaika':'NYLON', 'Banjo':'BANJO', 'Sitar':'SITAR',
   // Pedal steel
   'E9 Nashville':'TE', 'E9 Lanois':'335', 'C6 Swing/Jazz':'L4', 'B6 Universal':'335',
 };
@@ -1535,6 +1535,15 @@ const ETHNIC=[
   {name:'Oud', pitches:[36,41,45,50,55,60], notes:'C F A D G C', ref:'Middle-Eastern Taqsim', courses:true},
   {name:'Charango', pitches:[55,60,64,69,76], notes:'G C E A E', ref:'Andean Folk Music', courses:true},
   {name:'Saz / Bağlama', pitches:[47,52,57], notes:'B E A', ref:'Turkish Folk · short neck', courses:true},
+  {name:'Sitar', pitches:[36,43,48,55,60,65], notes:'C G C G C F', ref:'Hindustani classical · Kharaj-Pancham',   // Sa–Pa drones in C, Ma melody string on top
+    pedals:[   // meend — the sitar's gliding pulls (Classic mode glides them; set Bend Time · Slow for the real thing)
+      {id:'A',   name:'Meend · Pa',  group:'foot', key:'a', string:0, semis:2},   // Ma → Pa   (F → G)
+      {id:'B',   name:'Meend · Dha', group:'foot', key:'s', string:0, semis:4},   // Ma → Dha  (F → A)
+      {id:'AB',  name:'Meend · Sa′', group:'foot', key:'g', string:0, semis:7},   // Ma → high Sa (F → C) — the full-fifth pull
+      {id:'LKL', name:'Sa · Re',     group:'knee', key:'d', string:1, semis:2},   // top drone Sa → Re (C → D)
+      {id:'LKR', name:'Pa · Dha',    group:'knee', key:'f', string:2, semis:2},   // Pa → Dha (G → A)
+    ],
+    pedalInfo:'<b>Meend</b> — the sitar\'s gliding pulls, all on the top <b>Ma</b> string (F): up to <b>Pa</b>, <b>Dha</b>, or the full fifth to high <b>Sa</b>. The knee levers pull the <b>Sa</b> and <b>Pa</b> drones a whole step. Set <b>Bend Time · Slow</b> for the classic slow glide.'},
   {name:'Cavaquinho', pitches:[62,67,71,74], notes:'D G B D', ref:'Samba & Choro'},
   {name:'Ukulele', pitches:[67,60,64,69], notes:'G C E A', ref:'Soprano · reentrant tuning'},
   {name:'Baritone Uke', pitches:[50,55,59,64], notes:'D G B E', ref:'Tuned like a guitar’s top four'},
@@ -1603,6 +1612,7 @@ const TUNING_TIPS = {
   'Baritone Uke':  { desc:`Tuned like a guitar's top four strings, an octave below a soprano uke — warm and mellow. Favoured in jazz and folk (e.g. Lyle Ritz).` },
   'Cuatro':        { desc:`Venezuela's 4-string (re-entrant) — the rhythmic-harmonic base of joropo and música llanera.`, song:`"Alma Llanera" (Venezuela's unofficial anthem)` },
   'Balalaika':     { desc:`Russia's triangular folk lute, played with the fingers.`, song:`"Kalinka" (traditional)` },
+  'Sitar':         { desc:`India's long-necked lute with sympathetic strings — here as Sa–Pa drones in C with the Ma melody string on top (Kharaj-Pancham style). The pedals are meend: wide gliding pulls up to a full fifth.`, song:`"Norwegian Wood" — The Beatles` },
   'Banjo':         { desc:`A re-entrant 5-string with a high drone — the bluegrass sound.`, song:`"Foggy Mountain Breakdown" — Earl Scruggs` },
   // Pedal steel
   'E9 Nashville':  { desc:`THE country pedal-steel tuning — the crying, gliding sound you picture when you think "pedal steel" (Bud Isaacs, Buddy Emmons).`, song:`"Slowly" — Webb Pierce (Bud Isaacs, 1954)` },
@@ -2436,7 +2446,7 @@ function applyInst(inst, start){
   const N=inst.pitches.length; start=Math.max(0, Math.min(6-N, start));
   const res=computeCluster(inst.pitches, start);
   if(!res.ok){ toast(inst.name+' can’t fit those strings', true); return; }
-  active=inst.name; activeChord=null; lastVoiced=null; baseOffsets=[...res.offsets]; held.clear(); ethnicInst=inst; ethnicStart=start; clearSteel(); activeModeTuning=null; activeBendPedals=null; activeBendInfo="";
+  active=inst.name; activeChord=null; lastVoiced=null; baseOffsets=[...res.offsets]; held.clear(); ethnicInst=inst; ethnicStart=start; clearSteel(); activeModeTuning=null; activeBendPedals=inst.pedals||null; activeBendInfo=inst.pedalInfo||'';   // an instrument can bring its own pedals (Sitar meend)
   const n=document.getElementById('nowName'); n.textContent=inst.name; n.classList.remove('std');
   renderStrings(res.offsets); renderGrid(); renderModes(); renderPedals(); renderEthnic(); renderSteel(); renderChords();
   lastModelName=TUNING_MODELS[inst.name]||'NYLON'; sendModel(lastModelName);   // ethnic default: nylon-string

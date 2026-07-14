@@ -104,6 +104,7 @@ Maps an instrument's pitches onto a cluster of strings.
 | **Oud** | C F A D G C | `NYLON` | Middle-Eastern Taqsim |
 | **Charango** | G C E A E | `NYLON` | Andean Folk Music |
 | **Saz / Bağlama** | B E A | `NYLON` | Turkish Folk · short neck |
+| **Sitar** | C G C G C F | `SITAR` | Hindustani classical · Kharaj-Pancham — Sa–Pa drones in C, Ma on top; meend bend pedals (to Pa / Dha / high Sa, plus Sa→Re and Pa→Dha drone pulls) |
 | **Cavaquinho** | D G B D | `GB SML` | Samba & Choro |
 | **Ukulele** | G C E A | `NYLON` | Soprano · reentrant tuning |
 | **Baritone Uke** | D G B E | `NYLON` | Tuned like a guitar’s top four |
@@ -125,4 +126,4 @@ Maps an instrument's pitches onto a cluster of strings.
 
 ---
 
-_62 tunings in total. Generated from `vg800-tuner.html`._
+_63 tunings in total. Generated from `vg800-tuner.html`._
