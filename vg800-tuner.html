@@ -1286,8 +1286,8 @@
     <details class="docgrp">
       <summary>Bends — pedals &amp; knee levers</summary>
       <div class="docgrp-body"><ul>
-        <li>Hold the on-screen <b>Pedal&nbsp;A / B</b> and knee levers <b>LKL / LKR</b> (or keys <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> <kbd>F</kbd>) to bend the root / 3rd / 5th of the current tuning, pedal-steel style. They stack, and the icons animate as they move.</li>
-        <li><b>Combos</b> — <b>A+B</b> (the I → IV cry) and <b>A+LKL</b> (the m6 grip) engage a whole grip at once and light up the pedals they include. The <b>LKL</b> lever alone turns any major tuning <b>minor</b>; the open-major tunings add <b>IV / V</b> whole-neck pedals that glide the entire chord.</li>
+        <li>Hold the on-screen benders — <b>Sixth</b>, <b>Sus&nbsp;4</b>, <b>Minor</b>, <b>Maj&nbsp;7</b> (keys <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> <kbd>F</kbd>) — each named for the colour it pulls the current tuning into, pedal-steel style. They stack, and the icons animate as they move. The Pedal Steel section keeps the authentic Pedal&nbsp;A/B/C names.</li>
+        <li><b>Combos</b> — <b>IV Chord</b> (the I → IV cry) and <b>Minor 6</b> engage a whole grip at once and light up the pedals they include. The <b>Minor</b> lever alone turns any major tuning minor; the open-major tunings add <b>IV / V</b> whole-neck pedals that glide the entire chord.</li>
         <li><b>Per-String</b> — the Preset ⟷ Per-String switch turns the six pedals into one-per-string manual benders (keys <kbd>A</kbd>–<kbd>H</kbd>), with factory quick presets (B-Bender, 4th ↑, Nashville…) and savable custom ones. <b>All Strings</b> (<kbd>J</kbd>, rebindable) pushes every set bender in one press — e.g. glide the whole guitar up a fourth.</li>
         <li><b>Latch</b> — the small <b>Latch</b> button beside <b>⌨ Map</b> switches pedals to tap on/off instead of holding.</li>
         <li><b>Rebind</b> any control in <em>Settings → Keyboard Mapping</em> (or the <b>⌨ Map</b> button in the header): click a chip, press a key. <em>Reset</em> restores defaults.</li>
@@ -1497,7 +1497,7 @@ const FAMILIES = [
     {name:'Joni Mitchell', notes:'E B E G# B E', offsets:[0,0,1,2,2,0], ref:'Joni Mitchell · “Big Yellow Taxi” (Open E)'},
     {name:'Both Sides', artist:'Joni Mitchell', notes:'D A D F# A D', offsets:[-2,-2,-1,0,0,-2], chords:['Dmaj7','G/B','A7','A7sus4'], comment:'Open D, no capo. Recording uses capo 4 (sounds in F# major); this is the no-capo base tuning.'},
     {name:'Pyramid Song', artist:'Radiohead', notes:'F# A# C# F# A# F#', offsets:[2,-1,-1,-1,1,2], chords:['F#','Gmaj7','A6','F#m','Eadd9','G'], comment:'Open F# major. Let the top F# ring as a pedal; barre strings 6-2 for Gmaj7 (fret 1) and A6 (fret 3).'},
-    {name:'Radiohead', artist:'Radiohead', notes:'C G C G G# C', offsets:[-4,-3,0,-2,-2,-4], chords:['Fmaj7','Cmaj7','Dbmaj7','Eb6'], comment:'"Everything In Its Right Place" voicing — open strings C G C G G# C with a C pedal on the top string. Pedal A pushes the neutral G string (3) up 5 semitones (a fourth) to a second C.', pedals:[{id:'A', name:'Pedal A', group:'foot', key:'a', string:2, semis:5}], pedalInfo:'<b>Pedal A</b> raises the neutral G string (string 3) up 5 semitones — G → C — over this <b>Everything In Its Right Place</b> voicing.'},
+    {name:'Radiohead', artist:'Radiohead', notes:'C G C G G# C', offsets:[-4,-3,0,-2,-2,-4], chords:['Fmaj7','Cmaj7','Dbmaj7','Eb6'], comment:'"Everything In Its Right Place" voicing — open strings C G C G G# C with a C pedal on the top string. The G → C bender pushes the neutral G string (3) up a fourth to a second C.', pedals:[{id:'A', name:'G → C', group:'foot', key:'a', string:2, semis:5}], pedalInfo:'<b>G → C</b> raises the neutral G string (string 3) up a fourth to a second C — over this <b>Everything In Its Right Place</b> voicing.'},
   ]},
 ];
 const BUILTIN = FAMILIES.flatMap(f=>f.tunings);
@@ -1606,7 +1606,7 @@ const TUNING_TIPS = {
   'Joni Mitchell': { desc:`Joni built her sound on personal open tunings, described by bass note plus fret offsets (her catalog uses 50+).`, song:`"Big Yellow Taxi" — Joni Mitchell` },
   'Both Sides':    { desc:`Joni's open-D base — a Dmaj7 rings on the open strings. On the record she capos 4 (sounding F# major); this is the no-capo tuning.`, song:`"Both Sides, Now" — Joni Mitchell` },
   'Pyramid Song':  { desc:`Open F# major — let the top F# ring as a pedal while barre shapes slide beneath for the song's swaying, ambiguous chords.`, song:`"Pyramid Song" — Radiohead` },
-  'Radiohead':     { desc:`An "Everything In Its Right Place" voicing built around a C pedal on the top string (the same pedal-note trick as Pyramid Song's F#). Open strings ring C G C G G# C; hold Pedal A to push the neutral G string up a fourth to C while the top C keeps ringing.`, song:`"Everything In Its Right Place" — Radiohead` },
+  'Radiohead':     { desc:`An "Everything In Its Right Place" voicing built around a C pedal on the top string (the same pedal-note trick as Pyramid Song's F#). Open strings ring C G C G G# C; hold the G → C bender to push the neutral G string up a fourth while the top C keeps ringing.`, song:`"Everything In Its Right Place" — Radiohead` },
   // Ethnic instruments
   'Mandolin':      { desc:`Standard mandolin, tuned in fifths like a violin.`, song:`"Losing My Religion" — R.E.M. (Peter Buck)` },
   'Irish Bouzouki':{ desc:`The Greek bouzouki adapted for Celtic music — flat-backed, tuned a fifth lower — as a rhythm and countermelody engine.`, song:`Irish trad — Planxty (Andy Irvine & Dónal Lunny)` },
@@ -1831,13 +1831,13 @@ function renderStrings(offsets){
 const DEG_INT={'1':0,'3':4,'5':7}, DEG_NM={'1':'root','3':'3rd','5':'5th'};
 // A copedent = a set of controls; each control has one or more degree "moves".
 const COPEDENTS={
-  generic:{ controls:[
-    {id:'A',   name:'Pedal A', group:'foot', key:'a', act:'5th +1 step',    moves:[{deg:'5',semis:2}]},
-    {id:'B',   name:'Pedal B', group:'foot', key:'s', act:'3rd +½ step',    moves:[{deg:'3',semis:1}]},
-    {id:'LKL', name:'LKL',     group:'knee', key:'d', act:'3rd −½ (minor)',  moves:[{deg:'3',semis:-1}]},   // parallel-minor lever — hits EVERY string carrying the 3rd (bends-review P1; covers P10 for the open-G cards)
-    {id:'LKR', name:'LKR',     group:'knee', key:'f', act:'root −½ (maj7)',  moves:[{deg:'1',semis:-1}]},
-    {id:'AB',  name:'A + B',   group:'combo',parts:['A','B'],key:'g', act:'the I → IV cry',  moves:[{deg:'5',semis:2},{deg:'3',semis:1}]},
-    {id:'AL',  name:'A + LKL', group:'combo',parts:['A','LKL'],key:'j', act:'the m6 grip',   moves:[{deg:'5',semis:2},{deg:'3',semis:-1}]},   // R ♭3 6 (bends-review P2; A+B+LKR retired per P3)
+  generic:{ controls:[   // named for what they DO (the steel copedents below keep the authentic Pedal A/B/P5… names)
+    {id:'A',   name:'Sixth',   group:'foot', key:'a', act:'5th +1 step',    moves:[{deg:'5',semis:2}]},
+    {id:'B',   name:'Sus 4',   group:'foot', key:'s', act:'3rd +½ step',    moves:[{deg:'3',semis:1}]},
+    {id:'LKL', name:'Minor',   group:'knee', key:'d', act:'3rd −½',         moves:[{deg:'3',semis:-1}]},   // parallel-minor lever — hits EVERY string carrying the 3rd
+    {id:'LKR', name:'Maj 7',   group:'knee', key:'f', act:'root −½',        moves:[{deg:'1',semis:-1}]},
+    {id:'AB',  name:'IV Chord',group:'combo',parts:['A','B'],key:'g', act:'the I → IV cry',  moves:[{deg:'5',semis:2},{deg:'3',semis:1}]},
+    {id:'AL',  name:'Minor 6', group:'combo',parts:['A','LKL'],key:'j', act:'the m6 grip',   moves:[{deg:'5',semis:2},{deg:'3',semis:-1}]},   // R ♭3 6
   ]},
   e9:{ controls:[   // standard Emmons E9
     {id:'A',   name:'Pedal A', group:'foot', key:'a', act:'5th +1 step',     moves:[{deg:'5',semis:2}]},
@@ -1869,13 +1869,13 @@ const SCALE_BEND={ controls:[
 ]};
 function scalePcSet(){ if(!chordKeyOn()) return null; const sc=SCALES[settings.keyScale], base=CHORD_ROOTS.indexOf(settings.keyRoot); const s=new Set(); sc.intervals.forEach(iv=> s.add((base+iv)%12)); return s; }
 function scaleBendActive(){ return !!activeChord && chordKeyOn(); }   // a chord is held AND a key/scale is chosen
-// Modes-section pedals — bend to the current mode's 7th degree from opposite ends of the range. Pedal A lifts string 1
+// Modes-section pedals — bend to the current mode's 7th degree from opposite ends of the range. 7th ↑ lifts string 1
 // (high E) up to the nearest 7th above; Pedal B drops string 6 (low E) down to the nearest 7th below. The 7th (maj7 in
 // Ionian/Lydian, ♭7 elsewhere) rides on activeModeTuning.seventh, so both targets recompute on every mode change.
 const MODE_BEND={ controls:[
-  {id:'MA', name:'Pedal A', group:'foot', key:'a', string:0, seventhDir:1},    // high E → 7th above
-  {id:'MB', name:'Pedal B', group:'foot', key:'s', string:5, seventhDir:-1},   // low E  → 7th below
-  {id:'MC', name:'Pedal C', group:'foot', key:'d', string:2, charTone:true},   // string 3 → the mode's characteristic colour tone (bends-review P7)
+  {id:'MA', name:'7th ↑',      group:'foot', key:'a', string:0, seventhDir:1},    // high E → 7th above
+  {id:'MB', name:'7th ↓',      group:'foot', key:'s', string:5, seventhDir:-1},   // low E  → 7th below
+  {id:'MC', name:'Color Tone', group:'foot', key:'d', string:2, charTone:true},   // string 3 → the mode's characteristic colour tone
 ]};
 function modesBendActive(){ return !!activeModeTuning; }              // a Modes-section tuning is loaded
 function customBendActive(){ return !!(activeBendPedals && activeBendPedals.length); }   // the tuning declares its own pedals
@@ -1908,8 +1908,8 @@ function perStringControls(){
   singles.push({id:'PSALL', name:'All Strings', group:'combo', allStrings:true, act:'every set bender · one press', key:DEFAULT_KEYS.PSALL, parts:avail.map(i=>'PS'+(i+1)), perString:true});
   return singles;
 }
-function perStringActive(){ return !!settings.perStringOn && !customBendActive() && !modesBendActive() && !scaleBendActive(); }   // replaces only the copedent
-function pedalControls(){ return customBendActive() ? activeBendPedals : (modesBendActive() ? MODE_BEND.controls : (scaleBendActive() ? SCALE_BEND.controls : (perStringActive() ? perStringControls() : (activeExtraPedals ? copedent.controls.concat(activeExtraPedals) : copedent.controls)))); }
+function perStringActive(){ return !!settings.perStringOn; }   // Per-String overrides EVERY pedal context (copedent, custom, modes, scale bends)
+function pedalControls(){ return perStringActive() ? perStringControls() : customBendActive() ? activeBendPedals : modesBendActive() ? MODE_BEND.controls : scaleBendActive() ? SCALE_BEND.controls : (activeExtraPedals ? copedent.controls.concat(activeExtraPedals) : copedent.controls); }
 // Amounts changed: first drop any latched per-string pedal that's no longer available (a disabled button gets no
 // pointer listeners, so it would be stuck lit and mouse-dead — and silently re-fire when a later preset re-enables it),
 // then push the new bend state for whatever is still held.
@@ -2160,13 +2160,15 @@ function renderKeymap(){
 }
 function renderPedals(){
   const wrap=document.getElementById('pedalWrap'); if(!wrap) return;
-  const customMode=customBendActive(), modesMode=!customMode && modesBendActive(), sbMode=!customMode && !modesMode && scaleBendActive(), copedentContext=!customMode&&!modesMode&&!sbMode, psMode=copedentContext&&!!settings.perStringOn, controls=pedalControls();
+  const psMode=!!settings.perStringOn;   // Per-String wins in every context
+  const customMode=!psMode&&customBendActive(), modesMode=!psMode&&!customMode&&modesBendActive(), sbMode=!psMode&&!customMode&&!modesMode&&scaleBendActive();
+  const controls=pedalControls();
   curInfo=chordInfo(baseOffsets, active); if(steelRoot!=null) curInfo.root=steelRoot;   // pedal-steel forces the real root
   rebuildKeymap();
   ctrlStateCache={};
   controls.forEach(c=>{ ctrlStateCache[c.id]=controlState(c,curInfo,baseOffsets); });
   let html=`<div class="sec-tools">${!sbMode?`<button class="map-btn latch-btn${settings.latch?' on':''}" data-latchtog title="Latch — tap a pedal on/off instead of holding it">Latch</button>`:''}<button class="map-btn" data-mapjump="bends" title="Configure keyboard shortcuts">${KBD_ICO}Map</button></div>`;
-  if(copedentContext) html+=`<div class="latch-row"><div class="seg" id="psSeg" title="Switch the six pedals between the preset chord bends and one-per-string manual bends"><button class="${!settings.perStringOn?'on':''}" data-ps="0">Preset</button><button class="${settings.perStringOn?'on':''}" data-ps="1">Per-String</button></div></div>`;
+  html+=`<div class="latch-row"><div class="seg" id="psSeg" title="Switch between this context's preset bends and one-per-string manual bends"><button class="${!settings.perStringOn?'on':''}" data-ps="0">Preset</button><button class="${settings.perStringOn?'on':''}" data-ps="1">Per-String</button></div></div>`;   // available in every context
   if(customMode){                                               // Tuning declares its own pedals (fixed per-string bends)
     const grp=g=> controls.filter(c=>c.group===g).map(c=>pedalBtnHTML(c.id,c.name,'',ctrlStateCache[c.id])).join('');
     const foot=grp('foot'), knee=grp('knee'), combo=grp('combo');
@@ -2178,7 +2180,7 @@ function renderPedals(){
   } else if(modesMode){                                         // Modes section — two foot pedals bend to the mode's 7th from opposite ends
     const mn=activeModeTuning.name, sev=NOTE[activeModeTuning.seventh], kind=(((activeModeTuning.seventh-(activeModeTuning.root||0))+12)%12)===11?'major 7th':'♭7';   // quality judged relative to the mode's root, not C
     const chNote=activeModeTuning.charIv!=null?NOTE[((((activeModeTuning.root||0)+activeModeTuning.charIv)%12)+12)%12]:null;
-    html+=`<div class="pedal-info">Bends to the 7th of <b>${mn}</b> — the <b>${sev}</b> (${kind}). <b>Pedal A</b> lifts the high E up to it; <b>Pedal B</b> drops the low E down to it${chNote?`; <b>Pedal C</b> lifts string 3 to the mode's colour tone (<b>${chNote}</b>)`:''}. Retargets with each mode.</div>`;
+    html+=`<div class="pedal-info">Bends to the 7th of <b>${mn}</b> — the <b>${sev}</b> (${kind}). <b>7th ↑</b> lifts the high E up to it; <b>7th ↓</b> drops the low E down to it${chNote?`; <b>Color Tone</b> lifts string 3 to the mode's colour tone (<b>${chNote}</b>)`:''}. Retargets with each mode.</div>`;
     html+=`<p class="bend-cap"><b>Latch</b> keeps a pedal engaged after one tap — sustain the bend hands-free. Off = press &amp; hold.</p>`;
     html+=`<div class="fam-name">Foot Pedals · to the 7th</div><div class="pedals">${controls.map(c=>pedalBtnHTML(c.id,c.name,'',ctrlStateCache[c.id])).join('')}</div>`;
   } else if(sbMode){                                            // Chords key mode — six string-pedals raise each string to the next scale tone
@@ -2243,8 +2245,8 @@ function setCtrl(ctrl,on){
   if(midiOut){ if(settings.realBend) rbApply(bends); else send(eff); }   // Classic: depth targets + BEND CONTROL sweep; Panning mode: write the summed offsets to BEND DEPTH
   renderStrings(eff);
 }
-function pressCtrl(ctrl){ if(settings.latch && !scaleBendActive()) setCtrl(ctrl, !held.has(ctrl)); else setCtrl(ctrl, true); }   // scale bends are always momentary
-function releaseCtrl(ctrl){ if(!settings.latch || scaleBendActive()) setCtrl(ctrl, false); }
+function pressCtrl(ctrl){ if(settings.latch && (perStringActive() || !scaleBendActive())) setCtrl(ctrl, !held.has(ctrl)); else setCtrl(ctrl, true); }   // scale bends are always momentary (per-string pedals latch anywhere)
+function releaseCtrl(ctrl){ if(!settings.latch || (!perStringActive() && scaleBendActive())) setCtrl(ctrl, false); }
 // Bend time — how long the Classic BEND CONTROL sweep takes; a playing control, so it lives in the Bends
 // panel rather than Settings. Hidden in Panning mode, where bends step instantly.
 function bendTimeHTML(){
@@ -3148,7 +3150,7 @@ function renderEd(){
 /* ===== User tunings — create / edit / import / export (file-based, localStorage) ===== */
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 const TUNE_FMT='vg800-tunings', TUNE_VER=1;
-const USER_CTRLS=[['A','Pedal A'],['B','Pedal B'],['LKL','LKL'],['LKR','LKR'],['AB','A + B'],['AL','A + LKL']];
+const USER_CTRLS=[['A','Sixth'],['B','Sus 4'],['LKL','Minor'],['LKR','Maj 7'],['AB','IV Chord'],['AL','Minor 6']];
 function tuneSig(t){ return JSON.stringify([t.offsets, t.bends&&t.bends.keys?USER_CTRLS.map(([id])=>t.bends.keys[id]||''):null]); }   // name-independent content signature
 function userUniqueName(base, taken){ const names=taken||new Set(customs.map(t=>t.name)); let n=base, k=2; while(names.has(n)){ n=base+' ('+k+')'; k++; } return n; }
 function badgesFor(t){ return '<span class="ubadge on">Pitch</span>'+(t.bends?'<span class="ubadge on">Bends</span>':''); }
