@@ -962,7 +962,7 @@
 
   <fieldset class="panel" id="sec-modes">
     <legend class="panel-hd">Modes</legend>
-    <div class="panel-sub">one tuning · seven modes · C root</div>
+    <div class="panel-sub" id="modesSub">one tuning · seven modes · C root</div>
     <div id="modesWrap"></div>
   </fieldset>
 
@@ -1491,16 +1491,16 @@ const TUNING_TIPS = {
   'B6 Universal':  { desc:`Jeff Newman's single-neck tuning that fuses the E9 (country) and C6 (jazz/swing) necks, so one neck covers both.` },
   // Modes — one white-key tuning, seven parallel modes on C (brightest → darkest)
   'White Keys':    { desc:`The natural notes C D E F G A on six strings — the white-key set every mode is drawn from, with C on the low string as home. Identical to C Ionian.` },
-  'C Lydian':      { desc:`The brightest mode — major with a raised 4th (F♯). Floating, film-score shimmer.`, song:`"Flying Theme" — John Williams (E.T.)` },
-  'C Ionian':      { desc:`The plain major scale — the white keys with C as home.`, song:`"Let It Be" — The Beatles` },
-  'C Mixolydian':  { desc:`Major with a flat 7th (B♭) — the dominant, bluesy-rock colour. (The ♭7 has no open string here, so it shares the Ionian shape.)`, song:`"Sweet Home Alabama" — Lynyrd Skynyrd` },
+  'C Lydian':      { desc:`The brightest mode — major with a raised 4th. Floating, film-score shimmer.`, song:`"Flying Theme" — John Williams (E.T.)` },
+  'C Ionian':      { desc:`The plain major scale — the mode that feels like home.`, song:`"Let It Be" — The Beatles` },
+  'C Mixolydian':  { desc:`Major with a flat 7th — the dominant, bluesy-rock colour. (The ♭7 has no open string in this set, so it shares the Ionian shape.)`, song:`"Sweet Home Alabama" — Lynyrd Skynyrd` },
   'C Dorian':      { desc:`Minor with a bright natural 6th — the hopeful, funky minor of jazz and modal rock.`, song:`"So What" — Miles Davis` },
   'C Aeolian':     { desc:`The natural minor scale — ♭3 ♭6 ♭7. The default "sad" minor.`, song:`"Losing My Religion" — R.E.M.` },
-  'C Phrygian':    { desc:`Minor with a flat 2nd (D♭) — dark, Spanish/flamenco and metal tension.`, song:`"Wherever I May Roam" — Metallica` },
+  'C Phrygian':    { desc:`Minor with a flat 2nd — dark, Spanish/flamenco and metal tension.`, song:`"Wherever I May Roam" — Metallica` },
   'C Locrian':     { desc:`The darkest mode — a flat 2nd AND flat 5th give an unstable, diminished tonic.`, song:`"YYZ" — Rush (main riff)` },
 };
 // Tooltip payload for a tile: rich copy if we have it, else fall back to the tile's own ref/sub (e.g. unmatched E9 Lanois keeps its blurb).
-function tipFor(t){ const tip=TUNING_TIPS[t.name]; if(tip) return tip; const fb=t.ref||t.sub; return fb?{desc:fb}:null; }
+function tipFor(t){ const tip=TUNING_TIPS[t.tipKey||t.name]; if(tip) return tip; const fb=t.ref||t.sub; return fb?{desc:fb}:null; }   // tipKey lets re-rooted Modes cards reuse their C-template copy
 function escAttr(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
 // Per-string pan positions, index 0 = high E (str 1) … 5 = low E (str 6). −1 = hard L (L50), +1 = hard R (R50).
 let activePan='center';
@@ -1519,7 +1519,7 @@ const PANMODES=[
 const STR_COLORS=['#ef5350','#f2a33d','#c6d43f','#4cc178','#4f9dea','#a563d4'];
 let dispOffsets=[0,0,0,0,0,0];   // the pitch offsets currently shown (base tuning + engaged pedal bends)
 
-function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; if(typeof s.fxDoubler!=='boolean') s.fxDoubler=true; if(typeof s.fxOctave!=='boolean') s.fxOctave=true; if(typeof s.swellMs!=='number') s.swellMs=0; if(typeof s.swellLatch!=='boolean') s.swellLatch=true; if(typeof s.chordExt!=='string' || !['add9','6','m6','sus2','sus4','dim7','m7b5'].includes(s.chordExt)) s.chordExt='add9'; if(typeof s.keyRoot!=='string') s.keyRoot='C'; if(typeof s.keyScale!=='string') s.keyScale='off'; if(s.voicing!=='voiced') s.voicing='spread'; if(s.voiceSize!==4) s.voiceSize=3; if(typeof s.voiceStart!=='number'||s.voiceStart<0||s.voiceStart>6-s.voiceSize) s.voiceStart=0; if(s.voiceFeel!=='grip') s.voiceFeel='legato'; if(!s.chordLayers||typeof s.chordLayers!=='object') s.chordLayers={sevenths:false,borrowed:false,resolutions:false}; else for(const k of ['sevenths','borrowed','resolutions']) if(typeof s.chordLayers[k]!=='boolean') s.chordLayers[k]=false; if(!s.chordKeys||typeof s.chordKeys!=='object') s.chordKeys={...CHORD_KEYS_DEFAULT}; else for(const k in CHORD_KEYS_DEFAULT) if(typeof s.chordKeys[k]!=='string') s.chordKeys[k]=CHORD_KEYS_DEFAULT[k]; if(!s.hist||typeof s.hist!=='object') s.hist={...HIST_DEFAULT}; else { if(s.hist.mode!=='manual') s.hist.mode='rolling'; if(![4,8,16,32].includes(s.hist.n)) s.hist.n=8; if(typeof s.hist.timeline!=='boolean') s.hist.timeline=false; if(typeof s.hist.hidden!=='boolean') s.hist.hidden=false; } if(!s.ap||typeof s.ap!=='object'){ s.ap={...AP_DEFAULTS}; if(typeof s.autoPanRate==='number') s.ap.rate=s.autoPanRate; } else { for(const k in AP_DEFAULTS) if(!(k in s.ap)) s.ap[k]=AP_DEFAULTS[k]; if(s.ap.char==='none') s.ap.char='rotate'; if(!['1 bar','1 bar T','1/2 bar','1/2 bar T','1/4','1/4 T'].includes(s.ap.div)) s.ap.div='1/2 bar'; if(s.ap.bpm>170) s.ap.bpm=170; } if(typeof s.perStringOn!=='boolean') s.perStringOn=false; if(!Array.isArray(s.stringBend)||s.stringBend.length!==6) s.stringBend=[0,0,0,0,0,0]; else s.stringBend=s.stringBend.map(x=>Math.max(-12,Math.min(12,Math.round(Number(x)||0)))); if(typeof s.realBend!=='boolean') s.realBend=true; if(typeof s.rbMs!=='number') s.rbMs=300; if(!Array.isArray(s.altCCs)||s.altCCs.length!==6) s.altCCs=[71,72,73,74,75,76]; return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, fxDoubler:true, fxOctave:true, swellMs:0, swellLatch:true, chordExt:'add9', keyRoot:'C', keyScale:'off', voicing:'spread', voiceSize:3, voiceStart:0, voiceFeel:'legato', chordLayers:{sevenths:false,borrowed:false,resolutions:false}, chordKeys:{...CHORD_KEYS_DEFAULT}, hist:{...HIST_DEFAULT}, ap:{...AP_DEFAULTS}, perStringOn:false, stringBend:[0,0,0,0,0,0], realBend:true, rbMs:300, altCCs:[71,72,73,74,75,76], ...AB_DEFAULTS}; }
+function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; if(typeof s.fxDoubler!=='boolean') s.fxDoubler=true; if(typeof s.fxOctave!=='boolean') s.fxOctave=true; if(typeof s.swellMs!=='number') s.swellMs=0; if(typeof s.swellLatch!=='boolean') s.swellLatch=true; if(typeof s.chordExt!=='string' || !['add9','6','m6','sus2','sus4','dim7','m7b5'].includes(s.chordExt)) s.chordExt='add9'; if(typeof s.keyRoot!=='string') s.keyRoot='C'; if(typeof s.keyScale!=='string') s.keyScale='off'; if(s.voicing!=='voiced') s.voicing='spread'; if(s.voiceSize!==4) s.voiceSize=3; if(typeof s.voiceStart!=='number'||s.voiceStart<0||s.voiceStart>6-s.voiceSize) s.voiceStart=0; if(s.voiceFeel!=='grip') s.voiceFeel='legato'; if(!s.chordLayers||typeof s.chordLayers!=='object') s.chordLayers={sevenths:false,borrowed:false,resolutions:false}; else for(const k of ['sevenths','borrowed','resolutions']) if(typeof s.chordLayers[k]!=='boolean') s.chordLayers[k]=false; if(!s.chordKeys||typeof s.chordKeys!=='object') s.chordKeys={...CHORD_KEYS_DEFAULT}; else for(const k in CHORD_KEYS_DEFAULT) if(typeof s.chordKeys[k]!=='string') s.chordKeys[k]=CHORD_KEYS_DEFAULT[k]; if(!s.hist||typeof s.hist!=='object') s.hist={...HIST_DEFAULT}; else { if(s.hist.mode!=='manual') s.hist.mode='rolling'; if(![4,8,16,32].includes(s.hist.n)) s.hist.n=8; if(typeof s.hist.timeline!=='boolean') s.hist.timeline=false; if(typeof s.hist.hidden!=='boolean') s.hist.hidden=false; } if(!s.ap||typeof s.ap!=='object'){ s.ap={...AP_DEFAULTS}; if(typeof s.autoPanRate==='number') s.ap.rate=s.autoPanRate; } else { for(const k in AP_DEFAULTS) if(!(k in s.ap)) s.ap[k]=AP_DEFAULTS[k]; if(s.ap.char==='none') s.ap.char='rotate'; if(!['1 bar','1 bar T','1/2 bar','1/2 bar T','1/4','1/4 T'].includes(s.ap.div)) s.ap.div='1/2 bar'; if(s.ap.bpm>170) s.ap.bpm=170; } if(typeof s.perStringOn!=='boolean') s.perStringOn=false; if(!Array.isArray(s.stringBend)||s.stringBend.length!==6) s.stringBend=[0,0,0,0,0,0]; else s.stringBend=s.stringBend.map(x=>Math.max(-12,Math.min(12,Math.round(Number(x)||0)))); if(typeof s.realBend!=='boolean') s.realBend=true; if(typeof s.rbMs!=='number') s.rbMs=300; if(!Array.isArray(s.altCCs)||s.altCCs.length!==6) s.altCCs=[71,72,73,74,75,76]; if(typeof s.modesRoot!=='number'||s.modesRoot<0||s.modesRoot>11) s.modesRoot=0; if(!s.realBend && s.modesRoot && !modesRootFits(s.modesRoot)) s.modesRoot=0; return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, fxDoubler:true, fxOctave:true, swellMs:0, swellLatch:true, chordExt:'add9', keyRoot:'C', keyScale:'off', voicing:'spread', voiceSize:3, voiceStart:0, voiceFeel:'legato', chordLayers:{sevenths:false,borrowed:false,resolutions:false}, chordKeys:{...CHORD_KEYS_DEFAULT}, hist:{...HIST_DEFAULT}, ap:{...AP_DEFAULTS}, perStringOn:false, stringBend:[0,0,0,0,0,0], realBend:true, rbMs:300, altCCs:[71,72,73,74,75,76], modesRoot:0, ...AB_DEFAULTS}; }
 function saveSettingsLS(){ localStorage.setItem('vg800_settings', JSON.stringify(settings)); }
 function loadCustom(){ try{ return JSON.parse(localStorage.getItem('vg800_custom'))||[]; }catch(e){ return []; } }
 function saveCustomLS(){ localStorage.setItem('vg800_custom', JSON.stringify(customs)); }
@@ -2033,7 +2033,7 @@ function renderPedals(){
     if(knee)  html+=`<div class="fam-name">Knee Levers</div><div class="pedals">${knee}</div>`;
     if(combo) html+=`<div class="fam-name">Combos</div><div class="pedals">${combo}</div>`;
   } else if(modesMode){                                         // Modes section — two foot pedals bend to the mode's 7th from opposite ends
-    const mn=activeModeTuning.name, sev=NOTE[activeModeTuning.seventh], kind=activeModeTuning.seventh===11?'major 7th':'♭7';
+    const mn=activeModeTuning.name, sev=NOTE[activeModeTuning.seventh], kind=(((activeModeTuning.seventh-(activeModeTuning.root||0))+12)%12)===11?'major 7th':'♭7';   // quality judged relative to the mode's root, not C
     html+=`<div class="pedal-info">Bends to the 7th of <b>${mn}</b> — the <b>${sev}</b> (${kind}). <b>Pedal A</b> lifts the high E up to it; <b>Pedal B</b> drops the low E down to it. Retargets with each mode.</div>`;
     html+=`<p class="bend-cap"><b>Latch</b> keeps a pedal engaged after one tap — sustain the bend hands-free. Off = press &amp; hold.</p>`;
     html+=`<div class="fam-name">Foot Pedals · to the 7th</div><div class="pedals">${controls.map(c=>pedalBtnHTML(c.id,c.name,'',ctrlStateCache[c.id])).join('')}</div>`;
@@ -2203,17 +2203,43 @@ function makeCard(t,isC){
 }
 // Modes section — the White Keys base, then the seven modes ordered brightest→darkest so each adjacent card
 // flattens one string (reusing makeCard, so tiles/tooltips/latching match the rest of the app).
+/* Modes root — every card transposes by ONE shared shift per root, so the brightness ladder keeps its
+   one-string-one-semitone property. The shift is the nearest direction (up for C#–F, down for F#–B),
+   which keeps offsets smallest; F, F# and G still peak at ±13/14, which only Classic's ±24 ALT TUNE
+   range can express — those roots disable in Panning mode. */
+function modeRootDelta(r){ return r<=5 ? r : r-12; }
+function modesRootFits(r){ const d=modeRootDelta(r); return MODES.every(m=> m.base || m.offsets.every(o=> o+d>=-12 && o+d<=12)); }   // Panning: the base tuning lives on a ±12 param
+function transposedModes(){
+  const r=settings.modesRoot|0; if(!r) return MODES;
+  const d=modeRootDelta(r), rn=NOTE[r];
+  return MODES.filter(m=>!m.base).map(m=>({ name: rn+m.name.slice(1), offsets: m.offsets.map(o=>o+d), modes:true, seventh:(m.seventh+r)%12, root:r, tipKey:m.name }));
+}
 function renderModes(){
   const wrap=document.getElementById('modesWrap'); if(!wrap) return;
   wrap.innerHTML='';
-  const mkFam=(id,title,list)=>{
+  const r=settings.modesRoot|0, rb=!!settings.realBend;
+  const sub=document.getElementById('modesSub'); if(sub) sub.textContent=`one tuning · seven modes · ${NOTE[r]} root`;
+  const opts=NOTE.map((n,i)=>{ const okR=rb||modesRootFits(i); return `<option value="${i}"${i===r?' selected':''}${okR?'':' disabled'}>${n}${okR?'':' · needs Classic'}</option>`; }).join('');
+  const bar=document.createElement('div'); bar.className='chord-key';
+  bar.innerHTML=`<label class="chord-key-lbl">Root</label><select class="num" id="modesRootSel" title="Re-root all seven modes to this note">${opts}</select>`;
+  wrap.appendChild(bar);
+  const list=transposedModes();
+  const mkFam=(id,title,tunings)=>{
     const b=document.createElement('div'); b.className='fam'; b.id=id;
     const h=document.createElement('div'); h.className='fam-name'; h.textContent=title; b.appendChild(h);
-    const g=document.createElement('div'); g.className='grid'; list.forEach(t=>g.appendChild(makeCard(t,false))); b.appendChild(g);
+    const g=document.createElement('div'); g.className='grid'; tunings.forEach(t=>g.appendChild(makeCard(t,false))); b.appendChild(g);
     return b;
   };
-  wrap.appendChild(mkFam('fam-modes-base','Base · C major white keys', MODES.filter(m=>m.base)));
-  wrap.appendChild(mkFam('fam-modes-list','Modes · bright → dark', MODES.filter(m=>!m.base)));
+  if(!r) wrap.appendChild(mkFam('fam-modes-base','Base · C major white keys', list.filter(m=>m.base)));   // "White Keys" is C-specific — other roots just show the seven modes
+  wrap.appendChild(mkFam('fam-modes-list','Modes · bright → dark', list.filter(m=>!m.base)));
+  const sel=wrap.querySelector('#modesRootSel');
+  if(sel) sel.addEventListener('change',()=>{
+    const nr=+sel.value; if(nr===(settings.modesRoot|0)) return;
+    const was=activeModeTuning, suffix=was ? (was.base?'Ionian':was.name.split(' ').slice(1).join(' ')) : null;
+    settings.modesRoot=nr; saveSettingsLS();
+    if(suffix){ const t=transposedModes().find(m=>!m.base && m.name.endsWith(' '+suffix)); if(t){ apply(t); return; } }   // re-root the live mode (apply() re-renders everything, this section included)
+    renderModes();
+  });
 }
 function famBlock(f, isC, panel){
   const b=document.createElement(panel?'fieldset':'div'); b.className=panel?'panel':'fam'; b.id='fam-'+slug(f.family);
@@ -2423,7 +2449,7 @@ function applySteel(t, win){
 function randomTuning(){
   const pool=[];
   BUILTIN.forEach(t=>{ if(t.name!=='Standard' && t.name!==active) pool.push({name:t.name, go:()=>apply(t)}); });
-  MODES.forEach(t=>{ if(t.name!==active) pool.push({name:t.name, go:()=>apply(t)}); });
+  transposedModes().forEach(t=>{ if(t.name!==active) pool.push({name:t.name, go:()=>apply(t)}); });   // modes at the currently-selected root
   customs.forEach(t=>{ if(t.name!==active) pool.push({name:t.name, go:()=>apply(t)}); });
   ETHNIC.forEach(i=>{ if(i.name!==active) pool.push({name:i.name, go:()=>applyInst(i,0)}); });
   STEEL.forEach(t=>{ if(t.name!==active) pool.push({name:t.name, go:()=>applySteel(t,0)}); });
@@ -3171,14 +3197,19 @@ function setRealBend(on){
   if(autoPanOn){ stopAutoPan(); }
   settings.realBend=on; saveSettingsLS();
   document.documentElement.classList.toggle('realbend', on);
+  let resetNote='';
+  if(!on){   // Panning's BEND DEPTH can't express offsets beyond ±12
+    if(settings.modesRoot && !modesRootFits(settings.modesRoot)){ settings.modesRoot=0; saveSettingsLS(); }   // F/F#/G roots need Classic — drop to C even if the ACTIVE tuning happens to fit, so no >±12 card (or Random pick) stays reachable
+    if(baseOffsets.some(o=>o<-12||o>12)){ apply(BUILTIN[0]); resetNote=' · tuning reset to Standard'; }      // the live tuning itself is out of range → back to Standard
+  }
   if(midiOut){
     if(on){ sendInstFx(); rbHardwareSync(); }                            // ALT TUNE ON + BEND CONTROL 0 + depths 0 + base on ALT TUNE
     else { if(rbTimer){ clearInterval(rbTimer); rbTimer=null; } rbEngaged=false;
       midiOut.send([0xB0|((settings.channel-1)&0x0F), (settings.bendCC||69)&0x7F, 127]);   // Panning mode rests at BEND CONTROL 100 — essential, or its depth writes are ignored
       sendInstFx(); send(baseOffsets); applyPan(activePan); }             // base back on the BEND DEPTH CCs + restore the chosen pan placement
   }
-  updatePedalHint(); renderPedals(); renderPan();
-  toast(on ? 'Classic mode — glide bends' : 'Panning mode — stereo panning');
+  updatePedalHint(); renderPedals(); renderPan(); renderModes();   // the Modes root picker gates F/F#/G on the active engine
+  toast((on ? 'Classic mode — glide bends' : 'Panning mode — stereo panning')+resetNote);
 }
 document.querySelectorAll('#rbSeg button').forEach(b=> b.addEventListener('click',()=>{ const on=b.dataset.rb==='1'; if(on===!!settings.realBend) return; setRealBend(on); renderRbSettings(); renderPanCcRows(); updateAbLock(); }));   // re-clicking the active mode is a no-op; a real flip swaps only the pan/alt CC rows (pitch-row edits survive) + refreshes the scoop-control lock
 function openSettings(){ renderSettings(); applyGrpState(); open('settingsModal'); }
@@ -3240,7 +3271,7 @@ document.getElementById('saveSettings').addEventListener('click',()=>{
   const ab={ autoBend:document.getElementById('autoBendChk').checked, bendCC:num('bendCCInput',0,127,69), levelCC:num('levelCCInput',0,127,70), bendDepth:num('bendDepthInput',0,50,25), levelDip:num('levelDipInput',0,50,15), bendMs:num('bendMsInput',40,400,120) };
   const panCCs=[...settings.panCCs]; document.querySelectorAll('#panCcRows select[data-pcc]').forEach(x=>panCCs[+x.dataset.pcc]=Math.max(1,Math.min(127,+x.value||1)));   // only one of the two row sets is rendered per engine — keep the other as-is
   const altCCs=[...settings.altCCs]; document.querySelectorAll('#panCcRows select[data-acc]').forEach(x=>altCCs[+x.dataset.acc]=Math.max(1,Math.min(127,+x.value||1)));
-  settings={channel:ch,ccs,gap:settings.gap??20,glide:0,keys:settings.keys,latch:settings.latch,panCCs,altCCs,panMs:settings.panMs,fxDoubler:settings.fxDoubler,fxOctave:settings.fxOctave,swellMs:settings.swellMs,swellLatch:settings.swellLatch,chordExt:settings.chordExt,keyRoot:settings.keyRoot,keyScale:settings.keyScale,voicing:settings.voicing,voiceSize:settings.voiceSize,voiceStart:settings.voiceStart,voiceFeel:settings.voiceFeel,chordLayers:settings.chordLayers,chordKeys:settings.chordKeys,hist:settings.hist,ap:settings.ap,perStringOn:settings.perStringOn,stringBend:settings.stringBend,realBend:settings.realBend,rbMs:settings.rbMs, ...ab}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
+  settings={channel:ch,ccs,gap:settings.gap??20,glide:0,keys:settings.keys,latch:settings.latch,panCCs,altCCs,panMs:settings.panMs,fxDoubler:settings.fxDoubler,fxOctave:settings.fxOctave,swellMs:settings.swellMs,swellLatch:settings.swellLatch,chordExt:settings.chordExt,keyRoot:settings.keyRoot,keyScale:settings.keyScale,voicing:settings.voicing,voiceSize:settings.voiceSize,voiceStart:settings.voiceStart,voiceFeel:settings.voiceFeel,chordLayers:settings.chordLayers,chordKeys:settings.chordKeys,hist:settings.hist,ap:settings.ap,perStringOn:settings.perStringOn,stringBend:settings.stringBend,realBend:settings.realBend,rbMs:settings.rbMs,modesRoot:settings.modesRoot, ...ab}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
 });
 
 function applyTest(v){
