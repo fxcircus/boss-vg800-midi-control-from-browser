@@ -31,13 +31,15 @@ Ready-made hardware presets for both live in [`presets/`](presets/) — see [Rea
 
 ### Classic mode (the default)
 
-The tuning lives on **INST:ALT TUNE** (User mode, always ON — the app holds it on via CC# 78). Each string's base pitch is one **ALT TUNE · PITCH** assign with **MIN `−24` / MAX `+24`**, so a semitone offset maps to a CC value as `CC = round((st + 24) / 48 × 127)`:
+The tuning lives on **INST:ALT TUNE** (User mode — save it **ON in the patch**; there's no CC for it in this preset). Each string's base pitch is one **ALT TUNE · PITCH** assign with **MIN `−24` / MAX `+24`**, so a semitone offset maps to a CC value as `CC = round((st + 24) / 48 × 127)`:
 
 - Offset `0` → CC `64` (the center is the same in every scaling)
 - Offset `+12` → CC `95` · Offset `−12` → CC `32`
 - Offset `+24` → CC `127` · Offset `−24` → CC `0`
 
 Bends are the pedal's true two-step gesture: the app writes each string's **STR BEND · BEND DEPTH** (relative, −12 … +12, `CC = round((st + 12) / 24 × 127)`), then sweeps **BEND CONTROL** 0→100 so the pitch **glides** into the note — and glides back on release — exactly like working the knob by hand. Stereo panning is unavailable in this mode: the VG-800 has only 16 assign slots, and CC# 71–76 are spent on the ALT TUNE pitches.
+
+Classic also carries **guitar-model auto-select** (⚙ Settings → Mode → *Guitar model*): each tuning can switch the VG-800's instrument model with **two CC messages in order** — first **INST · TYPE** (CC# 70: low = E.GUITAR, high = ACOUSTIC) picks the category, then **INST:E.GTR · TYPE** (CC# 77) or **INST:ACOUSTIC · TYPE** (CC# 78) picks the model within it. See [TUNINGS.md](TUNINGS.md) for the model chosen per tuning. Because CC# 77 is spent on the electric model, **12-string has no CC in Classic** — toggle it on the pedal itself (**▲**).
 
 ### Panning mode (alternate preset)
 
@@ -49,12 +51,33 @@ The older, simpler preset: each string's full pitch offset (−12 … +12) write
 |:------:|:-------|:-------|:---:|:---:|:-----|
 | 1–6 | INST:STR BEND(A) · DEPTH 1–6 | `CC# 30, 31, 64, 65, 66, 68` | −12 | +12 | MOMENT |
 | 7 | INST:STR BEND(A) · BEND CONTROL | `CC# 69` | 0 | 100 | MOMENT |
-| 8 | INST · INST LEVEL | `CC# 70` | 0 | 100 | MOMENT |
+| 8 | INST · TYPE | `CC# 70` | E.GUITAR | ACOUSTIC | MOMENT |
 | 9–14 | INST:ALT TUNE(A) · PITCH 1–6 | `CC# 71–76` | −24 | +24 | MOMENT |
-| 15 | INST:12STR · (A)ON/OFF | `CC# 77` | OFF | ON | MOMENT |
-| 16 | INST:ALT TUNE(A) · ON/OFF | `CC# 78` | OFF | ON | MOMENT |
+| 15 | INST:E.GTR · TYPE | `CC# 77` | CLA-ST | FRETLESS | MOMENT |
+| 16 | INST:ACOUSTIC · TYPE | `CC# 78` | MA28 | SITAR | MOMENT |
+
+Model CC values (an even 0–127 spread — centralized in the app as `EGTR_MODELS` / `ACOUSTIC_MODELS`, adjust there after hardware testing):
+
+| CC# 77 (electric) | value | | CC# 78 (acoustic) | value |
+|:---|---:|---|:---|---:|
+| CLA-ST | 0 | | MA28 | 0 |
+| MOD-ST | 12 | | TRP-0 | 16 |
+| TE | 23 | | GB45 | 32 |
+| LP | 35 | | GB SML | 48 |
+| P-90 | 46 | | GLD 40 | 64 |
+| 335 | 58 | | NYLON | 79 |
+| L4 | 69 | | RESO | 95 |
+| RICK | 81 | | BANJO | 111 |
+| LIPS | 92 | | SITAR | 127 |
+| WIDE RANGE | 104 | | | |
+| BRIGHT HUM | 115 | | | |
+| FRETLESS | 127 | | | |
+
+**12-string** and **ALT TUNE ON/OFF** have no assign slots in this preset: toggle 12-string on the pedal (**▲**), and save the patch with ALT TUNE **ON**.
 
 In Classic the Ethnic **+ Octave** lift is baked into the ALT TUNE base pitches (the ±24 range leaves room), so a mandolin or ukulele sounds at real pitch on the open strings — play the "0 fret" instead of capoing the 12th. In Panning mode CC# 78 toggles the preset's fixed +12 as before.
+
+> ⚠️ `presets/royClassic.tsl` still carries the previous mapping (INST LEVEL / 12STR / ALT TUNE ON on CC# 70/77/78). Re-export it from the pedal after rewiring assigns 8/15/16 for the model control.
 
 ---
 
@@ -80,7 +103,7 @@ Skip the manual mapping below — import a preset that already has every assign 
 
 For **Classic mode** (the default):
 
-- **INST → ALT TUNE**: MODE = `ALT TUNE`, TUNING TYPE = `USER`, switched **ON**. This carries the tuning — the app keeps it on via CC# 78 and writes the per-string PITCH values over MIDI.
+- **INST → ALT TUNE**: MODE = `ALT TUNE`, TUNING TYPE = `USER`, switched **ON** and **saved ON in the patch** (there is no CC for it in this preset). It carries the tuning — the app writes the per-string PITCH values over MIDI.
 - **INST → STR BEND**: **STR BEND SW = ON**. Leave BEND CONTROL alone — the app drives it (resting at 0, swept to 100 for each bend so the pitch glides).
 - Map the full 16-slot assign table above (**CONTROL/ASSIGN → ASSIGN**).
 
@@ -140,7 +163,7 @@ Notes:
 - **Panning & auto-pan** *(Panning mode)* — manual stereo modes (Center, Equal Spread, Split, Zig-Zag, Pairs…) glide each string to its new position; the **Pan glide** toggle sets the sweep time (Instant → Long). **Auto-pan** gives each string its own pan LFO with character presets (**Rotate, Leslie, Fan Breathe, Ping-Pong, Drift**), Width, Shape, Phase spread, and Free-rate or Tempo-synced timing. Hidden in Classic mode, where CC# 71–76 carry the ALT TUNE pitches instead.
 - **Current Tuning readout** — an always-on panel combining pitch and pan for all six strings: a **pan strip** up top over a **pitch neck** where each note slides flat↔sharp from standard. Updates and animates live from the current tuning, bends and panning. On wide screens it parks in the left sidebar; on very wide screens it moves to a **right-hand rail together with the whole Bends panel**, so both stay in view while you browse tunings.
 - **Themes & display** — the pedal button (top-right) opens the theme picker: **DD500** (default), **GT1000, CS3, RC500, DS1**, each styled after a Boss pedal. **Compact mode** hides note/offset text on cards to fit more on screen.
-- **⚙ Settings** — MIDI Output (port + channel), **Mode** (**Classic** ⟷ **Panning**, with the Classic glide time), CC numbers (per-string pitch + alt-tune/pan), and **Bend effect** (a scoop articulation that swells into each new tuning).
+- **⚙ Settings** — MIDI Output (port + channel), **Mode** (**Classic** ⟷ **Panning**, plus the **Guitar model** auto-select toggle), CC numbers (per-string pitch + alt-tune/pan), and **Bend effect** (a Panning-mode scoop articulation into each new tuning). The Classic **Bend time** control lives in the Bends panel itself.
 - **+ Custom tuning** — dial each string ±12 from standard, name it and save it.
 
 ![The Bends section](screenshots/bends.png)

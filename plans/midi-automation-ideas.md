@@ -22,7 +22,7 @@ SOURCE / MODE, pp. 39–41).
    Each string gets its own pan LFO with staggered phase → kaleidoscopic stereo swirl;
    or static low→high fan like a grand piano. Top pick for wow-factor.
 
-2. **Per-string swell / arpeggiator / reveal**
+2. **Per-string arpeggiator / reveal**
    Target: `INST:STRING(A) → STRING LEVEL 1…6` (p.58).
    Sequence levels so a *held* chord assembles note-by-note (auto-strum/arp), per-string
    tremolo with phase offsets (rippling shimmer), or rhythmic per-string gating.
@@ -48,7 +48,7 @@ SOURCE / MODE, pp. 39–41).
 - **Talkbox vowel morph** — `FX:HUMANIZER VOWEL1/VOWEL2` (p.62): animate ah→ee→oo.
 - **Harmony / pitch interval moves** — `FX:HARMONIST HR1:HARMONY` / `FX:PITCH SHIFTER PS1:PITCH` (p.62).
 - **GR-300 / synth filter sweep** — `INST:SYN:GR-300 CUTOFF/RESONANCE/SWEEP` (p.57) or
-  `FX:AUTO WAH FREQUENCY` (p.61): vintage synth-guitar swells.
+  `FX:AUTO WAH FREQUENCY` (p.61): vintage synth-guitar fades.
 - **Rotary ramp** — `FX:ROTARY SPEED SELECT` (p.63): Leslie spin-up/down.
 - **Ring-mod sweep** — `FX:RING MOD FREQUENCY` (p.62): metallic, alien.
 - **Slicer / Isolator gate** — `FX:SLICER RATE / PATTERN` (p.63): tempo-synced chopping.
@@ -72,4 +72,4 @@ Budget: 6 (tuning) + 6 (pan) + 1 (morph) = **13 slots, 3 to spare**.
 
 Open questions:
 - LFOs free-running or tempo-synced to a set BPM?
-- Which per-string layer first: pan or swell/arp?
+- Which per-string layer first: pan or arp?

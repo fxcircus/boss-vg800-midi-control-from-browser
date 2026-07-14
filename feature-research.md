@@ -162,7 +162,7 @@ settings.seq = {
    mutes), per-string phase offset so flutters interleave.
 7. **Sequential Cross-Panned Arpeggio** — fret a chord; gate opens each string in
    order on 1/8 with `pan.phase` offset per string.
-8. **Half-Time Rotary Swell** — slow 1/2-bar rotate pan LFO under a subtle
+8. **Half-Time Rotary Rise** — slow 1/2-bar rotate pan LFO under a subtle
    4-on-the-floor volume gate; the cinematic version of #1.
 
 ### 1.6 Feasibility + limits

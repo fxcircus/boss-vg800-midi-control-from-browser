@@ -257,7 +257,7 @@
   .pedal-info { font-family: var(--mono); font-size: 11px; color: var(--bone-dim); margin: 0 2px 15px; letter-spacing: 0.3px; text-align: center; }
   .pedal-info b { color: var(--brass); font-weight: 700; }
   .pedals { display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 240px)); justify-content: center; gap: 10px; margin-bottom: 8px; }
-  /* Bends captions — explain pedal Latch vs the Swell's own Latch, in the app's small-caption voice */
+  /* Bends captions — small teaching lines in the app's caption voice */
   .bend-cap { font-family: var(--mono); font-size: 10px; line-height: 1.55; color: var(--bone-faint); letter-spacing: 0.2px; text-align: center; margin: -6px auto 14px; max-width: 580px; }
   .bend-cap b { color: var(--brass); font-weight: 700; }
   .bend-cap kbd { font-family: var(--mono); font-size: 9.5px; background: var(--ink); border: 1px solid var(--edge); border-radius: 4px; padding: 1px 5px; color: var(--bone); white-space: nowrap; }
@@ -334,9 +334,9 @@
   .pedal.on .ap-plate { transform: rotate(22deg); }
   .pedal[data-ctrl="LKL"].on .ap-lever { transform: rotate(-26deg); }
   .pedal[data-ctrl="LKR"].on .ap-lever { transform: rotate(26deg); }
-  /* Volume swell — 4-way speed segment + a hold/latch arm button */
-  .swell-row { display: flex; flex-wrap: wrap; align-items: stretch; gap: 10px; margin-bottom: 18px; }
-  .swell-seg { flex: 1 1 250px; }
+  /* Ethnic 12-string note (Classic: it's a hardware toggle, not an app control) */
+  .fx-tog.fx-static { cursor: default; color: var(--bone-faint); font-weight: 400; }
+  .fx-tog.fx-static:hover { border-color: var(--edge); color: var(--bone-faint); }
 
   /* Pedal key mapping + latch */
   .latch-tog { display: inline-flex; align-items: center; gap: 9px; font-family: var(--mono); font-size: 11px; color: var(--bone-dim); cursor: pointer; margin-bottom: 11px; }
@@ -463,7 +463,7 @@
      and the full inline one) and a single-column Bends panel with tightened type. */
   #rightRail { display: none; }
   @media (min-width: 1500px) {
-    /* Right rail = the ACTING column: just Bends + Swell, with room to breathe. Sits below the header band. */
+    /* Right rail = the ACTING column: the Bends panel, with room to breathe. Sits below the header band. */
     #rightRail { display: block; position: fixed; top: calc(var(--hdr-h, 74px) + 20px); left: calc(50% + 430px); width: min(400px, calc(50vw - 430px - 18px)); max-height: calc(100vh - var(--hdr-h, 74px) - 40px); overflow-y: auto; z-index: 40; padding: 2px 2px 8px; scrollbar-width: none; }
     #rightRail::-webkit-scrollbar { width: 0; height: 0; }
     /* FLAT — no drop shadows in the rail (state glows on engaged pedals stay) */
@@ -503,7 +503,6 @@
     #rightRail .ps-chips { gap: 5px; }
     #rightRail .ps-preset-fac, #rightRail .ps-preset-load { padding: 4px 9px; font-size: 11px; }
     #rightRail .ps-save { padding: 4px 10px; font-size: 11px; }
-    #rightRail .swell-row { margin-bottom: 6px; }
     /* Left column at this width — nav, Random, Played, Current Tuning as distinct FLAT panels with breathing room */
     #sideNav .bench { box-shadow: none; background: var(--wood); margin-top: 18px; }
     #sideNav .str .wire::before { background: var(--chrome-dim); }
@@ -1126,10 +1125,8 @@
       <summary>Mode</summary>
       <div class="settgrp-body">
         <div class="hist-set-row"><label class="chord-key-lbl">Mode</label><div class="seg" id="rbSeg"><button data-rb="1">Classic</button><button data-rb="0">Panning</button></div></div>
-        <div class="ab-controls" id="rbOpts">
-          <div class="hist-set-row"><label class="chord-key-lbl">Bend time</label><div class="seg" id="rbMsSeg"></div></div>
-        </div>
-        <p class="note-hint"><em>Classic</em> (default) drives the VG-800 preset where <em>ALT&nbsp;TUNE</em> (User mode, always ON) carries the tuning, and each bend is the pedal's true two-step gesture: set the target <em>BEND&nbsp;DEPTH</em>, then sweep <em>BEND&nbsp;CONTROL</em> 0→100 so the pitch <b>glides</b> into the note (and glides back on release) instead of stepping. <b>Panning is unavailable</b> in Classic — its CC slots drive the ALT&nbsp;TUNE pitches instead (the VG-800 has only 16 assign slots).<br><br><em>Panning</em> drives the older preset: bends write straight to BEND&nbsp;DEPTH (the note steps to pitch), and CC 71–76 place each string in the stereo field.<br><br>Classic mapping: <em>STR&nbsp;BEND(A) · DEPTH&nbsp;1–6</em> ← CC 30, 31, 64, 65, 66, 68 (−12/+12) · <em>BEND&nbsp;CONTROL</em> ← CC 69 (0–100) · <em>INST&nbsp;LEVEL</em> ← CC 70 · <em>ALT&nbsp;TUNE(A) · PITCH&nbsp;1–6</em> ← CC 71–76 (<em>−24/+24</em>) · <em>12STR</em> ← CC 77 · <em>ALT&nbsp;TUNE ON/OFF</em> ← CC 78 (the app keeps it ON).<br><br><em>Bend time</em> sets how long the BEND&nbsp;CONTROL sweep takes.</p>
+        <div class="hist-set-row" id="autoModelRow"><label class="chord-key-lbl">Guitar model</label><div class="seg" id="amSeg" title="Auto-select the VG-800 instrument model per tuning (Classic preset)"><button data-am="1">Auto</button><button data-am="0">Off</button></div></div>
+        <p class="note-hint"><em>Classic</em> (default) drives the VG-800 preset where <em>ALT&nbsp;TUNE</em> (User mode, saved ON in the patch) carries the tuning, and each bend is the pedal's true two-step gesture: set the target <em>BEND&nbsp;DEPTH</em>, then sweep <em>BEND&nbsp;CONTROL</em> 0→100 so the pitch <b>glides</b> into the note (and glides back on release) instead of stepping. <b>Panning is unavailable</b> in Classic — its CC slots drive the ALT&nbsp;TUNE pitches instead (the VG-800 has only 16 assign slots).<br><br><em>Panning</em> drives the older preset: bends write straight to BEND&nbsp;DEPTH (the note steps to pitch), and CC 71–76 place each string in the stereo field.<br><br>Classic mapping: <em>STR&nbsp;BEND(A) · DEPTH&nbsp;1–6</em> ← CC 30, 31, 64, 65, 66, 68 (−12/+12) · <em>BEND&nbsp;CONTROL</em> ← CC 69 (0–100) · <em>INST · TYPE</em> ← CC 70 (MIN E.GUITAR / MAX ACOUSTIC) · <em>ALT&nbsp;TUNE(A) · PITCH&nbsp;1–6</em> ← CC 71–76 (<em>−24/+24</em>) · <em>INST:E.GTR · TYPE</em> ← CC 77 · <em>INST:ACOUSTIC · TYPE</em> ← CC 78. <b>12-string has no CC</b> here — toggle it on the pedal (▲) — and <em>ALT&nbsp;TUNE ON</em> is stored in the patch itself.<br><br><em>Guitar model</em> (Auto): each tuning selects its instrument model with two messages — <em>INST TYPE</em> first (electric vs acoustic), then the model on CC 77/78. <em>Bend time</em> now lives in the <b>Bends</b> panel.</p>
       </div>
     </details>
 
@@ -1157,7 +1154,7 @@
             <div class="cc-c"><label>Inst Level CC#</label><select class="num" id="levelCCInput"></select></div>
           </div>
         </div>
-        <p class="note-hint">Swells into each new tuning. In <b>Classic</b> mode the scoop is a <em>volume dip</em> only — <em>Inst Level CC#</em> dips, then rises back as the new tuning lands (BEND&nbsp;CONTROL belongs to the bend engine there, so <em>Scoop depth</em> and <em>Bend Ctrl CC#</em> are greyed out). In <b>Panning</b> mode <em>Bend Ctrl CC#</em> and <em>Inst Level CC#</em> dip, then rise back to 100% together with the new pitch.<br><br>Mapping: <em>Bend Ctrl CC#</em> → <em>STR&nbsp;BEND · BEND&nbsp;CONTROL</em> (0–100); <em>Inst Level CC#</em> → <em>INST · INST&nbsp;LEVEL</em>.</p>
+        <p class="note-hint"><b>Panning mode only.</b> Scoops into each new tuning: <em>Bend Ctrl CC#</em> and <em>Inst Level CC#</em> dip, then rise back to 100% together with the new pitch. In <b>Classic</b> this is unavailable — tuning changes ride ALT&nbsp;TUNE, and CC 70 carries the instrument type there instead of a level.<br><br>Mapping (Panning preset): <em>Bend Ctrl CC#</em> → <em>STR&nbsp;BEND · BEND&nbsp;CONTROL</em> (0–100); <em>Inst Level CC#</em> → <em>INST · INST&nbsp;LEVEL</em>.</p>
       </div>
     </details>
 
@@ -1208,12 +1205,14 @@
     <details class="docgrp">
       <summary>One-time VG-800 setup</summary>
       <div class="docgrp-body">
-        <p><b>The fast way — import a ready-made preset.</b> Download <a href="presets/royClassic.tsl" download>royClassic.tsl</a> (for the default Classic mode) or <a href="presets/royPanning.tsl" download>royPanning.tsl</a> (for Panning mode), open <b>Boss Tone Studio for VG-800</b> → <em>LIBRARIAN</em> → import the .tsl, and write the patch to the pedal. Every assign below is already mapped.</p>
+        <p><b>The fast way — import a ready-made preset.</b> Download <a href="presets/royClassic.tsl" download>royClassic.tsl</a> (for the default Classic mode) or <a href="presets/royPanning.tsl" download>royPanning.tsl</a> (for Panning mode), open <b>Boss Tone Studio for VG-800</b> → <em>LIBRARIAN</em> → import the .tsl, and write the patch to the pedal.</p>
+        <p><b>⚠ royClassic.tsl currently predates the model-control mapping</b> — its assigns 8/15/16 still carry INST&nbsp;LEVEL / 12STR / ALT&nbsp;TUNE&nbsp;ON. Until it's re-exported with the assigns below, either rewire those three by hand or set <em>⚙ Settings → Mode → Guitar model</em> to <em>Off</em>.</p>
         <p>Or configure it by hand. The default <b>Classic</b> mode uses all 16 assign slots:</p>
         <ul>
-          <li><b>INST → ALT TUNE:</b> MODE <em>ALT&nbsp;TUNE</em>, TUNING TYPE <em>USER</em>, switched <em>ON</em> — this carries the tuning (the app keeps it on via CC&nbsp;78).</li>
+          <li><b>INST → ALT TUNE:</b> MODE <em>ALT&nbsp;TUNE</em>, TUNING TYPE <em>USER</em>, switched <em>ON</em> — save it ON in the patch; it carries the tuning (there is no CC for it in this preset).</li>
           <li><b>INST → STR BEND:</b> <em>STR BEND SW = ON</em>. The app drives <em>BEND&nbsp;CONTROL</em> itself — resting at 0, swept to 100 for each bend.</li>
-          <li><b>CONTROL/ASSIGN → ASSIGN</b> (MODE <em>MOMENT</em> everywhere): <em>STR&nbsp;BEND(A) · DEPTH&nbsp;1–6</em> ← CC <em>30, 31, 64, 65, 66, 68</em> (−12/+12, high-E → low-E) · <em>BEND&nbsp;CONTROL</em> ← CC <em>69</em> (0–100) · <em>INST&nbsp;LEVEL</em> ← CC <em>70</em> (0–100) · <em>ALT&nbsp;TUNE(A) · PITCH&nbsp;1–6</em> ← CC <em>71–76</em> (<b>−24/+24</b>) · <em>12STR (A)ON/OFF</em> ← CC <em>77</em> · <em>ALT&nbsp;TUNE(A) ON/OFF</em> ← CC <em>78</em>.</li>
+          <li><b>CONTROL/ASSIGN → ASSIGN</b> (MODE <em>MOMENT</em> everywhere): <em>STR&nbsp;BEND(A) · DEPTH&nbsp;1–6</em> ← CC <em>30, 31, 64, 65, 66, 68</em> (−12/+12, high-E → low-E) · <em>BEND&nbsp;CONTROL</em> ← CC <em>69</em> (0–100) · <em>INST · TYPE</em> ← CC <em>70</em> (MIN <em>E.GUITAR</em> / MAX <em>ACOUSTIC</em>) · <em>ALT&nbsp;TUNE(A) · PITCH&nbsp;1–6</em> ← CC <em>71–76</em> (<b>−24/+24</b>) · <em>INST:E.GTR · TYPE</em> ← CC <em>77</em> · <em>INST:ACOUSTIC · TYPE</em> ← CC <em>78</em>.</li>
+          <li><b>12-string</b> has no CC in this preset — toggle it on the pedal itself (<b>▲</b>) when you want it.</li>
           <li><b>Panning mode instead?</b> Same DEPTH assigns, but set <em>BEND CONTROL = 100</em> on the pedal (essential — at 0 the depths are ignored), point CC <em>71–76</em> at <em>STRING(A) · PAN&nbsp;1–6</em> (MIN <em>L50</em> / MAX <em>R50</em>), and flip <em>⚙ Settings → Mode</em> to <em>Panning</em>.</li>
           <li>Set <em>MIDI · RX&nbsp;CHANNEL</em> to match the app. These CC numbers already line up with <em>Settings → CC numbers</em> out of the box.</li>
         </ul>
@@ -1230,8 +1229,8 @@
         </ul>
         <p>Pick <b>Classic</b> when the bend gesture matters; pick <b>Panning</b> when the mix does. Match the toggle to whichever preset is loaded on the pedal — the CC numbers overlap, so the wrong mode sends real (wrong) commands.</p>
         <ul>
-          <li>The Bends <b>Swell</b> (INST&nbsp;LEVEL, CC 70) works the same in both modes.</li>
-          <li><em>Bend time</em> (in the same settings group) sets how long the Classic glide takes.</li>
+          <li><b>Guitar model auto-select</b> (⚙ Settings → Mode) — in Classic, each tuning can switch the VG-800's instrument model with two messages: <em>INST TYPE</em> (CC 70) picks electric vs acoustic, then CC 77 / CC 78 picks the model. <b>12-string</b> has no CC in Classic — toggle it on the pedal (▲).</li>
+          <li><em>Bend time</em> (in the <b>Bends</b> panel) sets how long the Classic glide takes.</li>
         </ul>
       </div>
     </details>
@@ -1317,7 +1316,7 @@
       <div class="docgrp-body"><ul>
         <li>The <b>pedal button</b> (top-right) opens the theme picker — CS3, DS1, RC500, DD500 and GT1000, each styled after a Boss pedal.</li>
         <li><b>Compact mode</b> (Display → Compact) hides the note names and offsets on tuning cards to fit more on screen.</li>
-        <li><b>Bend effect</b> (Settings) adds a scoop articulation that swells into each new tuning.</li>
+        <li><b>Bend effect</b> (Settings) adds a scoop articulation into each new tuning — Panning mode only.</li>
       </ul></div>
     </details>
 
@@ -1376,7 +1375,52 @@
 const NOTE = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const STD_MIDI = [64,59,55,50,45,40];
 const SLBL = ['1','2','3','4','5','6'];
-const STR12_CC=77, ALT_CC=78;   // INST fx assigns: "string doubler" (12-string, CC77) + "+octave" (alt-tune, CC78) — both MOMENT (127=on, 0=off)
+const STR12_CC=77, ALT_CC=78;   // PANNING preset: "string doubler" (12-string, CC77) + "+octave" (alt-tune, CC78) — both MOMENT (127=on, 0=off)
+/* ===== Classic-preset instrument model control =====
+   In the Classic preset CC 70/77/78 carry the INSTRUMENT MODEL (not level / 12-string / alt-on):
+     CC 70 → INST TYPE      (two-value: low = E.GUITAR, high = ACOUSTIC)
+     CC 77 → INST:E.GTR TYPE     CC 78 → INST:ACOUSTIC TYPE
+   Selecting a model is TWO messages IN ORDER: category first (CC 70), then the model CC.
+   12-string has no CC in this preset (toggle it on the pedal, ▲) and ALT TUNE ON/OFF is saved ON in the patch.
+   ▼ CENTRAL VALUE TABLE — values are an even 0–127 spread; adjust HERE after hardware testing
+     (the VG-800 may quantize the steps slightly differently). */
+const INST_TYPE_CC=70, EGTR_CC=77, ACOUSTIC_CC=78;
+const INST_TYPE_VAL={ electric:0, acoustic:127 };
+const EGTR_MODELS={ 'CLA-ST':0, 'MOD-ST':12, 'TE':23, 'LP':35, 'P-90':46, '335':58, 'L4':69, 'RICK':81, 'LIPS':92, 'WIDE RANGE':104, 'BRIGHT HUM':115, 'FRETLESS':127 };
+const ACOUSTIC_MODELS={ 'MA28':0, 'TRP-0':16, 'GB45':32, 'GB SML':48, 'GLD 40':64, 'NYLON':79, 'RESO':95, 'BANJO':111, 'SITAR':127 };
+function modelSpec(name){ if(name in EGTR_MODELS) return {cat:'electric', cc:EGTR_CC, val:EGTR_MODELS[name]}; if(name in ACOUSTIC_MODELS) return {cat:'acoustic', cc:ACOUSTIC_CC, val:ACOUSTIC_MODELS[name]}; return null; }
+let lastModelName=null;   // the model of the last-applied tuning, so toggling auto-model on (or reconnecting) can re-send it
+function sendModel(name){
+  if(!midiOut || !settings.realBend || !settings.autoModel) return;   // Classic-preset feature, gated on the Settings toggle
+  const m=modelSpec(name); if(!m) return;
+  const st=0xB0|((settings.channel-1)&0x0F);
+  midiOut.send([st, INST_TYPE_CC&0x7F, INST_TYPE_VAL[m.cat]&0x7F]);   // 1) category: electric vs acoustic
+  midiOut.send([st, m.cc&0x7F, m.val&0x7F]);                          //  2) the model within it
+}
+// Per-tuning model choices (keyed by tuning name; Modes use their C-template names, like TUNING_TIPS)
+const TUNING_MODELS={
+  // Common
+  'Standard':'CLA-ST', 'DADGAD':'MA28', 'Nashville':'MA28', 'Baritone':'TE', 'Bass VI':'P-90', 'Hendrix':'CLA-ST',
+  // Lap steel (fat single-coil ≈ horseshoe-pickup steel voice; Cyrus's Gmaj9 leans jazz)
+  'C6':'P-90', 'A6':'P-90', 'C6/A7':'P-90', 'E7':'P-90', 'E13':'P-90', 'E9 lap':'P-90', 'B11':'P-90', 'Cyrus Hybrid':'335',
+  // Open majors
+  'Open E':'LP', 'Open D':'MA28', 'Open G Dobro':'RESO', 'Open G low':'GB SML', 'Open A high':'GB SML',
+  // Drop
+  'Drop D':'LP', 'Drop Db':'BRIGHT HUM', 'Drop C':'BRIGHT HUM', 'Drop B':'BRIGHT HUM', 'Drop Bb':'BRIGHT HUM', 'Drop A':'BRIGHT HUM',
+  // Artists
+  'Fripp NST':'LP', 'Gambale':'335', 'Rain Song':'LIPS', 'Ostrich':'P-90', 'Schizophrenia':'MOD-ST', 'Nick Drake':'TRP-0',
+  'Keith Richards':'TE', 'Am. Football':'TE', 'Soundgarden':'BRIGHT HUM', 'Joni Mitchell':'MA28', 'Both Sides':'MA28',
+  'Pyramid Song':'L4', 'Radiohead':'RICK',
+  // Modes — neutral clean electric for the theory playground
+  'White Keys':'CLA-ST', 'C Lydian':'CLA-ST', 'C Ionian':'CLA-ST', 'C Mixolydian':'CLA-ST', 'C Dorian':'CLA-ST',
+  'C Aeolian':'CLA-ST', 'C Phrygian':'CLA-ST', 'C Locrian':'CLA-ST',
+  // Ethnic (steel-course instruments get the small steel body; gut/nylon families get NYLON)
+  'Mandolin':'GB SML', 'Irish Bouzouki':'GB SML', 'Greek Bouzouki':'GB SML', 'Oud':'NYLON', 'Charango':'NYLON',
+  'Saz / Bağlama':'NYLON', 'Cavaquinho':'GB SML', 'Ukulele':'NYLON', 'Baritone Uke':'NYLON', 'Cuatro':'NYLON',
+  'Balalaika':'NYLON', 'Banjo':'BANJO',
+  // Pedal steel
+  'E9 Nashville':'TE', 'E9 Lanois':'335', 'C6 Swing/Jazz':'L4', 'B6 Universal':'335',
+};
 function nameOf(m){ const pc=((m%12)+12)%12; return {name:NOTE[pc], oct:Math.floor(m/12)-1}; }
 function toCC(s){ const c=Math.max(-12,Math.min(12,s)); return Math.round((c+12)/24*127); }
 // Classic mode: ALT TUNE PITCH is assigned MIN −24 / MAX +24 → a different semitone→CC scaling than the ±12 bend depths.
@@ -1594,7 +1638,7 @@ const PANMODES=[
 const STR_COLORS=['#ef5350','#f2a33d','#c6d43f','#4cc178','#4f9dea','#a563d4'];
 let dispOffsets=[0,0,0,0,0,0];   // the pitch offsets currently shown (base tuning + engaged pedal bends)
 
-function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; if(typeof s.fxDoubler!=='boolean') s.fxDoubler=true; if(typeof s.fxOctave!=='boolean') s.fxOctave=true; if(typeof s.swellMs!=='number') s.swellMs=0; if(typeof s.swellLatch!=='boolean') s.swellLatch=true; if(typeof s.chordExt!=='string' || !['add9','6','m6','sus2','sus4','dim7','m7b5'].includes(s.chordExt)) s.chordExt='add9'; if(typeof s.keyRoot!=='string') s.keyRoot='C'; if(typeof s.keyScale!=='string') s.keyScale='off'; if(s.voicing!=='voiced') s.voicing='spread'; if(s.voiceSize!==4) s.voiceSize=3; if(typeof s.voiceStart!=='number'||s.voiceStart<0||s.voiceStart>6-s.voiceSize) s.voiceStart=0; if(s.voiceFeel!=='grip') s.voiceFeel='legato'; if(!s.chordLayers||typeof s.chordLayers!=='object') s.chordLayers={sevenths:false,borrowed:false,resolutions:false}; else for(const k of ['sevenths','borrowed','resolutions']) if(typeof s.chordLayers[k]!=='boolean') s.chordLayers[k]=false; if(!s.chordKeys||typeof s.chordKeys!=='object') s.chordKeys={...CHORD_KEYS_DEFAULT}; else for(const k in CHORD_KEYS_DEFAULT) if(typeof s.chordKeys[k]!=='string') s.chordKeys[k]=CHORD_KEYS_DEFAULT[k]; if(!s.hist||typeof s.hist!=='object') s.hist={...HIST_DEFAULT}; else { if(s.hist.mode!=='manual') s.hist.mode='rolling'; if(![4,8,16,32].includes(s.hist.n)) s.hist.n=8; if(typeof s.hist.timeline!=='boolean') s.hist.timeline=false; if(typeof s.hist.hidden!=='boolean') s.hist.hidden=false; } if(!s.ap||typeof s.ap!=='object'){ s.ap={...AP_DEFAULTS}; if(typeof s.autoPanRate==='number') s.ap.rate=s.autoPanRate; } else { for(const k in AP_DEFAULTS) if(!(k in s.ap)) s.ap[k]=AP_DEFAULTS[k]; if(s.ap.char==='none') s.ap.char='rotate'; if(!['1 bar','1 bar T','1/2 bar','1/2 bar T','1/4','1/4 T'].includes(s.ap.div)) s.ap.div='1/2 bar'; if(s.ap.bpm>170) s.ap.bpm=170; } if(typeof s.perStringOn!=='boolean') s.perStringOn=false; if(!Array.isArray(s.stringBend)||s.stringBend.length!==6) s.stringBend=[0,0,0,0,0,0]; else s.stringBend=s.stringBend.map(x=>Math.max(-12,Math.min(12,Math.round(Number(x)||0)))); if(typeof s.realBend!=='boolean') s.realBend=true; if(typeof s.rbMs!=='number') s.rbMs=300; if(!Array.isArray(s.altCCs)||s.altCCs.length!==6) s.altCCs=[71,72,73,74,75,76]; if(typeof s.modesRoot!=='number'||s.modesRoot<0||s.modesRoot>11) s.modesRoot=0; if(!s.realBend && s.modesRoot && !modesRootFits(s.modesRoot)) s.modesRoot=0; return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, fxDoubler:true, fxOctave:true, swellMs:0, swellLatch:true, chordExt:'add9', keyRoot:'C', keyScale:'off', voicing:'spread', voiceSize:3, voiceStart:0, voiceFeel:'legato', chordLayers:{sevenths:false,borrowed:false,resolutions:false}, chordKeys:{...CHORD_KEYS_DEFAULT}, hist:{...HIST_DEFAULT}, ap:{...AP_DEFAULTS}, perStringOn:false, stringBend:[0,0,0,0,0,0], realBend:true, rbMs:300, altCCs:[71,72,73,74,75,76], modesRoot:0, ...AB_DEFAULTS}; }
+function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; if(typeof s.fxDoubler!=='boolean') s.fxDoubler=true; if(typeof s.fxOctave!=='boolean') s.fxOctave=true; if(typeof s.autoModel!=='boolean') s.autoModel=true; delete s.swellMs; delete s.swellLatch; if(typeof s.chordExt!=='string' || !['add9','6','m6','sus2','sus4','dim7','m7b5'].includes(s.chordExt)) s.chordExt='add9'; if(typeof s.keyRoot!=='string') s.keyRoot='C'; if(typeof s.keyScale!=='string') s.keyScale='off'; if(s.voicing!=='voiced') s.voicing='spread'; if(s.voiceSize!==4) s.voiceSize=3; if(typeof s.voiceStart!=='number'||s.voiceStart<0||s.voiceStart>6-s.voiceSize) s.voiceStart=0; if(s.voiceFeel!=='grip') s.voiceFeel='legato'; if(!s.chordLayers||typeof s.chordLayers!=='object') s.chordLayers={sevenths:false,borrowed:false,resolutions:false}; else for(const k of ['sevenths','borrowed','resolutions']) if(typeof s.chordLayers[k]!=='boolean') s.chordLayers[k]=false; if(!s.chordKeys||typeof s.chordKeys!=='object') s.chordKeys={...CHORD_KEYS_DEFAULT}; else for(const k in CHORD_KEYS_DEFAULT) if(typeof s.chordKeys[k]!=='string') s.chordKeys[k]=CHORD_KEYS_DEFAULT[k]; if(!s.hist||typeof s.hist!=='object') s.hist={...HIST_DEFAULT}; else { if(s.hist.mode!=='manual') s.hist.mode='rolling'; if(![4,8,16,32].includes(s.hist.n)) s.hist.n=8; if(typeof s.hist.timeline!=='boolean') s.hist.timeline=false; if(typeof s.hist.hidden!=='boolean') s.hist.hidden=false; } if(!s.ap||typeof s.ap!=='object'){ s.ap={...AP_DEFAULTS}; if(typeof s.autoPanRate==='number') s.ap.rate=s.autoPanRate; } else { for(const k in AP_DEFAULTS) if(!(k in s.ap)) s.ap[k]=AP_DEFAULTS[k]; if(s.ap.char==='none') s.ap.char='rotate'; if(!['1 bar','1 bar T','1/2 bar','1/2 bar T','1/4','1/4 T'].includes(s.ap.div)) s.ap.div='1/2 bar'; if(s.ap.bpm>170) s.ap.bpm=170; } if(typeof s.perStringOn!=='boolean') s.perStringOn=false; if(!Array.isArray(s.stringBend)||s.stringBend.length!==6) s.stringBend=[0,0,0,0,0,0]; else s.stringBend=s.stringBend.map(x=>Math.max(-12,Math.min(12,Math.round(Number(x)||0)))); if(typeof s.realBend!=='boolean') s.realBend=true; if(typeof s.rbMs!=='number') s.rbMs=300; if(!Array.isArray(s.altCCs)||s.altCCs.length!==6) s.altCCs=[71,72,73,74,75,76]; if(typeof s.modesRoot!=='number'||s.modesRoot<0||s.modesRoot>11) s.modesRoot=0; if(!s.realBend && s.modesRoot && !modesRootFits(s.modesRoot)) s.modesRoot=0; return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, fxDoubler:true, fxOctave:true, autoModel:true, chordExt:'add9', keyRoot:'C', keyScale:'off', voicing:'spread', voiceSize:3, voiceStart:0, voiceFeel:'legato', chordLayers:{sevenths:false,borrowed:false,resolutions:false}, chordKeys:{...CHORD_KEYS_DEFAULT}, hist:{...HIST_DEFAULT}, ap:{...AP_DEFAULTS}, perStringOn:false, stringBend:[0,0,0,0,0,0], realBend:true, rbMs:300, altCCs:[71,72,73,74,75,76], modesRoot:0, ...AB_DEFAULTS}; }
 function saveSettingsLS(){ localStorage.setItem('vg800_settings', JSON.stringify(settings)); }
 function loadCustom(){ try{ return JSON.parse(localStorage.getItem('vg800_custom'))||[]; }catch(e){ return []; } }
 function saveCustomLS(){ localStorage.setItem('vg800_custom', JSON.stringify(customs)); }
@@ -1678,7 +1722,7 @@ function sendBase(offsets){   // Classic-mode tuning path: write the base tuning
   });
   curOffsets=offsets.slice();
 }
-function rbHardwareSync(){ if(!midiOut||!settings.realBend) return; rbDepths=[-1,-1,-1,-1,-1,-1]; sendBase(baseOffsets); if(held.size) rbApply(bendsFromEngaged()); }   // fresh port / mode flip / base re-send → push the resting state + current tuning, then glide any live held bend back in (never leave UI and hardware disagreeing)
+function rbHardwareSync(){ if(!midiOut||!settings.realBend) return; rbDepths=[-1,-1,-1,-1,-1,-1]; sendBase(baseOffsets); sendModel(lastModelName); if(held.size) rbApply(bendsFromEngaged()); }   // fresh port / mode flip / base re-send → push the resting state + current tuning, then glide any live held bend back in (never leave UI and hardware disagreeing)
 function send(offsets){
   if(!midiOut){ toast('No MIDI output connected', true, {label:'Open Settings', fn:openSettings}); return false; }
   if(glideTimer){ clearInterval(glideTimer); glideTimer=null; }
@@ -1698,57 +1742,35 @@ function send(offsets){
   }, stepMs);
   return true;
 }
-// Auto-bend "scoop": dip BEND CONTROL (+ INST LEVEL), then send the new pitch and
-// ramp both back to 100% together — masking the jump and swelling into the tuning.
+// Auto-bend "scoop" — PANNING-MODE tuning articulation: dip BEND CONTROL (+ INST LEVEL), send the new
+// pitch, then ramp both back to 100%, masking the jump. Not available in Classic: its CC 70 carries
+// INST TYPE (the model category), and tuning changes ride ALT TUNE there anyway.
 let bendTimer=null, bendHold=null;
 function bendScoop(offsets){
   if(!midiOut) return;
   if(bendTimer){ clearInterval(bendTimer); bendTimer=null; }
   if(bendHold){ clearTimeout(bendHold); bendHold=null; }
-  if(swellTimer){ clearInterval(swellTimer); swellTimer=null; }   // scoop takes sole ownership of CC70 from any in-flight swell
   const st=0xB0|((settings.channel-1)&0x0F);
-  const bcc=settings.bendCC&0x7F;
+  const bcc=settings.bendCC&0x7F, lcc=(settings.levelCC||70)&0x7F;
   const depth=settings.bendDepth||0, ldip=settings.levelDip||0, ms=Math.max(30, settings.bendMs||90);
   const cc=p=>Math.round(Math.max(0,Math.min(100,p))/100*127);
   midiOut.send([st, bcc, cc(100-depth)]);                       // dip now (pull toward standard)
-  if(ldip>0) sendLevel(cc(100-ldip), true);                     // dip level via sendLevel so swellLevel tracks CC70
+  if(ldip>0) midiOut.send([st, lcc, cc(100-ldip)]);
   const hold=Math.round(ms*0.35), rise=ms-hold, step=15, steps=Math.max(2, Math.round(rise/step));
   bendHold=setTimeout(()=>{
-    bendHold=null; if(!midiOut) return;
+    bendHold=null; if(!midiOut || settings.realBend) return;    // the mode flipped mid-scoop → these CCs now mean INST TYPE / bend engine — abort
     send(offsets);                                              // new pitch, as the ramp-up begins
     let n=0;
     bendTimer=setInterval(()=>{
       n++; const t=Math.min(1, n/steps);
-      if(midiOut) midiOut.send([st, bcc, cc(100-depth*(1-t))]); if(ldip>0) sendLevel(cc(100-ldip*(1-t)));
-      if(n>=steps){ clearInterval(bendTimer); bendTimer=null; if(midiOut) midiOut.send([st, bcc, 127]); if(ldip>0) sendLevel(127, true); }
+      if(settings.realBend){ clearInterval(bendTimer); bendTimer=null; return; }   // same guard for the ramp
+      if(midiOut){ midiOut.send([st, bcc, cc(100-depth*(1-t))]); if(ldip>0) midiOut.send([st, lcc, cc(100-ldip*(1-t))]); }
+      if(n>=steps){ clearInterval(bendTimer); bendTimer=null; if(midiOut){ midiOut.send([st, bcc, 127]); if(ldip>0) midiOut.send([st, lcc, 127]); } }
     }, step);
   }, hold);
 }
-// Classic-mode variant of the scoop: volume-dip only — CC69 belongs to the bend engine here, and the depths
-// rest at 0 so a BEND CONTROL scoop would be silent anyway. The level dip still masks the retune step.
-function rbScoop(offsets){
-  if(!midiOut) return;
-  if(bendTimer){ clearInterval(bendTimer); bendTimer=null; }
-  if(bendHold){ clearTimeout(bendHold); bendHold=null; }
-  if(swellTimer){ clearInterval(swellTimer); swellTimer=null; }   // scoop takes sole ownership of CC70 from any in-flight swell
-  const ldip=settings.levelDip||0, ms=Math.max(30, settings.bendMs||90);
-  const cc=p=>Math.round(Math.max(0,Math.min(100,p))/100*127);
-  if(ldip<=0){ send(offsets); return; }                           // nothing to dip → plain retune
-  sendLevel(cc(100-ldip), true);
-  send(offsets);                                                  // new base (ALT TUNE) right at the dip — never deferred, so a swell-cancelled scoop can't strand the hardware on the old tuning
-  const hold=Math.round(ms*0.35), rise=ms-hold, step=15, steps=Math.max(2, Math.round(rise/step));
-  bendHold=setTimeout(()=>{
-    bendHold=null; if(!midiOut) return;
-    let n=0;
-    bendTimer=setInterval(()=>{
-      n++; const t=Math.min(1, n/steps);
-      sendLevel(cc(100-ldip*(1-t)));
-      if(n>=steps){ clearInterval(bendTimer); bendTimer=null; sendLevel(127, true); }
-    }, step);
-  }, hold);
-}
-function tuningSend(offsets){                                   // tuning changes route through here
-  if(settings.autoBend && midiOut){ if(settings.realBend) rbScoop(offsets); else bendScoop(offsets); return true; }
+function tuningSend(offsets){                                   // tuning changes route through here (the scoop is a Panning-mode feature)
+  if(settings.autoBend && midiOut && !settings.realBend){ bendScoop(offsets); return true; }
   return send(offsets);
 }
 
@@ -2069,7 +2091,7 @@ const COPY_ICO='<svg class="hist-ico" viewBox="0 0 24 24" fill="none" stroke="cu
 const CLEAR_ICO='<svg class="hist-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/></svg>';
 const EYE_ICO='<svg class="hist-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
 const EYE_OFF_ICO='<svg class="hist-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.9 5.1A10.6 10.6 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.3 4M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7a10.6 10.6 0 0 0 4-.8M3 3l18 18M9.5 9.5a3 3 0 0 0 4.2 4.2"/></svg>';
-// Key mapping now lives in Settings (moved out of the Bends panel). Bends = rebindable pedal/swell chips; Chords = fixed number-key reference.
+// Key mapping now lives in Settings (moved out of the Bends panel). Bends = rebindable pedal chips; Chords = fixed number-key reference.
 function bindableCtrls(){ return [...copedent.controls, {id:'PSALL', name:'All Strings · Per-String', key:DEFAULT_KEYS.PSALL}]; }   // rebindable pedal keys: the copedent + the Per-String "All Strings" pedal
 function renderKeymap(){
   const box=document.getElementById('keymapSettings'); if(!box) return;
@@ -2143,7 +2165,7 @@ function renderPedals(){
     if(knee)  html+=`<div class="fam-name">Knee Levers</div><div class="pedals">${knee}</div>`;
     if(combo) html+=`<div class="fam-name">Combos</div><div class="pedals">${combo}</div>`;
   }
-  html+=swellHTML();
+  html+=bendTimeHTML();
   wrap.innerHTML=html;
   wrap.querySelectorAll('.pedal').forEach(b=>{
     if(b.classList.contains('disabled')) return;
@@ -2161,51 +2183,31 @@ function renderPedals(){
   wrap.querySelectorAll('.ps-preset-load').forEach(b=> b.addEventListener('click', ()=> loadPerStringPreset(+b.dataset.psload)));
   wrap.querySelectorAll('.ps-preset-del').forEach(b=> b.addEventListener('click', e=>{ e.stopPropagation(); delPerStringPreset(+b.dataset.psdel); }));
   const psSave=wrap.querySelector('[data-pssave]'); if(psSave) psSave.addEventListener('click', savePerStringPreset);
-  wrap.querySelectorAll('.swell-seg button').forEach(b=> b.addEventListener('click', ()=> setSwellSpeed(+b.dataset.swell)));
+  wrap.querySelectorAll('#btSeg [data-rbms]').forEach(b=> b.addEventListener('click', ()=>{ settings.rbMs=+b.dataset.rbms; saveSettingsLS(); wrap.querySelectorAll('#btSeg [data-rbms]').forEach(x=> x.classList.toggle('on', +x.dataset.rbms===settings.rbMs)); }));
 }
 // a control shows engaged (highlighted + animated) if it's held directly OR it's a part of a held combo
 function ctrlEngaged(ctrl){ if(held.has(ctrl)) return true; for(const h of held){ const c=ctrlById(h); if(c&&c.parts&&c.parts.includes(ctrl)) return true; } return false; }
 function setCtrl(ctrl,on){
   const st=ctrlStateCache[ctrl];
-  const wasActive=held.size>0;
   if(on){ if(!st||!st.avail) return; held.add(ctrl); } else held.delete(ctrl);
   document.querySelectorAll('#pedalWrap .pedal').forEach(b=> b.classList.toggle('on', ctrlEngaged(b.dataset.ctrl)));
   const bends=bendsFromEngaged();
   const eff=baseOffsets.map((o,i)=> o+bends[i]);
-  if(on && !wasActive) swellTrigger();   // a bend just started (no pedal was held) → CC70 volume swell / de-click
   if(midiOut){ if(settings.realBend) rbApply(bends); else send(eff); }   // Classic: depth targets + BEND CONTROL sweep; Panning mode: write the summed offsets to BEND DEPTH
   renderStrings(eff);
 }
 function pressCtrl(ctrl){ if(settings.latch && !scaleBendActive()) setCtrl(ctrl, !held.has(ctrl)); else setCtrl(ctrl, true); }   // scale bends are always momentary
 function releaseCtrl(ctrl){ if(!settings.latch || scaleBendActive()) setCtrl(ctrl, false); }
+// Bend time — how long the Classic BEND CONTROL sweep takes; a playing control, so it lives in the Bends
+// panel rather than Settings. Hidden in Panning mode, where bends step instantly.
+function bendTimeHTML(){
+  if(!settings.realBend) return '';
+  const seg=RB_MS_OPTS.map(([v,nm])=>`<button class="${(settings.rbMs||300)===v?'on':''}" data-rbms="${v}">${nm}</button>`).join('');
+  return `<div class="fam-name">Bend Time</div>`
+    +`<p class="bend-cap">How long each bend takes to <b>glide</b> into pitch — and back out on release.</p>`
+    +`<div class="latch-row"><div class="seg latch-seg" id="btSeg">${seg}</div></div>`;
+}
 function updatePedalHint(){ const el=document.getElementById('pedalHint'); if(el) el.textContent=(settings.latch?'TAP TO LATCH':'HOLD TO BEND')+(settings.realBend?'':' · PANNING MODE'); }   // Classic is the default — only the alternate mode gets a badge
-/* ===== Volume swell — CC70 (INST LEVEL) fades up on each bend, pedal-steel style ===== */
-let swellTimer=null, swellLevel=127;   // swellLevel = last CC70 value we sent (0–127), for send-on-change
-const swellEase = t => t*t;                             // quadratic ease-in — a quiet start (log-taper-like) hides the pick attack
-function sendLevel(v, force){ v=Math.max(0,Math.min(127,Math.round(v))); if(!force && v===swellLevel) return; swellLevel=v; if(midiOut) midiOut.send([0xB0|((settings.channel-1)&0x0F), (settings.levelCC||70)&0x7F, v]); }
-function cancelScoop(){ if(bendTimer){ clearInterval(bendTimer); bendTimer=null; } if(bendHold){ clearTimeout(bendHold); bendHold=null; } if(midiOut && !settings.realBend) midiOut.send([0xB0|((settings.channel-1)&0x0F), (settings.bendCC||69)&0x7F, 127]); }   // stop any in-flight tuning-scoop so the swell solely owns CC70; Panning mode rests BEND CONTROL at full (Classic's engine owns CC69, resting at 0)
-function rampLevel(from, to, ms, ease){                  // one-shot CC70 ramp, deduped; tick caps at AUTOPAN_MS (~25/sec) for slow swells, finer for short ramps + de-click
-  if(swellTimer){ clearInterval(swellTimer); swellTimer=null; }
-  cancelScoop();
-  from=Math.max(0,Math.min(127,from)); to=Math.max(0,Math.min(127,to));
-  sendLevel(from, true);
-  const tick=Math.max(6, Math.min(AUTOPAN_MS, Math.round(ms/8)));
-  const steps=Math.max(1, Math.round(ms/tick)); let n=0;
-  swellTimer=setInterval(()=>{ n++; const t=Math.min(1,n/steps), e=ease?ease(t):t; sendLevel(from+(to-from)*e); if(n>=steps){ clearInterval(swellTimer); swellTimer=null; sendLevel(to, true); } }, tick);
-}
-function swellTrigger(){                                  // called when a bend starts
-  if(!settings.swellMs) return;                          // Off → never touch CC70
-  rampLevel(0, 127, settings.swellMs, swellEase);        // a speed is set → full volume swell 0→127 on every bend
-}
-function setSwellSpeed(ms){ settings.swellMs=ms; saveSettingsLS(); if(swellTimer){ clearInterval(swellTimer); swellTimer=null; } sendLevel(127, true); renderPedals(); }   // Off/Slow/Moderate/Fast is the swell's on/off + speed
-const SWELL_OPTS=[[0,'Off'],[1200,'Slow'],[400,'Moderate'],[120,'Fast']];
-function swellHTML(){
-  const ms=settings.swellMs||0;
-  const seg=SWELL_OPTS.map(([v,nm])=>`<button class="${ms===v?'on':''}" data-swell="${v}">${nm}</button>`).join('');
-  return `<div class="fam-name">Swell</div>`
-    +`<p class="bend-cap">A volume <b>swell</b> fades up as each bend lands — pedal-steel style. Pick a speed to switch it on; <b>Off</b> disables it. <span style="opacity:.75">(Separate from the pedal Latch above — that one holds a pedal.)</span></p>`
-    +`<div class="swell-row"><div class="seg swell-seg">${seg}</div></div>`;
-}
 document.addEventListener('keydown', e=>{                 // rebind capture (chips live in Settings now)
   if(!bindingCtrl) return;
   e.preventDefault();
@@ -2422,14 +2424,14 @@ const ICON_DBL='<svg viewBox="0 0 16 16"><path d="M6 2v12M10 2v12"/></svg>';    
 const ICON_OCT='<svg viewBox="0 0 16 16"><path d="M8 13V4.2M4.4 7.6 8 4l3.6 3.6"/></svg>';  // up an octave
 function instBadges(inst, delta){
   let h='';
-  if(inst.courses) h+=`<span class="ibadge${settings.fxDoubler?' lit':''}" title="Doubled strings (courses) — String doubler ${settings.fxDoubler?'ON':'OFF'}">${ICON_DBL}</span>`;
+  if(inst.courses) h+=`<span class="ibadge${!settings.realBend&&settings.fxDoubler?' lit':''}" title="${settings.realBend?'Doubled strings (courses) — toggle 12-string on the VG-800 (▲)':'Doubled strings (courses) — String doubler '+(settings.fxDoubler?'ON':'OFF')}">${ICON_DBL}</span>`;
   if(delta<0) h+=`<span class="ibadge${settings.fxOctave?' lit':''}" title="Sits an octave low — + Octave lifts it to pitch (${settings.fxOctave?'ON':'OFF'})">${ICON_OCT}</span>`;
   return h;
 }
 // INST fx — global prefs (persisted, toggled in the Ethnic section); each effect fires only for the instruments it fits:
 // "string doubler" (CC77) on courses instruments, "+octave" alt-tune (CC78) on instruments that would otherwise need a capo.
-function instFxOn(){ if(!ethnicInst) return {doubler:false, octave:false}; const delta=computeCluster(ethnicInst.pitches, ethnicStart).delta; return { doubler: !!settings.fxDoubler && !!ethnicInst.courses, octave: !!settings.fxOctave && delta<0 }; }
-function sendInstFx(){ if(!midiOut) return; const f=instFxOn(), st=0xB0|((settings.channel-1)&0x0F); midiOut.send([st, STR12_CC&0x7F, f.doubler?127:0]); midiOut.send([st, ALT_CC&0x7F, (settings.realBend||f.octave)?127:0]); }   // Classic: ALT TUNE carries the base tuning → CC78 stays ON; the "+ Octave" lift rides the pitches instead (altLift)
+function instFxOn(){ if(!ethnicInst) return {doubler:false, octave:false}; const delta=computeCluster(ethnicInst.pitches, ethnicStart).delta; return { doubler: !settings.realBend && !!settings.fxDoubler && !!ethnicInst.courses, octave: !!settings.fxOctave && delta<0 }; }   // doubler CC exists only in the Panning preset
+function sendInstFx(){ if(!midiOut || settings.realBend) return; const f=instFxOn(), st=0xB0|((settings.channel-1)&0x0F); midiOut.send([st, STR12_CC&0x7F, f.doubler?127:0]); midiOut.send([st, ALT_CC&0x7F, f.octave?127:0]); }   // PANNING preset only — in Classic these CCs carry the instrument model (sendModel); 12-string is the pedal's ▲ toggle, ALT TUNE is saved ON in the patch, and the octave lift rides the pitches (altLift)
 function applyInst(inst, start){
   const N=inst.pitches.length; start=Math.max(0, Math.min(6-N, start));
   const res=computeCluster(inst.pitches, start);
@@ -2437,6 +2439,7 @@ function applyInst(inst, start){
   active=inst.name; activeChord=null; lastVoiced=null; baseOffsets=[...res.offsets]; held.clear(); ethnicInst=inst; ethnicStart=start; clearSteel(); activeModeTuning=null; activeBendPedals=null; activeBendInfo="";
   const n=document.getElementById('nowName'); n.textContent=inst.name; n.classList.remove('std');
   renderStrings(res.offsets); renderGrid(); renderModes(); renderPedals(); renderEthnic(); renderSteel(); renderChords();
+  lastModelName=TUNING_MODELS[inst.name]||'NYLON'; sendModel(lastModelName);   // ethnic default: nylon-string
   sendInstFx(); tuningSend(res.offsets);   // display always updates; push INST fx + MIDI when connected
   logHistory(inst.name, false);            // played-history hook — ethnic instruments (a tuning, not a chord)
 }
@@ -2464,7 +2467,9 @@ function renderEthnic(){
   const wrap=document.getElementById('ethnicWrap'); if(!wrap) return;
   const cards=ETHNIC.map(ethnicCardHTML).join('');
   const fx=`<div class="inst-fx">`
-    +`<label class="fx-tog"><input type="checkbox" id="fxDoubler"${settings.fxDoubler?' checked':''}><span>String doubler</span></label>`
+    +(settings.realBend
+      ? `<span class="fx-tog fx-static" title="CC 77 carries the electric model in the Classic preset — flip 12-string on the pedal itself">12-string: ▲ on the VG-800</span>`
+      : `<label class="fx-tog"><input type="checkbox" id="fxDoubler"${settings.fxDoubler?' checked':''}><span>String doubler</span></label>`)
     +`<label class="fx-tog"><input type="checkbox" id="fxOctave"${settings.fxOctave?' checked':''}><span>+ Octave</span></label>`
     +`</div>`;
   const cluster=ethnicInst?clusterRowHTML(ethnicInst, ethnicStart):'';
@@ -2531,6 +2536,7 @@ function applySteel(t, win){
   ethnicInst=null; steelInst=t; steelWin=win; steelRoot=t.root; copedent=COPEDENTS[t.copedent]||COPEDENTS.generic; activeModeTuning=null; activeBendPedals=null; activeBendInfo="";
   const n=document.getElementById('nowName'); n.textContent=t.name; n.classList.remove('std');
   renderStrings(res.offsets); renderGrid(); renderModes(); renderEthnic(); renderSteel(); renderPedals(); renderChords();
+  lastModelName=TUNING_MODELS[t.name]||null; sendModel(lastModelName);
   sendInstFx(); tuningSend(res.offsets);   // display always updates; push INST fx (off) + MIDI when connected
   logHistory(t.name, false);               // played-history hook — pedal steel (a tuning, not a chord)
 }
@@ -2944,7 +2950,7 @@ function startAutoPan(){
 }
 function stopAutoPan(){ if(autoPanTimer){ clearInterval(autoPanTimer); autoPanTimer=null; } autoPanOn=false; }
 const AP_CHARLIST=[['rotate','Rotate'],['leslie','Leslie'],['breathe','Fan Breathe'],['pingpong','Ping-Pong'],['drift','Drift']];
-const AP_CHARDESC={ rotate:'All six notes circle the room together.', leslie:'Two counter-rotating rotors — treble horn vs. bass drum.', breathe:'Width swells to full then collapses to center, slowly.', pingpong:'Odd and even strings bounce opposite, then swap.', drift:'Each string wanders on its own, smoothly — never repeating.' };
+const AP_CHARDESC={ rotate:'All six notes circle the room together.', leslie:'Two counter-rotating rotors — treble horn vs. bass drum.', breathe:'Width grows to full then collapses to center, slowly.', pingpong:'Odd and even strings bounce opposite, then swap.', drift:'Each string wanders on its own, smoothly — never repeating.' };
 const glideLbl=ms=> ms===0?'instant' : ms>=1000?(ms/1000).toFixed(2).replace(/\.?0+$/,'')+'S' : ms+' ms';
 const rateCycLbl=v=>{ const hz=0.05+(Math.max(1,Math.min(100,v))-1)/99*(1-0.05); return '≈ '+(1/hz).toFixed(1).replace(/\.0$/,'')+'s / cycle'; };
 const spreadLbl=v=> v<0.02?'block' : v>=0.98?'full rotation' : v<0.4?'narrow fan' : v<0.75?'wide fan' : 'near rotation';
@@ -3065,7 +3071,8 @@ function apply(t){
   if(t.bends&&t.bends.keys){ settings.keys={...DEFAULT_KEYS, ...t.bends.keys}; rebuildKeymap(); saveSettingsLS(); }   // user preset carries its own pedal key mapping
   const n=document.getElementById('nowName'); n.textContent=t.name; n.classList.toggle('std',t.name==='Standard');
   renderStrings(t.offsets); renderGrid(); renderModes(); renderPedals(); renderEthnic(); renderSteel(); renderChords();
-  sendInstFx(); tuningSend(t.offsets);   // display always updates; push INST fx (off) + MIDI when connected (shows the existing error toast if not)
+  if(!t.chord){ lastModelName=TUNING_MODELS[t.tipKey||t.name]||null; sendModel(lastModelName); }   // chords ride the current model; category first, then the model CC
+  sendInstFx(); tuningSend(t.offsets);   // display always updates; push INST fx (Panning) + MIDI when connected (shows the existing error toast if not)
   logHistory(t.name, !!t.chord);         // played-history hook — tunings/chords/transposed chords/random tuning (chord flag drives the key prefix)
 }
 
@@ -3270,16 +3277,15 @@ function renderPanCcRows(){   // ALT TUNE pitch CCs in Classic, PAN CCs in Panni
   }
   const note=document.getElementById('ccNote'); if(note) note.innerHTML = rb ? CC_NOTE_CLASSIC : CC_NOTE_PAN;
 }
-// Mode group — Classic | Panning seg (applies immediately, like the history segs) + the glide-time seg
+// Mode group — Classic | Panning seg + the Guitar-model auto-select toggle (both apply immediately, like the history segs)
 function renderRbSettings(){
   const seg=document.getElementById('rbSeg');
   if(seg) seg.querySelectorAll('button').forEach(b=> b.classList.toggle('on', (b.dataset.rb==='1')===!!settings.realBend));
-  const ms=document.getElementById('rbMsSeg');
-  if(ms){ ms.innerHTML=RB_MS_OPTS.map(([v,nm])=>`<button data-rbms="${v}" class="${(settings.rbMs||300)===v?'on':''}">${nm}</button>`).join('');
-    ms.querySelectorAll('button').forEach(b=> b.addEventListener('click',()=>{ settings.rbMs=+b.dataset.rbms; saveSettingsLS(); renderRbSettings(); })); }
-  const opts=document.getElementById('rbOpts');
-  if(opts){ opts.classList.toggle('locked', !settings.realBend); opts.querySelectorAll('button').forEach(el=> el.disabled=!settings.realBend); }
+  const am=document.getElementById('amSeg'), row=document.getElementById('autoModelRow'), dis=!settings.realBend;   // the model CCs exist only in the Classic preset
+  if(am) am.querySelectorAll('button').forEach(b=>{ b.classList.toggle('on', (b.dataset.am==='1')===!!settings.autoModel); b.disabled=dis; });
+  if(row) row.style.opacity=dis?0.45:'';
 }
+document.querySelectorAll('#amSeg button').forEach(b=> b.addEventListener('click',()=>{ if(b.disabled) return; const on=b.dataset.am==='1'; if(on===!!settings.autoModel) return; settings.autoModel=on; saveSettingsLS(); renderRbSettings(); if(on) sendModel(lastModelName); }));   // turning Auto on immediately applies the current tuning's model
 function setRealBend(on){
   on=!!on; if(settings.realBend===on) return;
   if(held.size){ held.clear(); renderStrings(baseOffsets); }            // drop any live bend before swapping engines
@@ -3292,12 +3298,13 @@ function setRealBend(on){
     if(baseOffsets.some(o=>o<-12||o>12)){ apply(BUILTIN[0]); resetNote=' · tuning reset to Standard'; }      // the live tuning itself is out of range → back to Standard
   }
   if(midiOut){
-    if(on){ sendInstFx(); rbHardwareSync(); }                            // ALT TUNE ON + BEND CONTROL 0 + depths 0 + base on ALT TUNE
+    if(on){ if(bendTimer){ clearInterval(bendTimer); bendTimer=null; } if(bendHold){ clearTimeout(bendHold); bendHold=null; }   // a surviving Panning scoop would spray CC69/70 into the Classic preset (CC70 = INST TYPE there)
+      sendInstFx(); rbHardwareSync(); }                                  // resting state (BEND CONTROL 0, depths 0) + base on ALT TUNE + the tuning's model
     else { if(rbTimer){ clearInterval(rbTimer); rbTimer=null; } rbEngaged=false;
       midiOut.send([0xB0|((settings.channel-1)&0x0F), (settings.bendCC||69)&0x7F, 127]);   // Panning mode rests at BEND CONTROL 100 — essential, or its depth writes are ignored
       sendInstFx(); send(baseOffsets); applyPan(activePan); }             // base back on the BEND DEPTH CCs + restore the chosen pan placement
   }
-  updatePedalHint(); renderPedals(); renderPan(); renderModes();   // the Modes root picker gates F/F#/G on the active engine
+  updatePedalHint(); renderPedals(); renderPan(); renderModes(); renderEthnic();   // the Modes root picker gates F/F#/G on the active engine; Ethnic swaps its 12-string control
   toast((on ? 'Classic mode — glide bends' : 'Panning mode — stereo panning')+resetNote);
 }
 document.querySelectorAll('#rbSeg button').forEach(b=> b.addEventListener('click',()=>{ const on=b.dataset.rb==='1'; if(on===!!settings.realBend) return; setRealBend(on); renderRbSettings(); renderPanCcRows(); updateAbLock(); }));   // re-clicking the active mode is a no-op; a real flip swaps only the pan/alt CC rows (pitch-row edits survive) + refreshes the scoop-control lock
@@ -3316,10 +3323,9 @@ function refreshAb(id){ const el=document.getElementById(id); if(!el) return; co
 }
 ['bendDepthInput','bendMsInput','levelDipInput'].forEach(id=>{ const el=document.getElementById(id); if(el) el.addEventListener('input',()=>refreshAb(id)); });
 // Grey out + lock the Bend-effect controls while the scoop toggle is off
-function updateAbLock(){ const on=document.getElementById('autoBendChk').checked, box=document.getElementById('abControls');
-  if(box){ box.classList.toggle('locked', !on); box.querySelectorAll('input,select').forEach(el=> el.disabled=!on);
-    ['bendDepthInput','bendCCInput'].forEach(id=>{ const el=document.getElementById(id); if(!el) return; const dead=!on||!!settings.realBend; el.disabled=dead;   // Classic scoop is volume-dip only — these two drive the Panning-mode BEND CONTROL dip
-      const row=el.closest('.ab-slider')||el.closest('.cc-c'); if(row) row.style.opacity = (on&&dead) ? 0.38 : ''; }); } }
+function updateAbLock(){ const rb=!!settings.realBend, on=document.getElementById('autoBendChk').checked, box=document.getElementById('abControls');
+  const chk=document.getElementById('autoBendChk'); if(chk) chk.disabled=rb;   // the scoop is a Panning-mode feature — Classic's CC 70 carries INST TYPE and its tunings ride ALT TUNE
+  if(box){ box.classList.toggle('locked', !on||rb); box.querySelectorAll('input,select').forEach(el=> el.disabled=!on||rb); } }
 document.getElementById('autoBendChk').addEventListener('change', updateAbLock);
 function markThemeBtns(){ const t=document.documentElement.dataset.theme||'dd500'; document.querySelectorAll('[data-theme-set]').forEach(b=>b.classList.toggle('on', b.dataset.themeSet===t)); }
 function applyTheme(t){ document.documentElement.dataset.theme=t; try{ localStorage.setItem('vg800_theme',t); }catch(e){} markThemeBtns(); }
@@ -3404,7 +3410,7 @@ document.getElementById('saveSettings').addEventListener('click',()=>{
   const ab={ autoBend:document.getElementById('autoBendChk').checked, bendCC:num('bendCCInput',0,127,69), levelCC:num('levelCCInput',0,127,70), bendDepth:num('bendDepthInput',0,50,25), levelDip:num('levelDipInput',0,50,15), bendMs:num('bendMsInput',40,400,120) };
   const panCCs=[...settings.panCCs]; document.querySelectorAll('#panCcRows select[data-pcc]').forEach(x=>panCCs[+x.dataset.pcc]=Math.max(1,Math.min(127,+x.value||1)));   // only one of the two row sets is rendered per engine — keep the other as-is
   const altCCs=[...settings.altCCs]; document.querySelectorAll('#panCcRows select[data-acc]').forEach(x=>altCCs[+x.dataset.acc]=Math.max(1,Math.min(127,+x.value||1)));
-  settings={channel:ch,ccs,gap:settings.gap??20,glide:0,keys:settings.keys,latch:settings.latch,panCCs,altCCs,panMs:settings.panMs,fxDoubler:settings.fxDoubler,fxOctave:settings.fxOctave,swellMs:settings.swellMs,swellLatch:settings.swellLatch,chordExt:settings.chordExt,keyRoot:settings.keyRoot,keyScale:settings.keyScale,voicing:settings.voicing,voiceSize:settings.voiceSize,voiceStart:settings.voiceStart,voiceFeel:settings.voiceFeel,chordLayers:settings.chordLayers,chordKeys:settings.chordKeys,hist:settings.hist,ap:settings.ap,perStringOn:settings.perStringOn,stringBend:settings.stringBend,realBend:settings.realBend,rbMs:settings.rbMs,modesRoot:settings.modesRoot, ...ab}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
+  settings={channel:ch,ccs,gap:settings.gap??20,glide:0,keys:settings.keys,latch:settings.latch,panCCs,altCCs,panMs:settings.panMs,fxDoubler:settings.fxDoubler,fxOctave:settings.fxOctave,autoModel:settings.autoModel,chordExt:settings.chordExt,keyRoot:settings.keyRoot,keyScale:settings.keyScale,voicing:settings.voicing,voiceSize:settings.voiceSize,voiceStart:settings.voiceStart,voiceFeel:settings.voiceFeel,chordLayers:settings.chordLayers,chordKeys:settings.chordKeys,hist:settings.hist,ap:settings.ap,perStringOn:settings.perStringOn,stringBend:settings.stringBend,realBend:settings.realBend,rbMs:settings.rbMs,modesRoot:settings.modesRoot, ...ab}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
 });
 
 function applyTest(v){

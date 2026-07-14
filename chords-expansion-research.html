@@ -1,0 +1,553 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chords Mode — Research &amp; Design Exploration · VG-800 MIDI Control</title>
+<style>
+  :root{
+    --ink:#17130c; --ink-2:#3a3227; --paper:#faf7ef; --card:#fffdf7; --line:#e6ddc9;
+    --brass:#a8752b; --brass-deep:#875d1e; --brass-soft:#f0e4cc;
+    --mono:'SFMono-Regular',ui-monospace,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    /* app harmonic-function colours, quoted verbatim from vg800-tuner.html */
+    --fn-tonic:#2f9d5b; --fn-subdom:#3f7fc4; --fn-dominant:#d1521f; --fn-borrow:#8a49c0;
+    --wood:#1b1a17;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --ink:#ece5d6; --ink-2:#b6ac97; --paper:#14130f; --card:#1d1b16; --line:#332f26;
+      --brass:#d8ab5c; --brass-deep:#e9c079; --brass-soft:#2a2417;
+      --fn-tonic:#45c07a; --fn-subdom:#5aa2ea; --fn-dominant:#ea6a3c; --fn-borrow:#a563d4; }
+  }
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{ margin:0; background:var(--paper); color:var(--ink); font-family:var(--sans);
+    font-size:16.5px; line-height:1.62; -webkit-font-smoothing:antialiased; }
+  .wrap{ max-width:1000px; margin:0 auto; padding:0 26px 120px; }
+  header.hero{ padding:64px 26px 40px; max-width:1000px; margin:0 auto; }
+  .kick{ font-family:var(--mono); font-size:12px; letter-spacing:3px; text-transform:uppercase;
+    color:var(--brass); margin:0 0 14px; }
+  h1{ font-size:40px; line-height:1.08; margin:0 0 16px; letter-spacing:-0.5px; font-weight:800; }
+  .sub{ font-size:19px; color:var(--ink-2); margin:0; max-width:70ch; }
+  .meta{ font-family:var(--mono); font-size:12.5px; color:var(--ink-2); margin-top:26px;
+    border-top:1px solid var(--line); padding-top:16px; }
+  .meta b{ color:var(--ink); font-weight:700; }
+  h2{ font-size:27px; margin:60px 0 6px; letter-spacing:-0.3px; padding-top:14px; border-top:2px solid var(--brass-soft); }
+  h2 .num{ font-family:var(--mono); font-size:14px; color:var(--brass); display:block; letter-spacing:2px; margin-bottom:4px; }
+  h3{ font-size:20px; margin:38px 0 4px; letter-spacing:-0.2px; }
+  h4{ font-size:15px; margin:26px 0 4px; font-family:var(--mono); letter-spacing:1px; text-transform:uppercase; color:var(--brass-deep); }
+  p{ margin:12px 0; } strong{ font-weight:700; }
+  a{ color:var(--brass); } code{ font-family:var(--mono); font-size:0.86em; background:var(--brass-soft);
+    padding:1.5px 5px; border-radius:4px; color:var(--brass-deep); white-space:nowrap; }
+  @media (prefers-color-scheme: dark){ code{ color:var(--brass-deep); } }
+  pre{ font-family:var(--mono); font-size:12.8px; line-height:1.55; background:var(--wood); color:#e7dcc4;
+    padding:15px 17px; border-radius:10px; overflow-x:auto; border:1px solid #000; margin:16px 0; }
+  pre .c{ color:#8f9877; } pre .k{ color:#e0b062; } pre .s{ color:#b6cf8f; }
+  ul,ol{ padding-left:22px; } li{ margin:6px 0; }
+  table{ border-collapse:collapse; width:100%; margin:20px 0; font-size:14px; }
+  th,td{ border:1px solid var(--line); padding:8px 11px; text-align:left; vertical-align:top; }
+  th{ background:var(--brass-soft); font-family:var(--mono); font-size:11.5px; letter-spacing:0.5px;
+    text-transform:uppercase; color:var(--brass-deep); font-weight:700; }
+  td code{ white-space:nowrap; }
+  tbody tr:nth-child(even){ background:color-mix(in srgb, var(--brass-soft) 30%, transparent); }
+  .lead{ font-size:18px; color:var(--ink-2); }
+  /* callout boxes */
+  .box{ border-radius:12px; padding:16px 20px; margin:22px 0; border:1px solid var(--line);
+    background:var(--card); box-shadow:0 1px 2px rgba(0,0,0,0.04); }
+  .box .tag{ font-family:var(--mono); font-size:11px; letter-spacing:1.5px; text-transform:uppercase;
+    font-weight:700; margin:0 0 8px; display:flex; align-items:center; gap:8px; }
+  .box.code{ border-left:4px solid var(--brass); }
+  .box.code .tag{ color:var(--brass); }
+  .box.flag{ border-left:4px solid var(--fn-dominant); background:color-mix(in srgb,var(--fn-dominant) 7%, var(--card)); }
+  .box.flag .tag{ color:var(--fn-dominant); }
+  .box.win{ border-left:4px solid var(--fn-tonic); background:color-mix(in srgb,var(--fn-tonic) 7%, var(--card)); }
+  .box.win .tag{ color:var(--fn-tonic); }
+  .box p:first-of-type{ margin-top:0; } .box p:last-child{ margin-bottom:0; }
+  .box.code code{ background:color-mix(in srgb,var(--brass) 16%, transparent); }
+  /* TOC */
+  nav.toc{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px 24px; margin:34px 0 10px; }
+  nav.toc h4{ margin:0 0 10px; color:var(--brass); }
+  nav.toc ol{ margin:0; columns:2; column-gap:34px; font-size:14.5px; }
+  @media(max-width:640px){ nav.toc ol{ columns:1; } h1{ font-size:31px; } }
+  nav.toc a{ text-decoration:none; color:var(--ink); }
+  nav.toc a:hover{ color:var(--brass); }
+  /* chord-cell mockups (mirror .chord-cell from the app) */
+  .grid-demo{ display:flex; flex-wrap:wrap; gap:10px; margin:18px 0; align-items:stretch; }
+  .cc{ position:relative; width:96px; min-height:58px; border-radius:8px; border:1.5px solid var(--line);
+    background:var(--card); display:flex; flex-direction:column; align-items:center; justify-content:center;
+    font-family:var(--sans); box-shadow:0 1px 3px rgba(0,0,0,0.08); padding:6px 4px; }
+  .cc .rn{ font-family:var(--mono); font-size:10px; font-weight:700; opacity:0.9; }
+  .cc .sym{ font-weight:800; font-size:18px; letter-spacing:-0.3px; }
+  .cc small{ position:absolute; bottom:3px; font-family:var(--mono); font-size:8.5px; color:var(--ink-2); letter-spacing:0.3px; }
+  .cc.tonic{ border-color:var(--fn-tonic); background:color-mix(in srgb,var(--fn-tonic) 14%, var(--card)); }
+  .cc.tonic .rn{ color:var(--fn-tonic); }
+  .cc.subdom{ border-color:var(--fn-subdom); background:color-mix(in srgb,var(--fn-subdom) 14%, var(--card)); }
+  .cc.subdom .rn{ color:var(--fn-subdom); }
+  .cc.dominant{ border-color:var(--fn-dominant); background:color-mix(in srgb,var(--fn-dominant) 14%, var(--card)); }
+  .cc.dominant .rn{ color:var(--fn-dominant); }
+  .cc.seventh::after{ content:"7"; position:absolute; top:-7px; right:-7px; width:18px; height:18px;
+    border-radius:50%; background:var(--brass); color:#fff; font-family:var(--mono); font-size:10px; font-weight:700;
+    display:flex; align-items:center; justify-content:center; box-shadow:0 1px 3px rgba(0,0,0,0.3); }
+  .cc.borrow{ border-style:dashed; border-color:var(--fn-borrow); background:color-mix(in srgb,var(--fn-borrow) 10%, var(--card)); }
+  .cc.borrow .rn{ color:var(--fn-borrow); }
+  .cc.resolve{ box-shadow:0 0 0 2px var(--fn-tonic), 0 0 14px color-mix(in srgb,var(--fn-tonic) 55%, transparent); }
+  .cc .arrow{ position:absolute; top:-10px; left:50%; transform:translateX(-50%);
+    font-family:var(--mono); font-size:11px; color:var(--fn-dominant); font-weight:700; }
+  .cap{ font-family:var(--mono); font-size:12px; color:var(--ink-2); margin:4px 0 0; }
+  .swatch{ display:inline-block; width:12px; height:12px; border-radius:3px; vertical-align:-1px; margin-right:5px; }
+  .pill{ display:inline-block; font-family:var(--mono); font-size:11px; padding:2px 8px; border-radius:20px;
+    border:1px solid var(--line); background:var(--card); margin:2px 3px 2px 0; }
+  .kbd{ font-family:var(--mono); font-size:12px; font-weight:700; background:var(--card); border:1px solid var(--line);
+    border-bottom-width:2px; border-radius:6px; padding:2px 8px; box-shadow:0 1px 0 rgba(0,0,0,0.06); white-space:nowrap; }
+  .two{ display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  @media(max-width:680px){ .two{ grid-template-columns:1fr; } }
+  hr{ border:none; border-top:1px solid var(--line); margin:34px 0; }
+  .foot{ font-family:var(--mono); font-size:12px; color:var(--ink-2); border-top:1px solid var(--line);
+    padding-top:20px; margin-top:60px; }
+  .tagrow{ margin:8px 0 0; }
+</style>
+
+<header class="hero">
+  <p class="kick">Research &amp; Design Exploration · Research only, no code changed</p>
+  <h1>Expanding Chords Mode</h1>
+  <p class="sub">Three proposals — scale-tone pedal bends inside a chord, layered “kosher-chord” highlighting, and a keyboard-mapping scheme relocated to Settings — each grounded in what <code>vg800-tuner.html</code> actually does today.</p>
+  <div class="meta">
+    Target file <b>vg800-tuner.html</b> &nbsp;·&nbsp; Sections touched <b>Chords · Bends · Settings</b> &nbsp;·&nbsp;
+    Scope <b>design/theory only</b> &nbsp;·&nbsp; All line numbers &amp; identifiers refer to the current source.
+  </div>
+</header>
+
+<div class="wrap">
+
+<nav class="toc">
+  <h4>Contents</h4>
+  <ol>
+    <li><a href="#summary">Executive summary</a></li>
+    <li><a href="#baseline">What the code does today</a></li>
+    <li><a href="#area1">Area 1 — Scale-tone pedal bends in Chords mode</a></li>
+    <li><a href="#area2">Area 2 — Layered highlighting of kosher chords</a></li>
+    <li><a href="#area3">Area 3 — Keyboard mapping &amp; moving it to Settings</a></li>
+    <li><a href="#order">Suggested implementation order</a></li>
+    <li><a href="#flags">Consolidated ambiguity / difficulty flags</a></li>
+  </ol>
+</nav>
+
+<!-- ============================================================= -->
+<h2 id="summary"><span class="num">00</span>Executive summary</h2>
+
+<p class="lead">All three features are feasible and fit the existing architecture well — but each leans on a subsystem that was built for a slightly different purpose, and the friction points are worth naming up front.</p>
+
+<ul>
+  <li><strong>Area 1 (scale-tone bends)</strong> is the most novel and the highest-effort. Your pedal engine (<code>controlState()</code>, <code>bendsFromEngaged()</code>, <code>setCtrl()</code>) already does exactly the right <em>mechanical</em> thing — aggregate per-string semitone offsets, clamp to ±12, send CC, live-preview the destination note. What it lacks is a <em>scale-aware, per-string</em> move generator. The existing copedent computes moves from a detected <strong>major triad root</strong> (<code>chordInfo()</code>), which is precisely why pedals feel “disabled” under most chords. The fix is a new bend-mode that reads <code>settings.keyRoot</code>/<code>keyScale</code> instead of re-detecting a root, and maps the six pedals to the six strings.</li>
+  <li><strong>Area 2 (layered highlighting)</strong> is mostly additive and low-risk. Your <code>diatonicMap()</code> already emits <code>{func, rn}</code> keyed by <code>"&lt;pc&gt;-&lt;rowKey&gt;"</code>; a parallel <code>diatonic7Map()</code> and a small <code>borrowedMap()</code> reuse the same shape. The real design work is <em>visual encoding</em> — using <strong>fill for function, border-style for layer, and corner badges for extension/target</strong> so four kinds of information coexist without a rainbow. Toggleable layers keep it legible.</li>
+  <li><strong>Area 3 (keyboard + Settings move)</strong> is the cleanest. Number keys <span class="kbd">1</span>–<span class="kbd">7</span> are currently unbound, and <code>diatonicChordAt()</code> already returns exactly the <code>{r, row, formula}</code> that <code>applyChord()</code> needs. Relocating the <code>keymapHTML()</code> drawer from <code>renderPedals()</code> into a Settings group is a UI move, not a logic change — <code>KEYMAP</code>, <code>rebuildKeymap()</code>, and the two global <code>keydown</code> handlers keep working untouched.</li>
+</ul>
+
+<div class="box win">
+  <p class="tag">▲ Recommended order</p>
+  <p>Ship in order of <strong>risk, not glamour</strong>: (1) relocate key-mapping to Settings, (2) add chord number-keys, (3) add the 7ths &amp; borrowed layers, (4) build scale-tone bends last. Rationale in <a href="#order">§ Implementation order</a>.</p>
+</div>
+
+<!-- ============================================================= -->
+<h2 id="baseline"><span class="num">01</span>What the code does today (the parts these features touch)</h2>
+
+<p>Every proposal below is anchored to these facts, so they’re collected here once.</p>
+
+<h4>The chord grid &amp; key mode</h4>
+<ul>
+  <li><code>renderChords()</code> (~L1864) builds a 12-root × <em>N</em>-row matrix. Rows come from <code>chordRows()</code> = <code>[...CHORD_FIXED, oneSpecialRow]</code>. <code>CHORD_FIXED</code> = <span class="pill">maj</span><span class="pill">min</span><span class="pill">7</span><span class="pill">min7</span><span class="pill">maj7</span><span class="pill">dim</span><span class="pill">aug</span>; the special row is one of <code>CHORD_EXT</code> (<span class="pill">add9</span><span class="pill">6</span><span class="pill">m6</span><span class="pill">sus2</span><span class="pill">sus4</span><span class="pill">dim7</span><span class="pill">m7♭5</span>), chosen by the <em>Extend</em> segmented control (<code>settings.chordExt</code>).</li>
+  <li><strong>Diatonic highlighting:</strong> when a scale is chosen, <code>diatonicMap(root, scale)</code> returns a dict keyed <code>"&lt;pc&gt;-&lt;rowKey&gt;"</code> → <code>{func, rn}</code>. In <code>renderChords()</code> each cell looks itself up and gets class <code>tonic|subdom|dominant</code> (fill+border) or <code>offkey</code> (dimmed). Roman numeral printed via <code>romanNumeral()</code>.</li>
+  <li><strong>Only seven triads light up.</strong> <code>SCALES[x].quals</code> holds one quality per degree (the <em>triad</em>), mapped to a grid row via <code>QUAL_ROW</code>. Nothing surfaces diatonic 7ths, secondary dominants, or borrowed chords.</li>
+  <li><strong>Latching one-tap:</strong> tapping a cell calls <code>applyChord(r, row, name, formula)</code> → <code>voiceChordVoiced()</code> → <code>apply()</code>, which sets <code>baseOffsets</code>, clears <code>held</code>, and stores <code>activeChord={r,row}</code>. The chord stays until you tap another. There is no momentary chord.</li>
+  <li><strong>±12 grey-out:</strong> a cell is disabled when <code>voiceChord(ri,row.formula)</code> returns <code>null</code>, which happens iff any string’s offset would exceed ±12 (<code>toCC()</code> maps −12…+12 → 0…127).</li>
+  <li><strong>Voicing engine:</strong> <code>settings.voicing</code> (Spread/Voiced), <code>voiceSize</code> (3/4), <code>voiceStart</code> (cluster window), <code>voiceFeel</code> (Legato/Grip). <code>applyChord()</code> already honours all of these — anything that calls it inherits the current voicing for free.</li>
+</ul>
+
+<h4>The Bends / pedal engine</h4>
+<ul>
+  <li>A <code>copedent</code> is a set of <code>controls</code>; each control has <code>moves:[{deg,semis}]</code> expressed in <em>chord degrees</em> (<code>'1'/'3'/'5'</code>). <code>controlState(ctrl, info, base)</code> resolves each degree to a string via the current root, sums per-string bends, and greys the pedal if a target degree is missing or any result exceeds ±12.</li>
+  <li><code>chordInfo(base, name)</code> finds the root by looking for a <strong>major triad</strong> (<code>r, r+4, r+7</code>) among the sounding pitch-classes. <strong>This is the crux of “pedals are disabled in Chords mode.”</strong> A minor/dim/sus voicing contains no major triad at its root, so <code>info.root==null</code> → “No chord root here — pedals disabled.” Even a <em>major</em> chord leaves the pedals doing pedal-steel degree moves, not scale moves.</li>
+  <li><code>setCtrl()</code> aggregates <code>bendsFromEngaged()</code> onto <code>baseOffsets</code> and calls <code>send()</code>; <code>renderStrings()</code> animates the slide. <code>pressCtrl()/releaseCtrl()</code> implement momentary-vs-latch via <code>settings.latch</code>. Per-pedal preview text comes from <code>movesHTML(st.moves)</code> — “String 3 &nbsp;G→A”.</li>
+</ul>
+
+<h4>Keyboard mapping</h4>
+<ul>
+  <li><code>DEFAULT_KEYS = {A:'a',B:'s',LKL:'d',LKR:'f',AB:'g',ABR:'h'}</code>; overrides in <code>settings.keys</code>. <code>rebuildKeymap()</code> builds <code>KEYMAP: char→ctrlId</code>.</li>
+  <li>Two global handlers: a <em>rebind-capture</em> <code>keydown</code> (active only while <code>bindingCtrl</code> is set) and a <em>pedal-engage</em> <code>keydown</code> that ignores repeats, <code>meta/ctrl/alt</code>, open modals, and <code>INPUT/TEXTAREA/SELECT</code> targets, then does <code>KEYMAP[key] → pressCtrl</code>. A matching <code>keyup</code> releases. <strong>Number keys 1–7 are not in <code>KEYMAP</code>, so today they do nothing — free to claim.</strong></li>
+  <li>The binding UI (<code>keymapHTML()</code>, the <code>.kdraw</code> “Key Mapping” drawer with the <code>.kb-chip</code> chips and the Latch checkbox) is rendered <em>inside</em> <code>renderPedals()</code>, i.e. it physically lives in the Bends panel.</li>
+</ul>
+
+<!-- ============================================================= -->
+<h2 id="area1"><span class="num">02</span>Area 1 — Scale-tone bends via the six pedals, inside Chords mode</h2>
+
+<p class="lead">Re-enable the pedals during Chords mode so each pedal raises <em>one string</em> to the <strong>next scale tone above its current pitch</strong> while the other strings sustain — a live, partial, pedal-steel voice-leading gesture, distinct from the chord buttons’ full static retune.</p>
+
+<h3>2.1 · Why this is musically worth it (and not redundant with sus/add9)</h3>
+
+<p>The existing <code>sus2</code>/<code>sus4</code>/<code>add9</code> rows perform a <strong>full six-string retune</strong> and <strong>latch</strong>: every string jumps to the new chord and stays. That is a <em>chord change</em>. A scale-tone bend is a different musical object:</p>
+
+<table>
+  <thead><tr><th>Dimension</th><th>sus/add9 row (exists)</th><th>Scale-tone pedal (proposed)</th></tr></thead>
+  <tbody>
+    <tr><td>Strings affected</td><td>All six re-voiced</td><td>Only the string(s) whose pedal you hold</td></tr>
+    <tr><td>Duration</td><td>Latched — permanent until next tap</td><td>Momentary — springs back on release</td></tr>
+    <tr><td>Motion heard</td><td>A new chord appears</td><td>A voice <em>moves</em> under a sustained chord — the “cry”</td></tr>
+    <tr><td>Note chosen</td><td>Fixed formula (2nd or 4th over root)</td><td>Whatever the next scale tone is <em>for that string</em></td></tr>
+    <tr><td>Gesture family</td><td>Comping / arrangement</td><td>Ornament / passing-tone / suspension-and-resolve</td></tr>
+  </tbody>
+</table>
+
+<p>Concretely: over a held C major, tapping the pedal for the string sounding <strong>E</strong> lifts it to <strong>F</strong> — a 4–3 suspension you resolve by <em>letting go</em>, which the sus4 row can’t do because it also moves the other strings and never returns. This is the core pedal-steel idiom, and it’s the thing your app can’t currently produce.</p>
+
+<h3>2.2 · Computing “next scale tone up” per string</h3>
+
+<p>The rule is small and deterministic. For string <code>i</code> with current sounding MIDI note <code>m = STD_MIDI[i] + baseOffsets[i]</code>, and the active scale’s pitch-class set <code>S</code> (derived from <code>settings.keyRoot</code> + <code>SCALES[settings.keyScale].intervals</code>):</p>
+
+<pre><span class="c">// next scale tone strictly above m, as a semitone delta d in 1..11</span>
+<span class="k">function</span> nextScaleUp(m, S){
+  <span class="k">for</span>(<span class="k">let</span> d=1; d&lt;=11; d++) <span class="k">if</span>(S.has(((m+d)%12+12)%12)) <span class="k">return</span> d;
+  <span class="k">return</span> null;              <span class="c">// unreachable for a non-empty scale</span>
+}
+<span class="c">// per-string move, clamped by the SAME ±12 rule controlState() already enforces</span>
+<span class="k">const</span> off = baseOffsets[i] + nextScaleUp(m, S);   <span class="c">// grey the pedal if off &gt; 12</span></pre>
+
+<p>For a diatonic scale the delta is always <strong>1 or 2 semitones</strong> (a half- or whole-step) — exactly the grace-note size that reads as “bend,” never a leap.</p>
+
+<h4>Worked example — C Major, holding a C-major triad (Spread voicing)</h4>
+<p>Using <code>voiceChord(0,[0,4,7])</code>, the six strings sound (string 1 → 6): <code>C4 · G3 · E3 · C3 · G2 · C2</code>. With <code>S = {C,D,E,F,G,A,B}</code>:</p>
+
+<table>
+  <thead><tr><th>Pedal → String</th><th>Sounds</th><th>Next scale tone up</th><th>Δ semis</th><th>Becomes</th></tr></thead>
+  <tbody>
+    <tr><td>P1 → str 1</td><td>C4</td><td>D</td><td>+2</td><td>D4</td></tr>
+    <tr><td>P2 → str 2</td><td>G3</td><td>A</td><td>+2</td><td>A3</td></tr>
+    <tr><td>P3 → str 3</td><td>E3</td><td>F</td><td>+1</td><td>F3</td></tr>
+    <tr><td>P4 → str 4</td><td>C3</td><td>D</td><td>+2</td><td>D3</td></tr>
+    <tr><td>P5 → str 5</td><td>G2</td><td>A</td><td>+2</td><td>A2</td></tr>
+    <tr><td>P6 → str 6</td><td>C2</td><td>D</td><td>+2</td><td>D2</td></tr>
+  </tbody>
+</table>
+
+<div class="box win">
+  <p class="tag">▲ The theory pays off</p>
+  <p>Press <em>all six</em> and C(C·G·E·C·G·C) becomes D·A·F·D·A·D — a <strong>Dm chord (the ii)</strong>. The whole triad walks up the scale by step. Press only <strong>P3</strong> and you get a 4–3 suspension (F over the C triad). Press only <strong>P1</strong> and you get an added-9 colour (D over C). These partial results are the point: one pedal set gives you suspensions, passing tones, and stepwise chord motion, all live under the fingers.</p>
+</div>
+
+<h3>2.3 · Is “up to the next scale tone” always the right move?</h3>
+<p>For a first version, <strong>yes — raises only, and keep it uniform.</strong> Reasons and caveats:</p>
+<ul>
+  <li><strong>Raises are the idiom.</strong> Pedal-steel A/B pedals and most knee levers <em>raise</em>; that’s the sound the ear expects when a note “blooms.” Uniform behaviour is also predictable — the same physical gesture always means “this string, up one scale step.”</li>
+  <li><strong>Leading-tone bonus.</strong> A string sounding the 7th degree bends up a half-step to the tonic (B→C) — a built-in resolution. A string on the 3rd bends to the 4th (E→F, the classic suspension). These fall out of the rule for free.</li>
+  <li><strong>Where up is debatable:</strong> a string already on the tonic bends to the 2nd (a fine add-9 colour), and a string on the 5th bends to the 6th (also musical). There’s no “wrong” degree, but two refinements are worth considering for v2:
+    <ol>
+      <li><strong>Optional lowers.</strong> A companion “lower to next scale tone <em>down</em>” set (a modifier, or a second pedal bank) unlocks the maj7 drop (C→B over C, mirroring the existing <code>LKR</code> “root −½ (maj7)”) and 4→3 from above.</li>
+      <li><strong>Chord-tone snapping.</strong> An alternate mode that bends to the next <em>chord</em> tone rather than the next <em>scale</em> tone gives fatter, always-consonant motion — but that is closer to what the chord rows already do, so scale-tone is the more distinctive default.</li>
+    </ol>
+  </li>
+</ul>
+<p><strong>Recommendation:</strong> ship raises-to-next-scale-tone as the default and only behaviour; expose lowers later behind a modifier if there’s appetite.</p>
+
+<h3>2.4 · How this maps onto your pedal engine</h3>
+
+<div class="box code">
+  <p class="tag">◆ Reuse, don’t rebuild</p>
+  <p>Your engine is already the right shape. The only new part is a <em>move generator</em> that produces per-string <code>{deg?, semis}</code> from the scale instead of from a detected major-triad root.</p>
+</div>
+
+<p>Introduce a <strong>synthetic copedent</strong> — call it <code>COPEDENTS.scaleBend</code> — active when Chords key-mode is on. Its six controls map 1:1 to strings:</p>
+
+<pre><span class="c">// conceptual — six string-pedals; moves are computed live, not fixed</span>
+scaleBend: { controls: [
+  {id:<span class="s">'S1'</span>, name:<span class="s">'String 1'</span>, group:<span class="s">'string'</span>, key:<span class="s">'a'</span>, string:0},
+  {id:<span class="s">'S2'</span>, name:<span class="s">'String 2'</span>, group:<span class="s">'string'</span>, key:<span class="s">'s'</span>, string:1},
+  <span class="c">/* … S3 'd', S4 'f', S5 'g', S6 'h' … */</span>
+]}</pre>
+
+<p>Then either (a) special-case <code>controlState()</code> when the control has a <code>string</code> field, computing <code>nextScaleUp()</code> against <code>settings.key*</code>; or (b) recompute each control’s <code>moves</code> live in <code>renderPedals()</code> before <code>controlState()</code> runs. Crucially, <strong>this path must bypass <code>chordInfo()</code></strong> — the scale, not a re-detected chord root, is the source of truth. Everything downstream is unchanged:</p>
+<ul>
+  <li><code>controlState()</code>’s ±12 clamp and grey-out already handle the range limit — a pedal near the ceiling simply disables itself, no new logic.</li>
+  <li><code>bendsFromEngaged()</code> already sums multiple held pedals per string, so holding P1+P3 raises two voices at once.</li>
+  <li><code>movesHTML()</code> already renders “String&nbsp;<em>n</em>&nbsp; from→to” — the live per-string preview the request asks for is <em>already there</em>; it just needs the scale-derived <code>from/to</code>. Each pedal button will read e.g. <em>“String&nbsp;3&nbsp; E→F.”</em></li>
+</ul>
+
+<h3>2.5 · Momentary vs latch, and pairing with chord latching</h3>
+<p><strong>Confirmed: this must be momentary/hold.</strong> The whole gesture <em>is</em> the release. The mechanics already exist: <code>releaseCtrl()</code> restores <code>baseOffsets</code> when <code>settings.latch</code> is false. Two clarifications:</p>
+<ul>
+  <li><strong>The chord stays; the bend is temporary.</strong> <code>activeChord</code> and <code>baseOffsets</code> hold the latched chord; pedals add a transient offset on top and remove it on release. This composition is exactly how <code>setCtrl()</code> already layers onto <code>baseOffsets</code> — so “hold a chord, bend within it, let go, chord intact” works with no state fight.</li>
+  <li><strong>Latch interaction is a genuine ambiguity.</strong> <code>settings.latch</code> currently governs <em>pedals</em> globally. If a user turns pedal-latch on, a scale-tone bend would stick — musically odd (you’d strand a suspension). Recommendation: for the scale-bend copedent, <strong>force momentary</strong> regardless of <code>settings.latch</code>, or give the scale-bend bank its own latch that defaults off. Flag either way — see §Flags.</li>
+</ul>
+
+<div class="box flag">
+  <p class="tag">⚑ Difficulty — this feature needs a scale to exist</p>
+  <p>“Next scale tone” is undefined when <code>settings.keyScale === 'off'</code>. Decide the fallback explicitly: <strong>(recommended)</strong> disable the scale-bend pedals and show “Pick a key &amp; scale to enable scale bends,” mirroring the existing “No chord root here — pedals disabled” affordance; <em>or</em> fall back to a chromatic +1 raise; <em>or</em> fall back to next <em>chord</em> tone. The first keeps the feature honest to its name.</p>
+</div>
+<div class="box flag">
+  <p class="tag">⚑ Difficulty — six “pedals” that aren’t foot pedals</p>
+  <p>The Bends UI groups controls into <em>Foot / Knee / Combos</em> with pedal-plate SVG badges (<code>PEDAL_ICONS</code>). Six per-string raises don’t fit that metaphor. Recommend a new group label (e.g. <em>“Scale Bends · one string each”</em>) and a string-coloured badge using <code>STR_COLORS[i]</code> instead of a foot-pedal icon, so the six buttons read as strings, not pedals. This is presentation only; <code>renderPedals()</code> already switches its section headers by <code>group</code>.</p>
+</div>
+
+<!-- ============================================================= -->
+<h2 id="area2"><span class="num">03</span>Area 2 — Layered highlighting of more “kosher” chords</h2>
+
+<p class="lead">Surface the diatonic 7ths, the borrowed chords, and where dominants resolve — as <strong>toggleable layers</strong> encoded with border, badge, and glow rather than more fill colours, so multiple facts coexist without turning the grid into a rainbow.</p>
+
+<h3>3.1 · What’s harmonically available beyond the seven triads</h3>
+
+<h4>Diatonic 7th chords (per mode)</h4>
+<p>Each degree has a natural four-note extension. These map almost entirely onto <em>rows you already render</em> — <code>maj7</code>, <code>min7</code>, <code>7</code> (dom) are fixed rows; only the half-diminished needs the <code>m7♭5</code> special row. That’s the whole “7ths layer”: light the correct 7th-quality cell for each degree, with the same function colour as its triad.</p>
+
+<table>
+  <thead><tr><th>Scale (in <code>SCALES</code>)</th><th>I</th><th>II</th><th>III</th><th>IV</th><th>V</th><th>VI</th><th>VII</th></tr></thead>
+  <tbody>
+    <tr><td>Major / Ionian</td><td>maj7</td><td>m7</td><td>m7</td><td>maj7</td><td><b>7</b></td><td>m7</td><td>m7♭5</td></tr>
+    <tr><td>Minor / Aeolian</td><td>m7</td><td>m7♭5</td><td>maj7</td><td>m7</td><td>m7</td><td>maj7</td><td><b>7</b></td></tr>
+    <tr><td>Dorian</td><td>m7</td><td>m7</td><td>maj7</td><td><b>7</b></td><td>m7</td><td>m7♭5</td><td>maj7</td></tr>
+    <tr><td>Mixolydian</td><td><b>7</b></td><td>m7</td><td>m7♭5</td><td>maj7</td><td>m7</td><td>m7</td><td>maj7</td></tr>
+    <tr><td>Harm. Minor</td><td>mMaj7*</td><td>m7♭5</td><td>+maj7*</td><td>m7</td><td><b>7</b></td><td>maj7</td><td>°7</td></tr>
+  </tbody>
+</table>
+<p class="cap">Bold = the dominant 7th (the leading-tone chord). *Harmonic minor’s I (min-major 7) and III (augmented-major 7) have no existing grid row — see the flag below.</p>
+
+<div class="box code">
+  <p class="tag">◆ Implementation — a parallel map</p>
+  <p>Add <code>SCALES[x].quals7</code> (the seven 7th-qualities) and a <code>diatonic7Map()</code> that is a carbon copy of <code>diatonicMap()</code> but reads <code>quals7</code> and maps quality→row through a small <code>QUAL_ROW7</code> (<code>maj7→maj7, m7→min7, dom7→sev, m7♭5→m7b5, °7→dim7</code>). <code>renderChords()</code> then adds a class when the 7ths layer is on and a cell matches. No new grid geometry — the cells already exist on the fixed rows.</p>
+</div>
+
+<h4>Borrowed chords / modal interchange</h4>
+<p>Chords pulled from the parallel mode — the everyday ones players actually reach for. In a <strong>major</strong> key the high-value borrowings are:</p>
+<table>
+  <thead><tr><th>Borrowed</th><th>From</th><th>Grid row</th><th>Why it’s useful</th></tr></thead>
+  <tbody>
+    <tr><td><b>iv</b> (minor iv)</td><td>parallel minor</td><td>min</td><td>The “Beatles” plagal sigh — iv→I</td></tr>
+    <tr><td><b>♭VII</b></td><td>Mixolydian/minor</td><td>maj</td><td>Rock/modal cadence ♭VII→I</td></tr>
+    <tr><td><b>♭VI</b></td><td>parallel minor</td><td>maj</td><td>♭VI–♭VII–I anthem move</td></tr>
+    <tr><td><b>♭III</b></td><td>parallel minor</td><td>maj</td><td>Bluesy mediant</td></tr>
+    <tr><td><b>ii°</b></td><td>parallel minor</td><td>dim</td><td>Darkened pre-dominant</td></tr>
+    <tr><td><b>V7/V, V7/ii…</b></td><td>secondary dominants</td><td>7</td><td>Tonicise any diatonic chord</td></tr>
+  </tbody>
+</table>
+<p>All of these already exist as tappable “off-key” cells today (your <code>.offkey</code> cells stay clickable — nice). The layer just <em>promotes</em> the useful ones from “dimmed to 36%” to “dashed-violet, labelled.”</p>
+
+<h4>Other genuinely useful options</h4>
+<ul>
+  <li><strong>Suspensions</strong> (<code>sus2</code>/<code>sus4</code>) are scale-agnostic and almost always available; better surfaced as an always-on “these work here” hint than as a diatonic claim.</li>
+  <li><strong>6ths</strong> (I6, ii-flavoured 6) — the <code>6</code>/<code>m6</code> rows; diatonic when their added 6th is in the scale. Lower priority; fold into the 7ths/extensions layer if desired.</li>
+  <li><strong>Resolution targets</strong> — not a chord type but a <em>relationship</em>: every dominant-function chord “wants” to resolve down a fifth. Worth its own layer (below).</li>
+</ul>
+
+<h3>3.2 · The visual system — encode <em>type</em> on a different channel than <em>function</em></h3>
+
+<p>The insight the request is pushing toward: <strong>fill colour is already spent on harmonic function</strong> (tonic/subdom/dominant). Don’t spend it again. Put <em>layer type</em> on <strong>border</strong>, put <em>extra attributes</em> on <strong>badges/glow</strong>. Then a single cell can say four things at once and still be scannable.</p>
+
+<table>
+  <thead><tr><th>Information</th><th>Visual channel</th><th>Encoding</th></tr></thead>
+  <tbody>
+    <tr><td>Harmonic <b>function</b></td><td>Fill tint + border colour</td><td>Green tonic / blue subdom / orange dominant — <em>your existing scheme, untouched</em></td></tr>
+    <tr><td>Diatonic <b>triad</b></td><td>Solid border</td><td>Baseline; what ships today</td></tr>
+    <tr><td>Diatonic <b>7th</b> available</td><td>Corner badge</td><td>Small “7” disc, top-right; same function colour</td></tr>
+    <tr><td><b>Borrowed</b> chord</td><td>Border <em>style</em> + hue</td><td>Dashed border in violet (a hue outside the function set)</td></tr>
+    <tr><td><b>Resolution</b> target</td><td>Glow / ring + arrow</td><td>Outer ring on the target when its dominant is focused; “→” arrow badge</td></tr>
+  </tbody>
+</table>
+
+<h4>Rendered mockups (real CSS, same palette as the app)</h4>
+
+<p class="cap">Layer: diatonic triads (ships today) — fill = function</p>
+<div class="grid-demo">
+  <div class="cc tonic"><span class="rn">I</span><span class="sym">C</span></div>
+  <div class="cc subdom"><span class="rn">ii</span><span class="sym">Dm</span></div>
+  <div class="cc dominant"><span class="rn">V</span><span class="sym">G</span></div>
+  <div class="cc"><span class="sym" style="opacity:.4">A♭</span><small style="position:static">off-key</small></div>
+</div>
+
+<p class="cap">Layer: + diatonic 7ths — a corner “7” badge, function colour kept</p>
+<div class="grid-demo">
+  <div class="cc tonic seventh"><span class="rn">Imaj7</span><span class="sym">C△</span></div>
+  <div class="cc subdom seventh"><span class="rn">ii7</span><span class="sym">Dm7</span></div>
+  <div class="cc dominant seventh"><span class="rn">V7</span><span class="sym">G7</span></div>
+  <div class="cc subdom seventh"><span class="rn">viiø7</span><span class="sym">Bø</span></div>
+</div>
+
+<p class="cap">Layer: + borrowed — dashed violet border, violet numeral (function fill still readable underneath if it has one)</p>
+<div class="grid-demo">
+  <div class="cc borrow"><span class="rn">iv</span><span class="sym">Fm</span></div>
+  <div class="cc borrow"><span class="rn">♭VII</span><span class="sym">B♭</span></div>
+  <div class="cc borrow"><span class="rn">♭VI</span><span class="sym">A♭</span></div>
+</div>
+
+<p class="cap">Layer: + resolutions — hovering/holding V7 rings its target I and shows the arrow</p>
+<div class="grid-demo">
+  <div class="cc dominant"><span class="arrow">→ C</span><span class="rn">V7</span><span class="sym">G7</span></div>
+  <div class="cc tonic resolve"><span class="rn">I</span><span class="sym">C</span></div>
+</div>
+
+<h3>3.3 · Toggling — keep it from becoming a rainbow</h3>
+<p>Layers are <strong>opt-in and independent</strong>, driven by a compact chip row placed next to the existing function legend (which already lives in <code>.chord-legend</code>). Persist each toggle in <code>settings</code> (e.g. <code>settings.chordLayers = {sevenths:false, borrowed:false, resolutions:false}</code>).</p>
+
+<div class="grid-demo" style="gap:8px">
+  <span class="pill" style="border-color:var(--fn-tonic)">▣ Triads · always on</span>
+  <span class="pill" style="border-color:var(--brass)">⑦ 7ths</span>
+  <span class="pill" style="border-color:var(--fn-borrow);border-style:dashed">⌁ Borrowed</span>
+  <span class="pill" style="border-color:var(--fn-dominant)">→ Resolutions</span>
+</div>
+
+<ul>
+  <li><strong>Default:</strong> triads only (today’s behaviour) — zero regression.</li>
+  <li><strong>7ths</strong> adds badges, not colours — safe to leave on permanently for jazz users.</li>
+  <li><strong>Borrowed</strong> is the “noisiest” layer; dashed-violet keeps it clearly a different <em>class</em> of suggestion, and it only promotes ~5 cells, not all off-key cells.</li>
+  <li><strong>Resolutions</strong> is interaction-driven (on hover/selection of a dominant) rather than always-painted, so it never adds standing clutter.</li>
+</ul>
+
+<div class="box code">
+  <p class="tag">◆ Maps cleanly onto <code>renderChords()</code></p>
+  <p>Each cell’s class string is already assembled inline (<code>cls</code> in the <code>CHORD_ROOTS.forEach</code> loop). Adding layers = OR-ing in a few more classes computed from <code>diatonic7Map()</code>/<code>borrowedMap()</code> and, for badges, appending a <code>&lt;span class="cc-badge"&gt;</code>. The resolution ring is a hover/focus handler that toggles a class on the target cell — the cells are already keyed by <code>data-r</code>/<code>data-row</code>, so the target is trivially found (<code>diatonicChordAt(root,scale,0)</code> for a V→I).</p>
+</div>
+
+<div class="box flag">
+  <p class="tag">⚑ Difficulty — one special row, but many 7ths</p>
+  <p>The grid shows only <strong>one</strong> <code>CHORD_EXT</code> row at a time. The diatonic 7ths of a major scale need <code>maj7</code>, <code>min7</code>, and <code>7</code> (all <em>fixed</em> rows — fine) <em>plus</em> <code>m7♭5</code> for viiø7, which is only the <em>special</em> row. So the “7ths layer” can fully light up only when the half-diminished degree’s row is present. Options: (a) auto-set the special row to <code>m7b5</code> while the 7ths layer is on; (b) promote <code>m7♭5</code> and <code>dim7</code> to always-visible fixed rows (bigger grid); (c) accept that viiø7 shows only when the user selects the m7♭5 row, and badge the triad’s <code>dim</code> cell as “→ ø7 available.” Recommend (a) — least visual cost.</p>
+</div>
+<div class="box flag">
+  <p class="tag">⚑ Difficulty — harmonic minor has no home for two of its 7ths</p>
+  <p><code>i(mMaj7)</code> and <code>III+(maj7)</code> aren’t expressible on any current row (no min-major-7 or aug-maj-7 row). For the 7ths layer in Harm. Minor, either add those rows, or gracefully fall back to badging the triad (“7th n/a on grid”). Not blocking — just note the gap so the layer doesn’t look broken there.</p>
+</div>
+
+<!-- ============================================================= -->
+<h2 id="area3"><span class="num">04</span>Area 3 — Keyboard mapping for chords, and moving key-mapping to Settings</h2>
+
+<p class="lead">Bind <span class="kbd">1</span>–<span class="kbd">7</span> to the seven diatonic chords of the current key — voiced with whatever voicing settings are live — using the same latch as the on-screen cells; add sensible modifiers; and relocate the whole key-mapping UI out of Bends into a dedicated Settings area with per-section “Map ⌨” jump buttons.</p>
+
+<h3>4.1 · Number keys → diatonic degree chords</h3>
+
+<p>The wiring is short because <code>diatonicChordAt()</code> already returns exactly what <code>applyChord()</code> consumes:</p>
+
+<pre><span class="c">// pressing "3" in C Major → the iii chord (Em), current voicing, latched</span>
+<span class="k">function</span> playDegree(deg){                 <span class="c">// deg = 0..6</span>
+  <span class="k">if</span>(settings.keyScale===<span class="s">'off'</span>) <span class="k">return</span>;   <span class="c">// no scale ⇒ no degrees</span>
+  <span class="k">const</span> nc = diatonicChordAt(settings.keyRoot, settings.keyScale, deg);
+  <span class="k">if</span>(nc) applyChord(nc.r, nc.row, CHORD_ROOTS[nc.r]+nc.suffix, nc.formula);
+}</pre>
+
+<p>Because it routes through <code>applyChord()</code>, three requested behaviours are <strong>free</strong>:</p>
+<ul>
+  <li><strong>“Currently active voicing settings”</strong> — <code>applyChord → voiceChordVoiced()</code> reads <code>settings.voicing/voiceSize/voiceStart/voiceFeel</code> live. Number keys inherit Spread/Voiced, 3/4-note, Legato/Grip automatically.</li>
+  <li><strong>Same latch as the buttons</strong> — <code>applyChord()</code> sets <code>activeChord</code> and clears <code>held</code>; press <span class="kbd">1</span> then <span class="kbd">4</span> and it swaps I→IV, identical to tapping the cells. No keyup handler needed for chords (unlike pedals).</li>
+  <li><strong>Stays in key</strong> — <code>diatonicChordAt()</code> returns the diatonic <em>quality</em> per degree, so <span class="kbd">2</span> is a minor ii in major but a diminished ii° in a scale where that degree is diminished.</li>
+</ul>
+
+<h4>Worked example — C Major</h4>
+<div class="grid-demo" style="gap:7px">
+  <div class="cc tonic" style="width:78px"><span class="rn">1 · I</span><span class="sym" style="font-size:15px">C</span></div>
+  <div class="cc subdom" style="width:78px"><span class="rn">2 · ii</span><span class="sym" style="font-size:15px">Dm</span></div>
+  <div class="cc tonic" style="width:78px"><span class="rn">3 · iii</span><span class="sym" style="font-size:15px">Em</span></div>
+  <div class="cc subdom" style="width:78px"><span class="rn">4 · IV</span><span class="sym" style="font-size:15px">F</span></div>
+  <div class="cc dominant" style="width:78px"><span class="rn">5 · V</span><span class="sym" style="font-size:15px">G</span></div>
+  <div class="cc tonic" style="width:78px"><span class="rn">6 · vi</span><span class="sym" style="font-size:15px">Am</span></div>
+  <div class="cc dominant" style="width:78px"><span class="rn">7 · vii°</span><span class="sym" style="font-size:15px">B°</span></div>
+</div>
+
+<div class="box flag">
+  <p class="tag">⚑ Ambiguity — “active quality/extension” vs staying in key</p>
+  <p>The brief says number keys should use “whatever quality/extension … currently selected.” But the <em>Extend</em> special row can be non-diatonic (e.g. <code>add9</code>, <code>sus4</code>), and blindly applying it to all seven degrees can throw out-of-scale notes. Two coherent readings:</p>
+  <p><strong>(Recommended) In-key by default:</strong> <span class="kbd">1</span>–<span class="kbd">7</span> play each degree’s <em>diatonic</em> quality (triad), inheriting the <em>voicing</em> engine settings but not the special-row extension. Colour/extensions come from modifiers (below). This guarantees every number key is musically valid in the chosen scale.</p>
+  <p><strong>Alternative — literal:</strong> apply the current Extend row’s formula transposed to each degree root. More “what you see is what you get,” but produces clams on degrees where the extension isn’t diatonic. If you want this, gate it so only diatonic-safe extensions (6, add9) apply, and fall back to the triad otherwise.</p>
+  <p>I recommend the in-key default and have designed the modifiers around it.</p>
+</div>
+
+<h3>4.2 · A non-conflicting modifier scheme</h3>
+
+<p>The pedal-engage handler already <em>ignores</em> <code>ctrlKey/metaKey/altKey</code>, so those are “safe” from the pedals’ perspective — but Ctrl/Cmd collide with the browser and Alt+digit trips OS menus on some platforms. <strong>Shift is the clean primary modifier</strong> (the pedal handler lets it through, and it never triggers browser chrome). Use <code>e.code</code> (<code>Digit1…Digit7</code>) so Shift’s symbol remapping (<span class="kbd">Shift</span>+2 = “@”) doesn’t matter.</p>
+
+<table>
+  <thead><tr><th>Keystroke</th><th>Action</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><span class="kbd">1</span>–<span class="kbd">7</span></td><td>Play that degree’s diatonic chord, current voicing, latched</td><td>Core mapping</td></tr>
+    <tr><td><span class="kbd">Shift</span>+<span class="kbd">1</span>–<span class="kbd">7</span></td><td>Same degree as its <strong>diatonic 7th</strong> (4-note)</td><td>Uses <code>quals7</code> from Area 2; momentary voice-size bump, doesn’t change the persistent 3/4 setting</td></tr>
+    <tr><td><span class="kbd">0</span> or <span class="kbd">`</span></td><td>Clear the active chord / re-center Legato</td><td>Maps to existing <code>lastVoiced=null</code> + clear</td></tr>
+    <tr><td><span class="kbd">[</span> / <span class="kbd">]</span></td><td>Nudge the voicing cluster window down / up</td><td>= <code>voiceStart</code> ∓1; only meaningful in Voiced mode</td></tr>
+    <tr><td><span class="kbd">-</span> / <span class="kbd">=</span></td><td>Toggle 3-note / 4-note voicing</td><td>= <code>voiceSize</code>; persistent, mirrors the on-screen seg</td></tr>
+  </tbody>
+</table>
+
+<p><strong>On “sus” as a modifier:</strong> a dedicated sus toggle is tempting, but the only truly safe modifier left is Alt (with the OS caveat). Recommendation: expose sus through the existing Extend row rather than a keystroke, or — if a key is wanted — make it a <em>sticky</em> on-screen toggle the number keys respect, avoiding Alt entirely. Flag: don’t overload Alt+digit.</p>
+
+<div class="box flag">
+  <p class="tag">⚑ Requirement — degrees need a scale selected</p>
+  <p>With <code>keyScale==='off'</code> the seven degrees are undefined. Number keys should no-op and the Chords panel should hint “Select a key &amp; scale to enable 1–7,” consistent with how the rest of key-mode gates on <code>keyOn</code>. Don’t silently map 1–7 to chromatic roots — it would contradict the “diatonic” promise.</p>
+</div>
+<div class="box flag">
+  <p class="tag">⚑ Care — number keys inside text fields</p>
+  <p>The new chord handler must copy the pedal handler’s guards: bail on open modals (<code>.scrim.open</code>) and on <code>INPUT/TEXTAREA/SELECT</code> targets, or typing a channel number / tuning name will fire chords. This is a one-line reuse of the existing guard.</p>
+</div>
+
+<h3>4.3 · Relocating key-mapping to Settings + per-section “Map ⌨” buttons</h3>
+
+<p>Today <code>keymapHTML()</code> renders the <code>.kdraw</code> drawer <em>inside</em> <code>renderPedals()</code>, so it’s buried in the Bends panel and knows only about pedals. Move it to a first-class Settings group and let it describe every section that has keystrokes.</p>
+
+<h4>Information architecture</h4>
+<p>Add a <code>&lt;details class="settgrp" data-grp="keys"&gt;</code> named <strong>“Keyboard Mapping”</strong> to the Settings sheet (alongside <em>MIDI Output</em>, <em>CC numbers</em>, <em>Bend effect</em>), organised <em>by section</em>:</p>
+
+<pre>Keyboard Mapping                         <span class="c">(new settgrp in #settingsModal)</span>
+├─ <span class="k">Global</span>
+│   └─ Latch — tap on/off instead of holding   [✓]
+├─ <span class="k">Bends</span>            <span class="c">← the current .kb-chip rebind chips, verbatim</span>
+│   ├─ Pedal A         [ A ]
+│   ├─ Pedal B         [ S ]
+│   ├─ LKL / LKR …     [ D ] [ F ]
+└─ <span class="k">Chords</span>           <span class="c">← new</span>
+    ├─ Degrees 1–7     [ 1 … 7 ]   (fixed, shown for reference)
+    ├─ 7th modifier    [ Shift ]
+    └─ Voicing nudge   [ [ ] − = ]</pre>
+
+<p>Each row shows <strong>the key and what it does</strong>; the Bends rows keep the exact rebind-on-click behaviour (<code>bindingCtrl</code> capture) that already works. The number-key chord bindings can start <em>fixed</em> (1–7 are conventional) with rebinding as a later nicety.</p>
+
+<h4>The “Map ⌨” buttons</h4>
+<p>Put a small ghost icon-button in each section header that has keystrokes — <strong>Bends</strong> and <strong>Chords</strong> (Panning has none). It should match the app’s existing icon-button language (the round <code>.gear</code> / theme buttons, or the small <code>.add</code> button):</p>
+<ul>
+  <li><strong>Look:</strong> a compact pill/round button with a keyboard glyph and “Map” label, brass on hover, same border tokens as <code>.gear</code>.</li>
+  <li><strong>Behaviour:</strong> on click → <code>openSettings()</code> (which already calls <code>renderSettings()</code> + <code>open('settingsModal')</code>), then programmatically open the <em>Keyboard Mapping</em> <code>&lt;details&gt;</code>, scroll it into view, and briefly highlight the relevant sub-block (Bends vs Chords). <code>openSettings()</code> and the <code>data-grp</code> convention already exist, so this is a targeted expand-and-scroll, not new plumbing.</li>
+</ul>
+
+<div class="box code">
+  <p class="tag">◆ Keeping every existing binding working after the move</p>
+  <p>Nothing about the <em>logic</em> moves — only the DOM location of the chips. <code>KEYMAP</code>, <code>rebuildKeymap()</code>, <code>settings.keys</code>, the rebind-capture <code>keydown</code>, and the engage/keyup handlers are all global and unaware of where the chips render. The one real change: <code>renderPedals()</code> currently re-renders on rebind (<code>bindingCtrl</code> → <code>renderPedals()</code>); after the move, the Settings render function owns re-rendering the chips. Extract <code>keymapHTML()</code>’s chip list into a function the Settings group calls, and repoint the rebind handler’s re-render at it. The Bends panel simply stops emitting the drawer. Low risk, mechanical.</p>
+</div>
+
+<div class="box flag">
+  <p class="tag">⚑ Note — the Latch toggle is shared</p>
+  <p><code>settings.latch</code> lives in that drawer today and governs the pedals. If it moves to a “Global” sub-block, keep in mind Area 1 wants scale-bends to stay momentary regardless — so either scope latch per-bank or document that Global Latch doesn’t apply to scale-bends. (Same flag as Area 1 §2.5.)</p>
+</div>
+
+<!-- ============================================================= -->
+<h2 id="order"><span class="num">05</span>Suggested implementation order</h2>
+
+<ol>
+  <li><strong>Relocate key-mapping to Settings + add “Map ⌨” buttons</strong> (Area 3.3). Pure refactor, no music theory, immediately improves IA and de-clutters Bends. De-risks everything after it by giving keystroke config a real home.</li>
+  <li><strong>Chord number-keys 1–7 + Shift-for-7th</strong> (Area 3.1–3.2). Tiny surface — one guarded handler calling <code>diatonicChordAt()</code>/<code>applyChord()</code>. High daily value, no visual change. Depends on <code>quals7</code>, which you’ll want for Area 2 anyway, so add <code>quals7</code> here.</li>
+  <li><strong>Area 2 layers, in sub-steps:</strong> (a) 7ths badges via <code>diatonic7Map()</code> — reuses <code>quals7</code> from step 2; (b) resolution rings (interaction-only, no standing clutter); (c) borrowed-chord dashed layer + the layer-toggle chips. Additive, reversible, default-off.</li>
+  <li><strong>Scale-tone pedal bends</strong> (Area 1). Last because it’s the only feature that adds a <em>new subsystem</em> (the <code>scaleBend</code> copedent + its move generator + a non-foot-pedal presentation) and has the most edge cases (scale-off fallback, latch scoping, ±12 at the ceiling). By this point the key/scale plumbing and the <code>quals7</code>/scale-set helpers are already battle-tested.</li>
+</ol>
+
+<p>Each step is independently shippable and leaves the app in a working state; nothing later is blocked by anything but the small shared helpers noted above.</p>
+
+<!-- ============================================================= -->
+<h2 id="flags"><span class="num">06</span>Consolidated ambiguity / difficulty flags</h2>
+
+<table>
+  <thead><tr><th>#</th><th>Area</th><th>Issue</th><th>Recommended resolution</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>1</td><td><code>chordInfo()</code> detects only <em>major</em> triads → pedals disabled under most chords. Scale-bends must not reuse it.</td><td>New path reads <code>settings.keyRoot/keyScale</code> directly; bypass <code>chordInfo()</code>.</td></tr>
+    <tr><td>2</td><td>1</td><td>“Next scale tone” undefined when <code>keyScale==='off'</code>.</td><td>Disable scale-bend pedals + hint to pick a key/scale.</td></tr>
+    <tr><td>3</td><td>1</td><td>Six per-string raises don’t fit the Foot/Knee/Combo pedal metaphor or the <code>PEDAL_ICONS</code>.</td><td>New “Scale Bends” group with string-coloured badges (<code>STR_COLORS</code>).</td></tr>
+    <tr><td>4</td><td>1 / 3</td><td>Global <code>settings.latch</code> would strand a momentary bend.</td><td>Force momentary for the scale-bend bank (or per-bank latch, default off).</td></tr>
+    <tr><td>5</td><td>2</td><td>Only one <code>CHORD_EXT</code> special row shows, but diatonic 7ths need <code>m7♭5</code> (and dim7).</td><td>Auto-set special row to <code>m7b5</code> while the 7ths layer is on.</td></tr>
+    <tr><td>6</td><td>2</td><td>Harm. minor’s <code>i(mMaj7)</code> / <code>III+maj7</code> have no grid row.</td><td>Badge the triad “7th n/a,” or add the rows later.</td></tr>
+    <tr><td>7</td><td>3</td><td>“Use current quality/extension” can produce out-of-key number-key chords.</td><td>Default to in-key diatonic quality; extensions via modifiers only.</td></tr>
+    <tr><td>8</td><td>3</td><td>Shift remaps digit <code>e.key</code>; Alt+digit trips OS menus.</td><td>Use <code>e.code</code> (<code>Digit1…7</code>); make Shift the primary modifier; avoid Alt.</td></tr>
+    <tr><td>9</td><td>3</td><td>Number keys could fire while typing in inputs / modals.</td><td>Reuse the pedal handler’s <code>.scrim.open</code> + <code>INPUT/TEXTAREA/SELECT</code> guards.</td></tr>
+  </tbody>
+</table>
+
+<p class="foot">
+  Research document · generated for the VG-800 MIDI Control app · design &amp; theory only, no application code modified.<br>
+  Every identifier, default, and line reference above is quoted from the current <b>vg800-tuner.html</b>. Worked examples were computed against <code>STD_MIDI=[64,59,55,50,45,40]</code>, <code>SCALES</code>, and <code>voiceChord()</code> as they exist in the source.
+</p>
+
+</div>
