@@ -446,6 +446,27 @@
   .tuning-tip.below::after { top: auto; bottom: 100%; border-top-color: transparent; border-bottom-color: var(--brass-deep); }
   .card:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
 
+  /* Themed dropdown popover — replaces the stock <select> list (the closed control already matches the app).
+     The native <select> stays in the DOM as the source of truth for value + change events. */
+  .sel-menu { position: fixed; z-index: 300; min-width: 120px; max-height: min(340px, 60vh); overflow-y: auto; padding: 6px; background: var(--wood); border: 1px solid var(--edge); border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05); animation: apReveal .16s cubic-bezier(.4,0,.2,1); }
+  .sel-menu::-webkit-scrollbar { width: 6px; }
+  .sel-menu::-webkit-scrollbar-thumb { background: var(--edge); border-radius: 3px; }
+  .sel-item { display: block; width: 100%; text-align: left; font-family: var(--mono); font-size: 12px; letter-spacing: 0.4px; color: var(--bone-dim); background: none; border: 1px solid transparent; border-radius: 8px; padding: 7px 11px; cursor: pointer; white-space: nowrap; transition: background .12s, color .12s; }
+  .sel-item:hover:not(.dis) { background: var(--felt); color: var(--bone); }
+  .sel-item.on { background: var(--felt); color: var(--brass); border-color: var(--edge-soft); }
+  .sel-item.on::before { content: "✓ "; }
+  .sel-item.dis { opacity: 0.45; cursor: not-allowed; color: var(--bone-faint); font-style: italic; }
+
+  /* Right rail — on very wide screens the workbench + Played + the whole Bends panel park here, always in view */
+  #rightRail { display: none; }
+  @media (min-width: 1500px) {
+    #rightRail { display: block; position: fixed; top: 30px; left: calc(50% + 430px); width: min(420px, calc(50vw - 430px - 18px)); max-height: calc(100vh - 52px); overflow-y: auto; z-index: 40; padding: 2px 2px 12px; scrollbar-width: none; }
+    #rightRail::-webkit-scrollbar { width: 0; height: 0; }
+    #rightRail > .bench:first-child { margin-top: 0; }   /* only the workbench loses its top margin — the Played bubble keeps its 14px gap */
+    #rightRail #sec-pedals { margin-top: 14px; }
+    #sideNav a[href="#sec-pedals"], #jumpMenu a[href="#sec-pedals"] { display: none; }   /* Bends is permanently on screen here */
+  }
+
   /* Left "jump to" nav — desktop only (needs room beside the centered content) */
   #sideNav { display: none; }
   @media (min-width: 1280px) {
@@ -894,6 +915,7 @@
 </head>
 <body>
 <nav id="sideNav" aria-label="Jump to section"><div id="navLinks"></div></nav>
+<aside id="rightRail" aria-label="Workbench and bends"></aside>
 <div class="wrap">
   <svg class="svg-defs" aria-hidden="true"><symbol id="pedalIco" viewBox="0 0 24 24"><rect x="4.5" y="2.5" width="15" height="19" rx="2.6" fill="currentColor" stroke="#141414" stroke-width="1.4"/><circle cx="9" cy="6.3" r="1.4" fill="#141414"/><circle cx="15" cy="6.3" r="1.4" fill="#141414"/><rect x="7" y="11" width="10" height="9" rx="1.8" fill="#141414"/></symbol></svg>
   <div id="hdrSentinel"></div>
@@ -1234,7 +1256,7 @@
 
     <details class="docgrp">
       <summary>Current Tuning readout</summary>
-      <div class="docgrp-body"><p>The always-on panel combines pitch and pan for all six strings: a <b>pan strip</b> up top, then a <b>pitch neck</b> where each note slides flat↔sharp from standard with its offset. Everything updates and animates live from the current tuning, bends and panning. On wide screens it parks in the left sidebar.</p></div>
+      <div class="docgrp-body"><p>The always-on panel combines pitch and pan for all six strings: a <b>pan strip</b> up top, then a <b>pitch neck</b> where each note slides flat↔sharp from standard with its offset. Everything updates and animates live from the current tuning, bends and panning. On wide screens it parks in the left sidebar; on very wide screens it moves to a <b>right-hand rail</b> together with the whole <b>Bends</b> panel, so both stay in view while you browse tunings.</p></div>
     </details>
 
     <details class="docgrp">
@@ -1534,6 +1556,7 @@ async function initMIDI(){
 }
 function ports(){
   const sel=document.getElementById('portSelect');
+  if(_selFor===sel) closeSelMenu();   // a statechange rebuilds the options — never leave a stale port list open
   const outs=midiAccess?[...midiAccess.outputs.values()]:[];
   sel.innerHTML='';
   if(!outs.length){ sel.innerHTML='<option>No outputs</option>'; setLamp(false,'No MIDI outputs'); midiOut=null; return; }
@@ -1553,6 +1576,7 @@ function setLamp(ok,msg){
 document.getElementById('portSelect').addEventListener('change',e=>{
   const outs=[...midiAccess.outputs.values()]; midiOut=outs.find(o=>o.id===e.target.value);
   if(midiOut){ localStorage.setItem('vg800_port',midiOut.id); setLamp(true,midiOut.name); if(settings.realBend){ sendInstFx(); rbHardwareSync(); } }   // a manually-picked port needs the Classic resting state too (ALT TUNE ON, control 0, base tuning)
+  else ports();   // picked id no longer exists (device unplugged mid-choice) → re-resolve to a live port instead of silently going dark
 });
 // settings.ccs[i] is the SOURCE CC for BEND DEPTH (i+1). DEPTH 1 = high E (string 1)
 // … DEPTH 6 = low E (string 6), same order as our offsets array (index 0 = high E).
@@ -2219,8 +2243,8 @@ function renderModes(){
   wrap.innerHTML='';
   const r=settings.modesRoot|0, rb=!!settings.realBend;
   const sub=document.getElementById('modesSub'); if(sub) sub.textContent=`one tuning · seven modes · ${NOTE[r]} root`;
-  const opts=NOTE.map((n,i)=>{ const okR=rb||modesRootFits(i); return `<option value="${i}"${i===r?' selected':''}${okR?'':' disabled'}>${n}${okR?'':' · needs Classic'}</option>`; }).join('');
-  const bar=document.createElement('div'); bar.className='chord-key';
+  const opts=NOTE.map((n,i)=>{ const okR=rb||modesRootFits(i); return `<option value="${i}"${i===r?' selected':''}${okR?'':' disabled'}>${n}${okR?'':' · Switch to Classic mode'}</option>`; }).join('');
+  const bar=document.createElement('div'); bar.className='chord-key'; bar.style.justifyContent='center';
   bar.innerHTML=`<label class="chord-key-lbl">Root</label><select class="num" id="modesRootSel" title="Re-root all seven modes to this note">${opts}</select>`;
   wrap.appendChild(bar);
   const list=transposedModes();
@@ -2296,19 +2320,25 @@ function renderNav(){
   updateSpy();
 }
 function placeBench(){
-  const bench=document.getElementById('sec-current'), hist=document.getElementById('sec-history'), nav=document.getElementById('sideNav'), wrap=document.querySelector('.wrap');
+  const bench=document.getElementById('sec-current'), hist=document.getElementById('sec-history'), nav=document.getElementById('sideNav'), rail=document.getElementById('rightRail'), wrap=document.querySelector('.wrap'), pedals=document.getElementById('sec-pedals'), pan=document.getElementById('sec-pan');
   if(!bench||!nav||!wrap) return;
-  const target=window.matchMedia('(min-width:1280px)').matches ? nav : wrap;   // desktop → sidebar, else main column
+  const wide=window.matchMedia('(min-width:1500px)').matches, mid=window.matchMedia('(min-width:1280px)').matches;
+  const target = (wide&&rail) ? rail : (mid ? nav : wrap);   // very wide → right rail; desktop → left sidebar; else main column
   if(bench.parentElement!==target) target.appendChild(bench);
   if(hist && (hist.parentElement!==target || bench.nextElementSibling!==hist)) bench.after(hist);   // the Played bubble always sits right under the workbench
+  if(pedals && pan && hist){   // the whole Bends panel joins the rail on very wide screens (no more scrolling to reach it); otherwise it returns to its spot before Panning
+    if(wide&&rail){ if(pedals.parentElement!==rail || hist.nextElementSibling!==pedals) hist.after(pedals); }
+    else if(pedals.parentElement!==wrap) wrap.insertBefore(pedals, pan);
+  }
 }
 window.addEventListener('resize', placeBench);
 function updateSpy(){
   const links=[...document.querySelectorAll('#sideNav a, #jumpMenu a')]; if(!links.length) return;
   let cur=null, best=-1e9; const line=120;
-  links.forEach(a=>{ const el=document.getElementById(a.getAttribute('href').slice(1)); if(!el||el.offsetParent===null) return; const top=el.getBoundingClientRect().top; if(top<=line && top>best){ best=top; cur=a.getAttribute('href'); } });   // skip hidden sections (e.g. Panning in Classic mode)
-  if(window.innerHeight+window.scrollY >= document.documentElement.scrollHeight-2){  // at page bottom → last VISIBLE section (a short final section like Panning never reaches the line; Panning itself hides in Classic mode)
-    for(let i=links.length-1;i>=0;i--){ const el=document.getElementById(links[i].getAttribute('href').slice(1)); if(el && el.offsetParent!==null){ cur=links[i].getAttribute('href'); break; } }
+  const spyEl=a=>{ const el=document.getElementById(a.getAttribute('href').slice(1)); return (el && el.offsetParent!==null && !el.closest('#rightRail')) ? el : null; };   // skip hidden sections (Panning in Classic mode) AND railed ones (fixed-position rects would poison the scroll math, and their links are hidden anyway)
+  links.forEach(a=>{ const el=spyEl(a); if(!el) return; const top=el.getBoundingClientRect().top; if(top<=line && top>best){ best=top; cur=a.getAttribute('href'); } });
+  if(window.innerHeight+window.scrollY >= document.documentElement.scrollHeight-2){  // at page bottom → last VISIBLE in-flow section
+    for(let i=links.length-1;i>=0;i--){ if(spyEl(links[i])){ cur=links[i].getAttribute('href'); break; } }
   }
   links.forEach(a=> a.classList.toggle('active', a.getAttribute('href')===cur));
 }
@@ -3234,6 +3264,50 @@ function updateAbLock(){ const on=document.getElementById('autoBendChk').checked
 document.getElementById('autoBendChk').addEventListener('change', updateAbLock);
 function markThemeBtns(){ const t=document.documentElement.dataset.theme||'dd500'; document.querySelectorAll('[data-theme-set]').forEach(b=>b.classList.toggle('on', b.dataset.themeSet===t)); }
 function applyTheme(t){ document.documentElement.dataset.theme=t; try{ localStorage.setItem('vg800_theme',t); }catch(e){} markThemeBtns(); }
+/* ===== Themed dropdowns — one shared popover replaces every stock <select> list (select.num + the MIDI port
+   picker). The native <select> stays the source of truth: picking an item sets .value and dispatches 'change',
+   so all existing handlers keep working; keyboard arrows on a focused select still work natively. Touch too. ===== */
+let _selMenu=null, _selFor=null;
+function closeSelMenu(){ if(_selMenu){ _selMenu.remove(); _selMenu=null; _selFor=null; } }
+function openSelMenu(sel){
+  closeSelMenu(); _selFor=sel;
+  const m=document.createElement('div'); m.className='sel-menu'; m.setAttribute('role','listbox');
+  [...sel.options].forEach((o,i)=>{
+    const b=document.createElement('button'); b.type='button';
+    b.className='sel-item'+(o.disabled?' dis':'')+(i===sel.selectedIndex?' on':'');
+    b.textContent=o.textContent;
+    if(!o.disabled) b.addEventListener('click',()=>{
+      if(!sel.isConnected || ![...sel.options].some(x=>x.value===o.value && !x.disabled)){ closeSelMenu(); return; }   // the select was rebuilt under us (e.g. a MIDI port unplugged) — never apply a stale pick
+      const changed=sel.value!==o.value; sel.value=o.value; closeSelMenu(); if(changed) sel.dispatchEvent(new Event('change',{bubbles:true}));
+    });
+    m.appendChild(b);
+  });
+  document.body.appendChild(m); _selMenu=m;
+  sel.addEventListener('change', closeSelMenu, {once:true});   // a native keyboard change (arrow keys) may re-render the select — never leave an orphaned popover
+  const r=sel.getBoundingClientRect();
+  m.style.minWidth=Math.max(120, Math.round(r.width))+'px';
+  const mh=m.offsetHeight, mw=m.offsetWidth;
+  m.style.left=Math.max(8, Math.min(window.innerWidth-mw-8, r.left))+'px';
+  m.style.top=(r.bottom+6+mh>window.innerHeight-8 ? Math.max(8, r.top-mh-6) : r.bottom+6)+'px';   // open above when there's no room below
+  const cur=m.querySelector('.sel-item.on'); if(cur) cur.scrollIntoView({block:'center'});
+}
+document.addEventListener('pointerdown', e=>{   // capture: a press that dismisses the menu must not reach what's underneath (a native picker swallows it too — else it could engage a pedal or apply a tuning)
+  if(!_selMenu || _selMenu.contains(e.target)) return;
+  const sel=e.target.closest && e.target.closest('select.num, .conn select');
+  const sameAnchor = sel && sel===_selFor;
+  closeSelMenu();
+  if(!sel || sameAnchor){ e.preventDefault(); e.stopPropagation(); }   // pressing another select falls through and opens its own menu
+}, true);
+document.addEventListener('mousedown', e=>{
+  const sel=e.target.closest && e.target.closest('select.num, .conn select');
+  if(sel && !sel.disabled){ if(e.button!==0) return; e.preventDefault(); try{ sel.focus({preventScroll:true}); }catch(_){} if(_selFor!==sel) openSelMenu(sel); return; }   // left button only (right-click keeps its context menu); preventScroll so the focus scroll can't instantly close us
+  if(_selMenu && !_selMenu.contains(e.target)) closeSelMenu();
+});
+document.addEventListener('click', e=>{ const sel=e.target.closest && e.target.closest('select.num, .conn select'); if(sel) e.preventDefault(); });   // belt for touch browsers that open the picker on click
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && _selMenu){ closeSelMenu(); e.preventDefault(); e.stopImmediatePropagation(); } });   // Escape closes ONLY the dropdown — never the modal behind it (native pickers behave the same)
+window.addEventListener('resize', closeSelMenu);
+document.addEventListener('scroll', e=>{ if(_selMenu && !(e.target===_selMenu || (_selMenu.contains&&_selMenu.contains(e.target)))) closeSelMenu(); }, true);   // page/sheet scroll closes; scrolling the list itself doesn't
+
 const themeBtn=document.getElementById('themeBtn'), themeMenu=document.getElementById('themeMenu');
 function setThemeMenu(open){ themeMenu.classList.toggle('open',open); themeBtn.classList.toggle('open',open); themeBtn.setAttribute('aria-expanded',open?'true':'false'); }
 themeBtn.addEventListener('click',e=>{ e.stopPropagation(); const willOpen=!themeMenu.classList.contains('open'); if(willOpen) setJumpMenu(false); setThemeMenu(willOpen); });
