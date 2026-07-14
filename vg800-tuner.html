@@ -457,14 +457,42 @@
   .sel-item.on::before { content: "✓ "; }
   .sel-item.dis { opacity: 0.45; cursor: not-allowed; color: var(--bone-faint); font-style: italic; }
 
-  /* Right rail — on very wide screens the workbench + Played + the whole Bends panel park here, always in view */
+  /* Right rail — on very wide screens the workbench + Played + the whole Bends panel park here, always in view.
+     Everything inside is scaled for the narrow column: a medium-size workbench (between the tiny sidebar version
+     and the full inline one) and a single-column Bends panel with tightened type. */
   #rightRail { display: none; }
   @media (min-width: 1500px) {
-    #rightRail { display: block; position: fixed; top: 30px; left: calc(50% + 430px); width: min(420px, calc(50vw - 430px - 18px)); max-height: calc(100vh - 52px); overflow-y: auto; z-index: 40; padding: 2px 2px 12px; scrollbar-width: none; }
+    #rightRail { display: block; position: fixed; top: 30px; left: calc(50% + 430px); width: min(400px, calc(50vw - 430px - 18px)); max-height: calc(100vh - 52px); overflow-y: auto; z-index: 40; padding: 2px 2px 12px; scrollbar-width: none; }
     #rightRail::-webkit-scrollbar { width: 0; height: 0; }
-    #rightRail > .bench:first-child { margin-top: 0; }   /* only the workbench loses its top margin — the Played bubble keeps its 14px gap */
-    #rightRail #sec-pedals { margin-top: 14px; }
-    #sideNav a[href="#sec-pedals"], #jumpMenu a[href="#sec-pedals"] { display: none; }   /* Bends is permanently on screen here */
+    /* Workbench — medium scale */
+    #rightRail .bench { margin-top: 0; padding: 15px 6px 12px; border-radius: 12px; }
+    #rightRail .hist-bubble { margin-top: 12px; padding: 14px 8px 13px; }
+    #rightRail .bench-head { padding: 0 10px 9px; }
+    #rightRail .bench-head .name { font-size: 18px; }
+    #rightRail .bench-head .name.long { font-size: 15px; }
+    #rightRail .bench-head .name.xlong { font-size: 12px; }
+    #rightRail .bench-head .lbl { display: none; }
+    #rightRail .bench .fam-name { margin: 2px 6px 10px; }
+    #rightRail .str { grid-template-columns: 32px 1fr 32px; height: 31px; padding: 0 12px; }
+    #rightRail .str-lbl { font-size: 9px; letter-spacing: 0; }
+    #rightRail .slide { min-width: 27px; height: 20px; font-size: 12.5px; padding: 0 5px; border-radius: 4px; }
+    #rightRail .slide .oct { font-size: 7.5px; }
+    #rightRail .str-off { font-size: 11px; }
+    #rightRail .cv-pan { margin: 2px 10px 12px; }
+    #rightRail .cv-panfield { height: 46px; }
+    #rightRail .cv-dot { width: 15px; height: 15px; font-size: 9px; }
+    /* Bends panel — one full-width column, compact captions */
+    #rightRail #sec-pedals { margin: 12px 0 0; padding: 8px 14px 14px; }
+    #rightRail #sec-pedals .panel-hd { font-size: 16px; letter-spacing: 1.2px; }
+    #rightRail #sec-pedals .panel-sub { font-size: 9px; margin: 6px 0 10px; }
+    #rightRail .sec-tools { margin-bottom: 2px; }
+    #rightRail .pedal-info { font-size: 10px; margin: 0 0 12px; }
+    #rightRail .bend-cap { font-size: 9.5px; margin: -4px auto 12px; }
+    #rightRail .pedals { grid-template-columns: 1fr; gap: 8px; }
+    #rightRail .pedal { padding: 10px 12px; }
+    #rightRail .latch-row { margin: 0 0 10px; }
+    #rightRail .ps-list, #rightRail .ps-presets { max-width: none; }
+    #sideNav a.group[href="#sec-pedals"], #jumpMenu a.group[href="#sec-pedals"] { display: none; }   /* Bends is permanently on screen here (a.group carries the specificity to actually win) */
   }
 
   /* Left "jump to" nav — desktop only (needs room beside the centered content) */
