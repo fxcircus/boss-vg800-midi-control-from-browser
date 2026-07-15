@@ -329,7 +329,10 @@
   .ps-save:hover { background: var(--felt); }
   /* GUITAR card — model picker for the Classic preset (CC70 category + CC77/78 model; those CCs don't exist in Panning) */
   html:not(.realbend) #sec-guitar { display: none; }
+  #sec-guitar { position: relative; }
   #sec-guitar .gtr-inner { max-width: 420px; margin: 0 auto; }
+  .gtr-auto { position: absolute; top: 4px; right: 14px; padding: 2px; gap: 2px; }   /* corner control, like Latch/Map on Bends */
+  .gtr-auto button { flex: 0 0 auto; font-size: 9px; padding: 4px 9px; letter-spacing: 0.5px; text-transform: uppercase; }
   .gtr-preview { background: color-mix(in srgb, var(--ink) 55%, transparent); border: 1px solid var(--edge-soft); border-radius: 12px; padding: 11px 10px 6px; text-align: center; margin: 10px 0; }
   .gtr-name { font-family: var(--cond); font-weight: 700; font-size: 18px; letter-spacing: 2px; text-transform: uppercase; color: var(--bone); }
   .gtr-cat { font-family: var(--mono); font-size: 9.5px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--bone-faint); margin: 1px 0 4px; min-height: 12px; }
@@ -1076,6 +1079,7 @@
 
   <fieldset class="panel" id="sec-guitar">
     <legend class="panel-hd">Guitar</legend>
+    <div class="seg gtr-auto" id="gtrAutoSeg" title="Auto: each tuning switches the VG-800 model &middot; Manual: your pick stays until you change it"><button data-am="1">Auto</button><button data-am="0">Manual</button></div>
     <div class="gtr-inner">
       <div class="gtr-preview"><div class="gtr-name" id="gtrName">&mdash;</div><div class="gtr-cat" id="gtrCat"></div><div class="gtr-stage" id="gtrStage"></div></div>
       <div class="seg gtr-tabs" id="gtrTabs"><button data-cat="electric">Electric</button><button data-cat="acoustic">Acoustic</button></div>
@@ -1154,7 +1158,6 @@
       <summary>Mode</summary>
       <div class="settgrp-body">
         <div class="hist-set-row"><label class="chord-key-lbl">Mode</label><div class="seg" id="rbSeg"><button data-rb="1">Classic</button><button data-rb="0">Panning</button></div></div>
-        <div class="hist-set-row" id="autoModelRow"><label class="chord-key-lbl">Guitar model</label><div class="seg" id="amSeg" title="Auto-select the VG-800 instrument model per tuning (Classic preset)"><button data-am="1">Auto</button><button data-am="0">Off</button></div></div>
         <p class="note-hint"><em>Classic</em> (default) drives the VG-800 preset where <em>ALT&nbsp;TUNE</em> (User mode, saved ON in the patch) carries the tuning, and each bend is the pedal's true two-step gesture: set the target <em>BEND&nbsp;DEPTH</em>, then sweep <em>BEND&nbsp;CONTROL</em> 0→100 so the pitch <b>glides</b> into the note (and glides back on release) instead of stepping. <b>Panning is unavailable</b> in Classic — its CC slots drive the ALT&nbsp;TUNE pitches instead (the VG-800 has only 16 assign slots).<br><br><em>Panning</em> drives the older preset: bends write straight to BEND&nbsp;DEPTH (the note steps to pitch), and CC 71–76 place each string in the stereo field.<br><br>Classic mapping: <em>STR&nbsp;BEND(A) · DEPTH&nbsp;1–6</em> ← CC 30, 31, 64, 65, 66, 68 (−12/+12) · <em>BEND&nbsp;CONTROL</em> ← CC 69 (0–100) · <em>INST · TYPE</em> ← CC 70 (MIN E.GUITAR / MAX ACOUSTIC) · <em>ALT&nbsp;TUNE(A) · PITCH&nbsp;1–6</em> ← CC 71–76 (<em>−24/+24</em>) · <em>INST:E.GTR · TYPE</em> ← CC 77 · <em>INST:ACOUSTIC · TYPE</em> ← CC 78. <b>12-string has no CC</b> here — toggle it on the pedal (▲) — and <em>ALT&nbsp;TUNE ON</em> is stored in the patch itself.<br><br><em>Guitar model</em> (Auto): each tuning selects its instrument model with two messages — <em>INST TYPE</em> first (electric vs acoustic), then the model on CC 77/78. <em>Bend time</em> now lives in the <b>Bends</b> panel.</p>
       </div>
     </details>
@@ -1421,7 +1424,7 @@ let lastModelName=null;   // the model of the last-applied tuning, so toggling a
 let curModelName=null;    // what the GUITAR card shows: the tuning's model when Auto is on, or the player's manual pick
 let gtrPicked=false;      // a model actually landed this session (auto or manual) — the boot seed alone must never reach the hardware
 function sendModel(name){   // automatic per-tuning path — respects the Auto gate; manual GUITAR-card picks go through sendModelRaw
-  if(settings.autoModel && modelSpec(name)){ const chg=curModelName!==name; curModelName=name; gtrPicked=true; gtrRender(chg); }   // only pull the card to the model's tab when the model really changed
+  if(settings.autoModel && modelSpec(name)){ const chg=curModelName!==name; curModelName=name; gtrPicked=true; if(chg){ settings.curModel=name; saveSettingsLS(); } gtrRender(chg); }   // only pull the card to the model's tab (and persist) when the model really changed
   else gtrRender(false);   // Auto off or unmapped tuning: hardware keeps its model, card just refreshes
   if(!settings.autoModel) return;
   sendModelRaw(name);
@@ -1580,6 +1583,8 @@ const GTR_ART={
 };
 const GTR_LISTS={ electric:['CLA-ST','MOD-ST','TE','LP','P-90','335','RICK','LIPS','WIDE RANGE','BRIGHT HUM','L4','FRETLESS'],   // display order; CC values always come from the model tables above
                   acoustic:['MA28','TRP-0','GB45','GB SML','GLD 40','NYLON','RESO','BANJO','SITAR'] };
+const GTR_FULLNAME={ 'CLA-ST':'Fender Stratocaster', 'MOD-ST':'EMG Active Single-Coils', 'TE':'Fender Telecaster', 'LP':'Gibson Les Paul Standard', 'P-90':'Gibson Les Paul Junior', '335':'Gibson ES-335 Dot', 'RICK':'Rickenbacker 360', 'LIPS':'Danelectro 56-U3', 'WIDE RANGE':'Wide Range Humbucker', 'BRIGHT HUM':'Humbucking Pickup', 'L4':'Gibson L-4 CES', 'FRETLESS':'Fretless Guitar',
+                     'MA28':'Martin D-28', 'TRP-0':'Martin 000-28', 'GB45':'Gibson J-45', 'GB SML':'Gibson B-25', 'GLD 40':'Guild D-40', 'NYLON':'Nylon-String Classical', 'RESO':'Dobro Resonator', 'BANJO':'5-String Banjo', 'SITAR':'Sitar' };
 let gtrTab='electric';
 function gtrSVG(name){ const art=GTR_ART[name]; if(!art) return '';
   if(GTR_VB[name]) return `<svg viewBox="${GTR_VB[name]}" class="gtr-art" aria-hidden="true">${art()}</svg>`;   // traced art: own frame, filled path
@@ -1591,14 +1596,19 @@ function gtrRender(follow=true){
   if(follow&&m) gtrTab=m.cat;   // a tuning/manual change pulls the card to the model's own tab so the lit chip is visible
   document.querySelectorAll('#gtrTabs button').forEach(b=>b.classList.toggle('on', b.dataset.cat===gtrTab));
   document.getElementById('gtrName').textContent=curModelName||'—';
-  document.getElementById('gtrCat').textContent=m?(m.cat==='electric'?'Electric':'Acoustic'):'';
+  document.getElementById('gtrCat').textContent=curModelName?(GTR_FULLNAME[curModelName]||''):'';   // the real instrument behind the patch name
   document.getElementById('gtrStage').innerHTML=curModelName?gtrSVG(curModelName):'';
   chips.innerHTML=GTR_LISTS[gtrTab].map(n=>`<button class="gtr-chip${n===curModelName?' on':''}" data-model="${n}">${n}</button>`).join('');
+  document.querySelectorAll('#gtrAutoSeg button').forEach(b=>b.classList.toggle('on', (b.dataset.am==='1')===!!settings.autoModel));
 }
 document.getElementById('gtrTabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; gtrTab=b.dataset.cat; gtrRender(false); });
-document.getElementById('gtrChips').addEventListener('click',e=>{ const b=e.target.closest('.gtr-chip'); if(!b) return; curModelName=b.dataset.model; gtrPicked=true; sendModelRaw(curModelName); gtrRender(); });   // manual pick: explicit intent, skips the Auto gate
-curModelName='CLA-ST';   // boot baseline mirrors the string grid: Standard tuning's model, display-only (nothing is sent until a tuning or chip is picked)
-gtrRender();
+document.getElementById('gtrChips').addEventListener('click',e=>{ const b=e.target.closest('.gtr-chip'); if(!b) return; curModelName=b.dataset.model; gtrPicked=true; settings.curModel=curModelName; saveSettingsLS(); sendModelRaw(curModelName); gtrRender(); });   // manual pick: explicit intent, skips the Auto gate; persists across reloads
+document.getElementById('gtrAutoSeg').addEventListener('click',e=>{   // Auto: tunings drive the model · Manual: the current pick stays
+  const b=e.target.closest('button'); if(!b) return; const on=b.dataset.am==='1'; if(on===!!settings.autoModel) return;
+  settings.autoModel=on; saveSettingsLS();
+  if(on) sendModel(lastModelName); else gtrRender();   // flipping to Auto snaps back to the active tuning's model right away
+});
+// boot render happens in the init block at the end of the file, once settings (and the persisted model) are loaded
 
 // Per-tuning model choices (keyed by tuning name; Modes use their C-template names, like TUNING_TIPS)
 const TUNING_MODELS={
@@ -1859,7 +1869,7 @@ const PANMODES=[
 const STR_COLORS=['#ef5350','#f2a33d','#c6d43f','#4cc178','#4f9dea','#a563d4'];
 let dispOffsets=[0,0,0,0,0,0];   // the pitch offsets currently shown (base tuning + engaged pedal bends)
 
-function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; if(typeof s.fxDoubler!=='boolean') s.fxDoubler=true; if(typeof s.fxOctave!=='boolean') s.fxOctave=true; if(typeof s.autoModel!=='boolean') s.autoModel=true; delete s.swellMs; delete s.swellLatch; if(typeof s.chordExt!=='string' || !['add9','6','m6','sus2','sus4','dim7','m7b5'].includes(s.chordExt)) s.chordExt='add9'; if(typeof s.keyRoot!=='string') s.keyRoot='C'; if(typeof s.keyScale!=='string') s.keyScale='off'; if(s.voicing!=='voiced') s.voicing='spread'; if(s.voiceSize!==4) s.voiceSize=3; if(typeof s.voiceStart!=='number'||s.voiceStart<0||s.voiceStart>6-s.voiceSize) s.voiceStart=0; if(s.voiceFeel!=='grip') s.voiceFeel='legato'; if(!s.chordLayers||typeof s.chordLayers!=='object') s.chordLayers={sevenths:false,borrowed:false,resolutions:false}; else for(const k of ['sevenths','borrowed','resolutions']) if(typeof s.chordLayers[k]!=='boolean') s.chordLayers[k]=false; if(!s.chordKeys||typeof s.chordKeys!=='object') s.chordKeys={...CHORD_KEYS_DEFAULT}; else for(const k in CHORD_KEYS_DEFAULT) if(typeof s.chordKeys[k]!=='string') s.chordKeys[k]=CHORD_KEYS_DEFAULT[k]; if(!s.hist||typeof s.hist!=='object') s.hist={...HIST_DEFAULT}; else { if(s.hist.mode!=='manual') s.hist.mode='rolling'; if(![4,8,16,32].includes(s.hist.n)) s.hist.n=8; if(typeof s.hist.timeline!=='boolean') s.hist.timeline=false; if(typeof s.hist.hidden!=='boolean') s.hist.hidden=false; } if(!s.ap||typeof s.ap!=='object'){ s.ap={...AP_DEFAULTS}; if(typeof s.autoPanRate==='number') s.ap.rate=s.autoPanRate; } else { for(const k in AP_DEFAULTS) if(!(k in s.ap)) s.ap[k]=AP_DEFAULTS[k]; if(s.ap.char==='none') s.ap.char='rotate'; if(!['1 bar','1 bar T','1/2 bar','1/2 bar T','1/4','1/4 T'].includes(s.ap.div)) s.ap.div='1/2 bar'; if(s.ap.bpm>170) s.ap.bpm=170; } if(typeof s.perStringOn!=='boolean') s.perStringOn=false; if(!Array.isArray(s.stringBend)||s.stringBend.length!==6) s.stringBend=[0,0,0,0,0,0]; else s.stringBend=s.stringBend.map(x=>Math.max(-12,Math.min(12,Math.round(Number(x)||0)))); if(typeof s.realBend!=='boolean') s.realBend=true; if(typeof s.rbMs!=='number') s.rbMs=300; if(!Array.isArray(s.altCCs)||s.altCCs.length!==6) s.altCCs=[71,72,73,74,75,76]; if(typeof s.modesRoot!=='number'||s.modesRoot<0||s.modesRoot>11) s.modesRoot=0; if(!s.realBend && s.modesRoot && !modesRootFits(s.modesRoot)) s.modesRoot=0; return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, fxDoubler:true, fxOctave:true, autoModel:true, chordExt:'add9', keyRoot:'C', keyScale:'off', voicing:'spread', voiceSize:3, voiceStart:0, voiceFeel:'legato', chordLayers:{sevenths:false,borrowed:false,resolutions:false}, chordKeys:{...CHORD_KEYS_DEFAULT}, hist:{...HIST_DEFAULT}, ap:{...AP_DEFAULTS}, perStringOn:false, stringBend:[0,0,0,0,0,0], realBend:true, rbMs:300, altCCs:[71,72,73,74,75,76], modesRoot:0, ...AB_DEFAULTS}; }
+function loadSettings(){ try{ const s=JSON.parse(localStorage.getItem('vg800_settings')); if(s&&s.ccs&&s.ccs.length===6){ if(typeof s.gap!=='number') s.gap=20; s.glide=0; if(!s.keys||typeof s.keys!=='object') s.keys={...DEFAULT_KEYS}; else for(const id in DEFAULT_KEYS) if(!(id in s.keys)) s.keys[id]=DEFAULT_KEYS[id]; if(typeof s.latch!=='boolean') s.latch=false; for(const k in AB_DEFAULTS) if(typeof s[k]!==typeof AB_DEFAULTS[k]) s[k]=AB_DEFAULTS[k]; if(s.bendDepth===12) s.bendDepth=25; if(s.levelDip===8) s.levelDip=15; if(s.bendMs===90) s.bendMs=120; if(!Array.isArray(s.panCCs)||s.panCCs.length!==6) s.panCCs=[71,72,73,74,75,76]; if(typeof s.panMs!=='number') s.panMs=500; if(typeof s.fxDoubler!=='boolean') s.fxDoubler=true; if(typeof s.fxOctave!=='boolean') s.fxOctave=true; if(typeof s.autoModel!=='boolean') s.autoModel=true; delete s.swellMs; delete s.swellLatch; if(typeof s.chordExt!=='string' || !['add9','6','m6','sus2','sus4','dim7','m7b5'].includes(s.chordExt)) s.chordExt='add9'; if(typeof s.keyRoot!=='string') s.keyRoot='C'; if(typeof s.keyScale!=='string') s.keyScale='off'; if(s.voicing!=='voiced') s.voicing='spread'; if(s.voiceSize!==4) s.voiceSize=3; if(typeof s.voiceStart!=='number'||s.voiceStart<0||s.voiceStart>6-s.voiceSize) s.voiceStart=0; if(s.voiceFeel!=='grip') s.voiceFeel='legato'; if(!s.chordLayers||typeof s.chordLayers!=='object') s.chordLayers={sevenths:false,borrowed:false,resolutions:false}; else for(const k of ['sevenths','borrowed','resolutions']) if(typeof s.chordLayers[k]!=='boolean') s.chordLayers[k]=false; if(!s.chordKeys||typeof s.chordKeys!=='object') s.chordKeys={...CHORD_KEYS_DEFAULT}; else for(const k in CHORD_KEYS_DEFAULT) if(typeof s.chordKeys[k]!=='string') s.chordKeys[k]=CHORD_KEYS_DEFAULT[k]; if(!s.hist||typeof s.hist!=='object') s.hist={...HIST_DEFAULT}; else { if(s.hist.mode!=='manual') s.hist.mode='rolling'; if(![4,8,16,32].includes(s.hist.n)) s.hist.n=8; if(typeof s.hist.timeline!=='boolean') s.hist.timeline=false; if(typeof s.hist.hidden!=='boolean') s.hist.hidden=false; } if(!s.ap||typeof s.ap!=='object'){ s.ap={...AP_DEFAULTS}; if(typeof s.autoPanRate==='number') s.ap.rate=s.autoPanRate; } else { for(const k in AP_DEFAULTS) if(!(k in s.ap)) s.ap[k]=AP_DEFAULTS[k]; if(s.ap.char==='none') s.ap.char='rotate'; if(!['1 bar','1 bar T','1/2 bar','1/2 bar T','1/4','1/4 T'].includes(s.ap.div)) s.ap.div='1/2 bar'; if(s.ap.bpm>170) s.ap.bpm=170; } if(typeof s.perStringOn!=='boolean') s.perStringOn=false; if(!Array.isArray(s.stringBend)||s.stringBend.length!==6) s.stringBend=[0,0,0,0,0,0]; else s.stringBend=s.stringBend.map(x=>Math.max(-12,Math.min(12,Math.round(Number(x)||0)))); if(typeof s.realBend!=='boolean') s.realBend=true; if(typeof s.rbMs!=='number') s.rbMs=300; if(!Array.isArray(s.altCCs)||s.altCCs.length!==6) s.altCCs=[71,72,73,74,75,76]; if(typeof s.modesRoot!=='number'||s.modesRoot<0||s.modesRoot>11) s.modesRoot=0; if(!s.realBend && s.modesRoot && !modesRootFits(s.modesRoot)) s.modesRoot=0; if(typeof s.curModel!=='string'||!modelSpec(s.curModel)) s.curModel='CLA-ST'; return s; } }catch(e){} return {channel:1, ccs:[30,31,64,65,66,68], gap:20, glide:0, keys:{...DEFAULT_KEYS}, latch:false, panCCs:[71,72,73,74,75,76], panMs:500, fxDoubler:true, fxOctave:true, autoModel:true, chordExt:'add9', keyRoot:'C', keyScale:'off', voicing:'spread', voiceSize:3, voiceStart:0, voiceFeel:'legato', chordLayers:{sevenths:false,borrowed:false,resolutions:false}, chordKeys:{...CHORD_KEYS_DEFAULT}, hist:{...HIST_DEFAULT}, ap:{...AP_DEFAULTS}, perStringOn:false, stringBend:[0,0,0,0,0,0], realBend:true, rbMs:300, altCCs:[71,72,73,74,75,76], modesRoot:0, curModel:'CLA-ST', ...AB_DEFAULTS}; }
 function saveSettingsLS(){ localStorage.setItem('vg800_settings', JSON.stringify(settings)); }
 function loadCustom(){ try{ return JSON.parse(localStorage.getItem('vg800_custom'))||[]; }catch(e){ return []; } }
 function saveCustomLS(){ localStorage.setItem('vg800_custom', JSON.stringify(customs)); }
@@ -3532,15 +3542,11 @@ function renderPanCcRows(){   // ALT TUNE pitch CCs in Classic, PAN CCs in Panni
   }
   const note=document.getElementById('ccNote'); if(note) note.innerHTML = rb ? CC_NOTE_CLASSIC : CC_NOTE_PAN;
 }
-// Mode group — Classic | Panning seg + the Guitar-model auto-select toggle (both apply immediately, like the history segs)
+// Mode group — Classic | Panning seg (applies immediately, like the history segs); the Guitar-model Auto/Manual toggle lives on the GUITAR card
 function renderRbSettings(){
   const seg=document.getElementById('rbSeg');
   if(seg) seg.querySelectorAll('button').forEach(b=> b.classList.toggle('on', (b.dataset.rb==='1')===!!settings.realBend));
-  const am=document.getElementById('amSeg'), row=document.getElementById('autoModelRow'), dis=!settings.realBend;   // the model CCs exist only in the Classic preset
-  if(am) am.querySelectorAll('button').forEach(b=>{ b.classList.toggle('on', (b.dataset.am==='1')===!!settings.autoModel); b.disabled=dis; });
-  if(row) row.style.opacity=dis?0.45:'';
 }
-document.querySelectorAll('#amSeg button').forEach(b=> b.addEventListener('click',()=>{ if(b.disabled) return; const on=b.dataset.am==='1'; if(on===!!settings.autoModel) return; settings.autoModel=on; saveSettingsLS(); renderRbSettings(); if(on) sendModel(lastModelName); }));   // turning Auto on immediately applies the current tuning's model
 function setRealBend(on){
   on=!!on; if(settings.realBend===on) return;
   if(held.size){ held.clear(); renderStrings(baseOffsets); }            // drop any live bend before swapping engines
@@ -3665,7 +3671,7 @@ document.getElementById('saveSettings').addEventListener('click',()=>{
   const ab={ autoBend:document.getElementById('autoBendChk').checked, bendCC:num('bendCCInput',0,127,69), levelCC:num('levelCCInput',0,127,70), bendDepth:num('bendDepthInput',0,50,25), levelDip:num('levelDipInput',0,50,15), bendMs:num('bendMsInput',40,400,120) };
   const panCCs=[...settings.panCCs]; document.querySelectorAll('#panCcRows select[data-pcc]').forEach(x=>panCCs[+x.dataset.pcc]=Math.max(1,Math.min(127,+x.value||1)));   // only one of the two row sets is rendered per engine — keep the other as-is
   const altCCs=[...settings.altCCs]; document.querySelectorAll('#panCcRows select[data-acc]').forEach(x=>altCCs[+x.dataset.acc]=Math.max(1,Math.min(127,+x.value||1)));
-  settings={channel:ch,ccs,gap:settings.gap??20,glide:0,keys:settings.keys,latch:settings.latch,panCCs,altCCs,panMs:settings.panMs,fxDoubler:settings.fxDoubler,fxOctave:settings.fxOctave,autoModel:settings.autoModel,chordExt:settings.chordExt,keyRoot:settings.keyRoot,keyScale:settings.keyScale,voicing:settings.voicing,voiceSize:settings.voiceSize,voiceStart:settings.voiceStart,voiceFeel:settings.voiceFeel,chordLayers:settings.chordLayers,chordKeys:settings.chordKeys,hist:settings.hist,ap:settings.ap,perStringOn:settings.perStringOn,stringBend:settings.stringBend,realBend:settings.realBend,rbMs:settings.rbMs,modesRoot:settings.modesRoot, ...ab}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
+  settings={channel:ch,ccs,gap:settings.gap??20,glide:0,keys:settings.keys,latch:settings.latch,panCCs,altCCs,panMs:settings.panMs,fxDoubler:settings.fxDoubler,fxOctave:settings.fxOctave,autoModel:settings.autoModel,chordExt:settings.chordExt,keyRoot:settings.keyRoot,keyScale:settings.keyScale,voicing:settings.voicing,voiceSize:settings.voiceSize,voiceStart:settings.voiceStart,voiceFeel:settings.voiceFeel,chordLayers:settings.chordLayers,chordKeys:settings.chordKeys,hist:settings.hist,ap:settings.ap,perStringOn:settings.perStringOn,stringBend:settings.stringBend,realBend:settings.realBend,rbMs:settings.rbMs,modesRoot:settings.modesRoot,curModel:settings.curModel, ...ab}; saveSettingsLS(); close('settingsModal'); toast('Settings saved');
 });
 
 function applyTest(v){
@@ -3815,6 +3821,8 @@ renderChords();
 renderPan();
 renderHistory();
 applyHistHidden();
+curModelName=settings.curModel;   // restore the persisted model (display-only: nothing is sent until a tuning or chip pick)
+gtrRender();
 placeBench();
 initMIDI();
 </script>
