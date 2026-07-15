@@ -1520,7 +1520,7 @@ const TUNING_MODELS={
   // Common
   'Standard':'CLA-ST', 'DADGAD':'MA28', 'Nashville':'TRP-0', 'Baritone':'TE', 'Bass VI':'BRIGHT HUM', 'Hendrix':'CLA-ST',
   // Lap steel (fat single-coil ≈ horseshoe-pickup steel voice; Cyrus's Gmaj9 leans jazz)
-  'C6':'P-90', 'A6':'P-90', 'C6/A7':'P-90', 'E7':'P-90', 'E13':'P-90', 'E9 lap':'P-90', 'B11':'P-90', 'Cyrus Hybrid':'335',
+  'C6':'P-90', 'A6':'P-90', 'C6/A7':'P-90', 'E7':'P-90', 'E13':'P-90', 'E9 lap':'P-90', 'B11':'P-90', 'Cyrus Hybrid':'P-90',
   // Open majors
   'Open E':'LP', 'Open D':'MA28', 'Open G Dobro':'RESO', 'Open G low':'GB SML', 'Open A high':'GB SML',
   // Drop
@@ -1528,7 +1528,7 @@ const TUNING_MODELS={
   // Artists
   'Fripp NST':'LP', 'Gambale':'335', 'Led Kashmir':'LIPS', 'Led Rain':'TRP-0', 'Ostrich':'P-90', 'Schizophrenia':'MOD-ST', 'Nick Drake':'TRP-0',
   'Keith Richards':'TE', 'Am. Football':'MOD-ST', 'SoundG Wave':'BRIGHT HUM', 'SoundG Sun':'BRIGHT HUM', 'Joni Cab':'MA28', 'Joni Sides':'MA28',
-  'Radio Pyramid':'L4', 'Radio Everything':'RICK',
+  'Radio Pyramid':'335', 'Radio Everything':'335',
   // Modes — neutral clean electric for the theory playground
   'White Keys':'CLA-ST', 'C Lydian':'CLA-ST', 'C Ionian':'CLA-ST', 'C Mixolydian':'CLA-ST', 'C Dorian':'CLA-ST',
   'C Aeolian':'CLA-ST', 'C Phrygian':'CLA-ST', 'C Locrian':'CLA-ST',
@@ -1537,7 +1537,7 @@ const TUNING_MODELS={
   'Saz / Bağlama':'NYLON', 'Cavaquinho':'GB SML', 'Ukulele':'NYLON', 'Baritone Uke':'NYLON', 'Cuatro':'NYLON',
   'Balalaika':'NYLON', 'Banjo':'BANJO', 'Sitar':'SITAR',
   // Pedal steel
-  'E9 Nashville':'P-90', 'E9 Lanois':'P-90', 'C6 Swing/Jazz':'L4', 'B6 Universal':'P-90',
+  'E9 Nashville':'L4', 'E9 Lanois':'L4', 'C6 Swing/Jazz':'L4', 'B6 Universal':'L4',
 };
 function nameOf(m){ const pc=((m%12)+12)%12; return {name:NOTE[pc], oct:Math.floor(m/12)-1}; }
 function toCC(s){ const c=Math.max(-12,Math.min(12,s)); return Math.round((c+12)/24*127); }

@@ -36,7 +36,7 @@ Every tuning built into the app, with its open-string notes (low→high), the pe
 | Tuning | Notes (low→high) | Offsets (str 1→6) | Model | Reference |
 |---|---|---|---|---|
 | **B11** | B D# F# A C# E | `[0, +2, +2, +4, -6, -5]` | `P-90` |  |
-| **Cyrus Hybrid** | G B D F# A D | `[-2, -2, -1, 0, +2, +3]` | `335` |  |
+| **Cyrus Hybrid** | G B D F# A D | `[-2, -2, -1, 0, +2, +3]` | `P-90` |  |
 
 ## Open Majors
 
@@ -76,8 +76,8 @@ Every tuning built into the app, with its open-string notes (low→high), the pe
 | **SoundG Sun** | D A D G B E | `[0, 0, 0, 0, 0, -2]` | `BRIGHT HUM` | Soundgarden · “Black Hole Sun” (Drop D) |
 | **Joni Cab** | E B E G# B E | `[0, 0, +1, +2, +2, 0]` | `MA28` | Joni Mitchell · “Big Yellow Taxi” (Open E) |
 | **Joni Sides** | D A D F# A D | `[-2, -2, -1, 0, 0, -2]` | `MA28` | Joni Mitchell — Open D, no capo. Recording uses capo 4 (sounds in F# major); this is the no-capo base tuning. |
-| **Radio Pyramid** | F# A# C# F# A# F# | `[+2, -1, -1, -1, +1, +2]` | `L4` | Radiohead — Open F# major. Let the top F# ring as a pedal; barre strings 6-2 for Gmaj7 (fret 1) and A6 (fret 3). |
-| **Radio Everything** | C G C G G# C | `[-4, -3, 0, -2, -2, -4]` | `RICK` | Radiohead — "Everything In Its Right Place" voicing — open strings C G C G G# C with a C pedal on the top string. The G → C bender pushes the neutral G string (3) up a fourth to a second C. |
+| **Radio Pyramid** | F# A# C# F# A# F# | `[+2, -1, -1, -1, +1, +2]` | `335` | Radiohead — Open F# major. Let the top F# ring as a pedal; barre strings 6-2 for Gmaj7 (fret 1) and A6 (fret 3). |
+| **Radio Everything** | C G C G G# C | `[-4, -3, 0, -2, -2, -4]` | `335` | Radiohead — "Everything In Its Right Place" voicing — open strings C G C G G# C with a C pedal on the top string. The G → C bender pushes the neutral G string (3) up a fourth to a second C. |
 
 ## Modes
 
@@ -120,10 +120,10 @@ Maps an instrument's pitches onto a cluster of strings.
 
 | Tuning | Spelling (low→high) | Model | Notes |
 |---|---|---|---|
-| **E9 Nashville** | B D E F# G# B E G# D# F# | `P-90` | country · session sound |
-| **E9 Lanois** | B B E E G# B E G# D# F# | `P-90` | ambient variant · doubled low strings for 12-string shimmer |
+| **E9 Nashville** | B D E F# G# B E G# D# F# | `L4` | country · session sound |
+| **E9 Lanois** | B B E E G# B E G# D# F# | `L4` | ambient variant · doubled low strings for 12-string shimmer |
 | **C6 Swing/Jazz** | C F A C E G A C E D | `L4` | western swing · jazz |
-| **B6 Universal** | B D D F# G# B D G# D# F# | `P-90` | 6th-flavored hybrid |
+| **B6 Universal** | B D D F# G# B D G# D# F# | `L4` | 6th-flavored hybrid |
 
 
 ---
