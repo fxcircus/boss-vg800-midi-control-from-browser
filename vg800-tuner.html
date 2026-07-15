@@ -314,7 +314,6 @@
   .seg-wrap { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; max-width: 560px; margin: 2px auto 10px; }
   .seg-wrap button { flex: 0 0 auto; padding: 6px 10px; white-space: nowrap; }
   .seg-wrap .ps-trash { width: 13px; height: 13px; display: block; }
-  .ps-key-all { opacity: 0.5; }   /* the All-Strings key, shown on every row: one press bends them all */
   /* GUITAR card — model picker for the Classic preset (CC70 category + CC77/78 model; those CCs don't exist in Panning) */
   html:not(.realbend) #sec-guitar { display: none; }
   #sec-guitar { position: relative; }
@@ -2220,7 +2219,7 @@ function perStringRowHTML(c, st){
     <button class="pedal ps-pad${greyed?' disabled':''}" data-ctrl="${c.id}"${greyed?' aria-disabled="true"':''}>
       <span class="ps-dot" style="background:${STR_COLORS[c.string]}"></span>
       <span class="ps-lbl">${c.name}</span>
-      ${key?`<span class="ps-key">${key}</span>`:''}${(keyFor('PSALL')||'')?`<span class="ps-key ps-key-all" title="${(keyFor('PSALL')||'').toUpperCase()} engages every set bender at once">${(keyFor('PSALL')||'').toUpperCase()}</span>`:''}
+      ${key?`<span class="ps-key">${key}</span>`:''}
       <span class="ps-preview${pcls}">${preview}</span>
     </button>
     <div class="ps-adjust">
@@ -2299,8 +2298,10 @@ function renderPedals(){
     if(!settings.realBend) html+=`<div class="pedal-info">Base + bend share one ±12 range in Panning — a pedal greys out past what the current tuning leaves it.</div>`;   // Classic needs no prose; this line only explains Panning's grey-outs
     const TRASH_ICO='<svg class="ps-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6M10 11v6M14 11v6"/></svg>';
     html+=`<div class="seg seg-wrap" id="psFacSeg">${FACTORY_PS.map((p,i)=>`<button class="${lit(p)?'on':''}" data-psfac="${i}" title="${p.tip||p.name}" aria-label="${p.name}">${p.name==='Clear'?TRASH_ICO:p.name}</button>`).join('')}</div>`;
-    const psSingles=controls.filter(c=>!c.allStrings);   // the All-Strings pedal stays in the keymap (its key shows on every row) — it just has no card
-    html+=`<div class="fam-name">Strings · one pedal each</div><div class="ps-list">${psSingles.map(c=>perStringRowHTML(c, ctrlStateCache[c.id])).join('')}</div>`;
+    const psAll=controls.find(c=>c.allStrings), psSingles=controls.filter(c=>!c.allStrings);
+    const allSt=psAll&&ctrlStateCache[psAll.id], allDis=allSt&&!allSt.avail, allKey=(keyFor('PSALL')||'').toUpperCase();
+    const allRow=psAll?`<div class="ps-row"><button class="pedal ps-pad${allDis?' disabled':''}" data-ctrl="PSALL"${allDis?' aria-disabled="true"':''}><span class="ps-dot" style="background:linear-gradient(135deg,${STR_COLORS.join(',')})"></span><span class="ps-lbl">All Strings</span>${allKey?`<span class="ps-key">${allKey}</span>`:''}<span class="ps-preview${allDis?' muted':''}">${allDis?'set a bend first':'every set bender · one press'}</span></button></div>`:'';
+    html+=`<div class="ps-list">${psSingles.map(c=>perStringRowHTML(c, ctrlStateCache[c.id])).join('')}${allRow}</div>`;
   } else {
     const info = curInfo.root==null
       ? 'No chord root here — pedals disabled.'
