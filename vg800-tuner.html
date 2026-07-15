@@ -312,7 +312,8 @@
   .ps-val.zero { color: var(--bone-faint); }
   /* Per-String factory presets — one radio-style wrapping seg (exactly one cell lit at a time) */
   .seg-wrap { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; max-width: 560px; margin: 2px auto 10px; }
-  .seg-wrap button { flex: 0 0 auto; padding: 6px 10px; }
+  .seg-wrap button { flex: 0 0 auto; padding: 6px 10px; white-space: nowrap; }
+  .seg-wrap .ps-trash { width: 13px; height: 13px; display: block; }
   .ps-key-all { opacity: 0.5; }   /* the All-Strings key, shown on every row: one press bends them all */
   /* GUITAR card — model picker for the Classic preset (CC70 category + CC77/78 model; those CCs don't exist in Panning) */
   html:not(.realbend) #sec-guitar { display: none; }
@@ -2001,8 +2002,8 @@ const FACTORY_PS=[   // group → the labeled cluster row each chip renders unde
   {name:'−1',    amounts:[-1,-1,-1,-1,-1,-1],  group:'shift',  tip:'Every string down a half step'},
   {name:'−2',    amounts:[-2,-2,-2,-2,-2,-2],  group:'shift',  tip:'Every string down a whole step'},
   {name:'4th ↑', amounts:[5,5,5,5,5,5],        group:'jump',   tip:'Every string up a fourth — drone / power-chord jump'},
-  {name:'5th ↑', amounts:[7,7,7,7,7,7],        group:'jump',   tip:'Every string up a fifth'},
   {name:'4th ↓', amounts:[-5,-5,-5,-5,-5,-5],  group:'jump',   tip:'Every string down a fourth — drone drops, half-time feels'},
+  {name:'5th ↑', amounts:[7,7,7,7,7,7],        group:'jump',   tip:'Every string up a fifth'},
   {name:'Oct ↑', amounts:[12,12,12,12,12,12],  group:'jump',   tip:'Every string up an octave'},
   {name:'Oct ↓', amounts:[-12,-12,-12,-12,-12,-12], group:'jump', tip:'Every string down an octave'},
   {name:'B-Bender', amounts:[0,2,0,0,0,0],     group:'bender', tip:'B string up a whole step (B → C#) — Telecaster B-bender'},
@@ -2296,7 +2297,8 @@ function renderPedals(){
     const psEq=a=>Array.isArray(a)&&a.length===6&&a.every((v,i)=>(v|0)===(settings.stringBend[i]|0));   // does a preset match the live amounts? (drives the lit cell)
     const lit=p=> p.name==='Clear' ? !settings.stringBend.some(x=>x|0) : psEq(p.amounts);   // radio feel: exactly one cell lights per state (Clear = everything zeroed)
     if(!settings.realBend) html+=`<div class="pedal-info">Base + bend share one ±12 range in Panning — a pedal greys out past what the current tuning leaves it.</div>`;   // Classic needs no prose; this line only explains Panning's grey-outs
-    html+=`<div class="seg seg-wrap" id="psFacSeg">${FACTORY_PS.map((p,i)=>`<button class="${lit(p)?'on':''}" data-psfac="${i}" title="${p.tip||p.name}">${p.name}</button>`).join('')}</div>`;
+    const TRASH_ICO='<svg class="ps-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6M10 11v6M14 11v6"/></svg>';
+    html+=`<div class="seg seg-wrap" id="psFacSeg">${FACTORY_PS.map((p,i)=>`<button class="${lit(p)?'on':''}" data-psfac="${i}" title="${p.tip||p.name}" aria-label="${p.name}">${p.name==='Clear'?TRASH_ICO:p.name}</button>`).join('')}</div>`;
     const psSingles=controls.filter(c=>!c.allStrings);   // the All-Strings pedal stays in the keymap (its key shows on every row) — it just has no card
     html+=`<div class="fam-name">Strings · one pedal each</div><div class="ps-list">${psSingles.map(c=>perStringRowHTML(c, ctrlStateCache[c.id])).join('')}</div>`;
   } else {
