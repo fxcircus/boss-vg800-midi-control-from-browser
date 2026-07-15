@@ -1451,6 +1451,9 @@ function gtrNeck(hw, joinY, o={}){
     s+=`<path d="M ${GTR_CX-hw} ${n} L ${GTR_CX-hw-0.5} 9 C ${GTR_CX-hw-0.5} 6.5 ${GTR_CX-2.5} 5.5 ${GTR_CX} 5.5 C ${GTR_CX+2.5} 5.5 ${GTR_CX+hw+0.5} 6.5 ${GTR_CX+hw+0.5} 9 L ${GTR_CX+hw} ${n} Z" fill="currentColor" fill-opacity="0.07" stroke-width="1.4"/>`;
     s+=`<rect x="${GTR_CX-4.4}" y="9.5" width="3.1" height="10.5" rx="1.55" stroke-width="1"/><rect x="${GTR_CX+1.3}" y="9.5" width="3.1" height="10.5" rx="1.55" stroke-width="1"/>`;
     for(const sx of [-1,1]) for(let i=0;i<3;i++) s+=`<circle cx="${(GTR_CX+sx*(hw+2.8)).toFixed(1)}" cy="${(10.5+i*3.4).toFixed(1)}" r="1" fill="currentColor" stroke="none"/>`;
+  } else if(head==='fender'){    // Fender scroll: swells up-left, concave scoop with a small hook back down the treble edge
+    s+=`<path d="M ${GTR_CX-hw} ${n} L ${GTR_CX-hw-3} 12.5 C ${GTR_CX-hw-3.8} 7 ${GTR_CX-hw+0.7} 4.8 ${GTR_CX-1.5} 5.3 C ${GTR_CX+2.5} 5.8 ${GTR_CX+5.5} 8.5 ${GTR_CX+5} 12 C ${GTR_CX+4.6} 14.8 ${GTR_CX+5.6} 16.3 ${GTR_CX+6.6} 17.8 C ${GTR_CX+6} 20 ${GTR_CX+hw+0.4} 22 ${GTR_CX+hw} ${n} Z" fill="currentColor" fill-opacity="0.07" stroke-width="1.4"/>`;
+    for(let i=0;i<6;i++) s+=`<circle cx="${(GTR_CX-hw-4+i*0.55).toFixed(1)}" cy="${(8.8+i*2.35).toFixed(1)}" r="0.9" fill="currentColor" stroke="none"/>`;
   } else if(head==='bottle'){    // Danelectro "Coke bottle": waisted neck-in, bulbed top, three tuners a side
     s+=`<path d="M ${GTR_CX-hw} ${n} C ${GTR_CX-hw-0.5} 19 ${GTR_CX-hw-3.5} 17 ${GTR_CX-hw-3.5} 12.5 C ${GTR_CX-hw-3.5} 7.5 ${GTR_CX-3} 6 ${GTR_CX} 6 C ${GTR_CX+3} 6 ${GTR_CX+hw+3.5} 7.5 ${GTR_CX+hw+3.5} 12.5 C ${GTR_CX+hw+3.5} 17 ${GTR_CX+hw+0.5} 19 ${GTR_CX+hw} ${n} Z" fill="currentColor" fill-opacity="0.07" stroke-width="1.4"/>`;
     for(const sx of [-1,1]) for(let i=0;i<3;i++) s+=`<circle cx="${(GTR_CX+sx*(hw+5.6)).toFixed(1)}" cy="${(9.5+i*3).toFixed(1)}" r="0.9" fill="currentColor" stroke="none"/>`;
@@ -1481,7 +1484,7 @@ function gtrFHole(x,y,flip=1,k=1){
 }
 /* electric body outlines (drawn in a 0-140 frame; the svg wrapper centers them in 150) */
 const GTR_BODY={
-  strat:`<path d="M 55 61 C 54 66 48 67 44 62 C 41 58 39 52 39 48 C 39 45.5 35.5 45.5 34.5 48 C 32 53 31 60 33 67 C 27 73 24 82 25 92 C 27 108 40 122 58 123 C 69 124 80 119 86 111 C 91 103 91 94 87 88 C 84 83 84 79 87 74 C 90 69 89 62 84 59 C 82 57 79 56 77 57.5 C 74 59 72 62 71 65 C 69 64 67 62.5 65 61 Z" fill="currentColor" fill-opacity="0.07"/>`,
+  strat:`<path d="M 55 68 C 54.8 70.8 54 72.8 52.5 73.2 C 50.5 73.5 49 70.5 48.3 66 C 47.7 62 47.2 58.5 46.2 56.2 C 45.4 54.2 43.4 54 42.6 56 C 41.5 59 40.7 64 40.3 69 C 36.5 74 34.3 82 33.3 91 C 32.9 99 34 108 36.5 115 C 39.5 123 46 128.5 54 130 C 58 130.7 62 130.7 66 130 C 74 128.5 80.5 123.5 84 117 C 86.5 112 87.3 106 87 100.5 C 86.7 96 85 92.5 83.7 89.7 C 82.9 87.3 83.3 84.7 85 82.3 C 86.8 79.5 86.6 74.6 84.6 70.6 C 83 67.2 79 63.4 75.5 63 C 73.4 64.4 72.2 66.6 71.3 70 C 70.7 72 69.3 72.4 68 71.6 C 66.8 70.4 66 68.8 65 68 Z" fill="currentColor" fill-opacity="0.07"/>`,
   sstrat:`<path d="M 55 61 C 54 67 47 68 43 62 C 40 57 38 50 36 45 C 33 46 31 52 32 60 C 33 66 34 69 36 71 C 27 77 24 87 26 97 C 29 113 42 123 59 123 C 74 123 87 116 90 105 C 92 97 90 90 86 85 C 90 80 93 72 91 65 C 89 58 84 53 79 54 C 75 57 73 61 72 64 C 70 63 67 62 65 61 Z" fill="currentColor" fill-opacity="0.07"/>`,
   tele:`<path d="M 55 58 C 49 54 41 55 36 60 C 28 66 25 77 25 89 C 25 109 41 122 60 122 C 80 122 94 109 94 89 C 94 73 88 62 78 58 C 74 56 69 56.5 66 58.5 C 65.7 58.3 65.3 58.1 65 58 Z" fill="currentColor" fill-opacity="0.07"/>`,
   lp:`<path d="M 55 56 C 49 52 41 53 37 58 C 30 64 27 74 28 85 C 29 106 44 121 62 121 C 81 121 94 106 93 86 C 92 74 89 65 83 60 C 79 56 73 55 69 57 C 67 54.5 66 55 65 56 Z" fill="currentColor" fill-opacity="0.07"/>`,
@@ -1505,11 +1508,18 @@ function gtrPuHum(cx,cy,w,h,o={}){   // two coils side by side; poles on one coi
   }
   return s;
 }
+function gtrClaST(frets){   // CLA-ST portrait; FRETLESS reuses it with a smooth board
+  const pu=(y,slant)=>`<g${slant?` transform="rotate(-8 60 ${y})"`:''}><rect x="50" y="${y-2}" width="20" height="4" rx="2" fill="currentColor" fill-opacity="0.13" stroke-width="1.2"/>${[0,1,2,3,4].map(i=>`<circle cx="${53+i*3.5}" cy="${y}" r="0.65" fill="currentColor" stroke="none"/>`).join('')}</g>`;
+  return gtrNeck(5,68,{head:'fender',frets})+GTR_BODY.strat+
+    `<path d="M 54 73.5 C 50 73.5 47 76 45.5 80.5 C 44 85.5 43.7 92 44.5 99 C 45.5 107 48.5 114 53.5 118.5 C 58 122.3 65 122 69.5 117.5 C 72.8 114 74.3 108 74 102 L 73.5 86 C 73.2 79 70 74.5 65.5 75.3 C 62 72.7 57 72.7 54 73.5 Z" stroke-width="0.9"/>`+
+    pu(81)+pu(91)+pu(101,true)+
+    gtrSolid(60,111,17,3.6,1)+`<path d="M 67.5 109 C 73.5 107 77.5 103 79 97" stroke-width="1.1"/>`+
+    `<line x1="63.5" y1="89" x2="68" y2="94" stroke-width="1.4"/>`+
+    gtrKnob(70.5,104,1.9)+gtrKnob(73,111,1.9)+gtrKnob(75,117.5,1.7);
+}
 const GTR_ART={
   /* ---- electric ---- */
-  'CLA-ST':()=>gtrNeck(5,62,{head:'inline6'})+GTR_BODY.strat+
-    `<path d="M 48 65 C 42 69 39 77 41 86 C 43 96 50 105 59 109 C 67 112 76 110 79 103 C 81 97 79 91 74 88 L 75 72 C 75 66 71 62 66 64 C 60 61 53 61 48 65 Z" stroke-width="0.9"/>`+
-    gtrSC(60,75)+gtrSC(60,85)+`<g transform="rotate(-8 60 95)">${gtrSC(60,95)}</g>`+gtrSolid(60,105,18,4,1)+gtrKnob(75,101)+gtrKnob(79,108)+gtrKnob(82,115,2),
+  'CLA-ST':()=>gtrClaST(5),
   'MOD-ST':()=>gtrPuFrame()+   // three EMG-style active single coils: closed faces, no poles
     [48,72,96].map(y=>`<rect x="28" y="${y-7}" width="64" height="14" rx="7" fill="currentColor" fill-opacity="0.18" stroke-width="2.1"/><circle cx="35" cy="${y}" r="1.6" stroke-width="1"/><circle cx="85" cy="${y}" r="1.6" stroke-width="1"/>`).join(''),
   'TE':()=>gtrNeck(5,58,{head:'inline6'})+GTR_BODY.tele+
@@ -1544,9 +1554,7 @@ const GTR_ART={
     gtrHB(60,72,15,7)+gtrHB(60,88,15,7)+gtrSolid(60,100,13,3,1)+
     `<path d="M 52 134 L 56 112 L 68 112 L 72 134" stroke-width="1.3"/><line x1="55" y1="118" x2="69" y2="118" stroke-width="1"/>`+
     gtrKnob(45,106)+gtrKnob(51,112)+gtrKnob(73,106)+gtrKnob(79,112),
-  'FRETLESS':()=>gtrNeck(5,62,{head:'inline6',frets:0})+GTR_BODY.strat+   // CLA-ST with a smooth board
-    `<path d="M 48 65 C 42 69 39 77 41 86 C 43 96 50 105 59 109 C 67 112 76 110 79 103 C 81 97 79 91 74 88 L 75 72 C 75 66 71 62 66 64 C 60 61 53 61 48 65 Z" stroke-width="0.9"/>`+
-    gtrSC(60,75)+gtrSC(60,85)+`<g transform="rotate(-8 60 95)">${gtrSC(60,95)}</g>`+gtrSolid(60,105,18,4,1)+gtrKnob(75,101)+gtrKnob(79,108)+gtrKnob(82,115,2),
+  'FRETLESS':()=>gtrClaST(0),   // CLA-ST with a smooth board
   /* ---- acoustic ---- */
   'MA28':()=>gtrNeck(5,54)+gtrAcBody(50,134,[[76,50,90,54,90,64],[90,73,85,77,85,86],[85,96,95,98,95,112],[95,128,81,134,60,134]])+
     gtrRosette(60,86,10)+gtrSolid(60,106,21,4.5,1.5)+`<path d="M 71 92 C 79 96 81 104 78 111" stroke-width="1"/>`,
