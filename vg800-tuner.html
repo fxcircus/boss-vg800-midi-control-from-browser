@@ -240,9 +240,10 @@
   .jump-menu.open { display: block; animation: apReveal .18s cubic-bezier(.4,0,.2,1); }
   .jump-menu a { display: block; font-family: var(--mono); font-size: 12.5px; color: var(--bone-dim); text-decoration: none; padding: 8px 12px; border-radius: 8px; letter-spacing: 0.2px; transition: color .12s, background .12s; }
   .jump-menu a:hover, .jump-menu a.active { color: var(--brass); background: var(--felt); }
-  .jump-menu a.group { display: flex; align-items: center; gap: 9px; color: var(--bone); font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; margin-top: 8px; }
+  .jump-menu a.group, .jump-menu span.group { display: flex; align-items: center; gap: 9px; color: var(--bone); font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; margin-top: 8px; }
   .jump-menu a.group:first-child { margin-top: 0; }
-  .jump-menu a.group .nav-ico { width: 15px; height: 15px; flex-shrink: 0; }
+  .jump-menu a.group .nav-ico, .jump-menu span.group .nav-ico { width: 15px; height: 15px; flex-shrink: 0; }
+  .jump-menu span.group, #sideNav span.group { cursor: default; }   /* the Tunings header is a label, not a jump target */
   .jump-menu a.sub { padding-left: 22px; font-size: 12px; }
   .jump-menu a.sub2 { padding-left: 32px; }
   /* Random-tuning action item — a button in the jump menu / sidebar (brass accent to read as an action, not a nav link) */
@@ -569,8 +570,8 @@
   #sideNav .str-off { font-size: 10px; }
   #sideNav a { display: block; font-family: var(--mono); font-size: 11px; color: var(--bone-faint); text-decoration: none; padding: 5px 10px; border-left: 2px solid transparent; letter-spacing: 0.2px; transition: color .12s, background .12s, border-color .12s; }
   #sideNav a:hover { color: var(--bone); background: var(--felt); }
-  #sideNav a.group { display: flex; align-items: center; gap: 7px; color: var(--bone-dim); font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 1px; margin-top: 12px; }
-  #sideNav a.group .nav-ico { width: 14px; height: 14px; flex-shrink: 0; opacity: 0.9; }
+  #sideNav a.group, #sideNav span.group { display: flex; align-items: center; gap: 7px; color: var(--bone-dim); font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 1px; margin-top: 12px; }
+  #sideNav a.group .nav-ico, #sideNav span.group .nav-ico { width: 14px; height: 14px; flex-shrink: 0; opacity: 0.9; }
   #sideNav a.group:hover .nav-ico, #sideNav a.group.active .nav-ico { opacity: 1; }
   #sideNav a.sub { padding-left: 22px; }
   #sideNav a.sub2 { padding-left: 34px; }
@@ -2536,7 +2537,7 @@ function renderNav(){
     pedals:'<svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/><path d="M9 12H4M7.5 8.5 4 12l3.5 3.5"/><path d="M15 12h5M16.5 8.5 20 12l-3.5 3.5"/></svg>',
     pan:'<svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8.5a6.5 6.5 0 1 1 13 0c0 6-6 6-6 10a3.5 3.5 0 1 1-7 0"/><path d="M15 8.5a2.5 2.5 0 0 0-5 0v1a2 2 0 1 1 0 4"/></svg>' };
   box.innerHTML='<button class="jump-rand" data-rand-tuning title="Apply a random tuning">'+DICE_ICO+'Random tuning</button>'
-    +'<a class="group" href="#sec-tunings">'+I.tunings+'Tunings</a>'+links
+    +'<span class="group">'+I.tunings+'Tunings</span>'+links   // header only — the family sub-links are the jump targets
     +'<a class="sub" href="#sec-ethnic">Ethnic</a>'
     +'<a class="sub" href="#sec-strings">Transpose</a>'
     +'<a class="sub" href="#sec-chords">Chords</a>'
