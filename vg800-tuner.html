@@ -327,6 +327,22 @@
   .ps-preset-del:hover { color: var(--err); background: var(--felt); }
   .ps-save { padding: 6px 13px; font-family: var(--cond); font-size: 12.5px; font-weight: 700; letter-spacing: 0.3px; background: var(--wood); border: 1px solid var(--brass-deep); border-radius: 8px; color: var(--brass); cursor: pointer; transition: background .12s; }
   .ps-save:hover { background: var(--felt); }
+  /* GUITAR card — model picker for the Classic preset (CC70 category + CC77/78 model; those CCs don't exist in Panning) */
+  html:not(.realbend) #sec-guitar { display: none; }
+  #sec-guitar .gtr-inner { max-width: 420px; margin: 0 auto; }
+  .gtr-preview { background: color-mix(in srgb, var(--ink) 55%, transparent); border: 1px solid var(--edge-soft); border-radius: 12px; padding: 11px 10px 6px; text-align: center; margin: 10px 0; }
+  .gtr-name { font-family: var(--cond); font-weight: 700; font-size: 18px; letter-spacing: 2px; text-transform: uppercase; color: var(--bone); }
+  .gtr-cat { font-family: var(--mono); font-size: 9.5px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--bone-faint); margin: 1px 0 4px; min-height: 12px; }
+  .gtr-stage { display: flex; align-items: center; justify-content: center; height: 150px; }
+  .gtr-stage svg { height: 150px; width: auto; }
+  .gtr-art { color: var(--bone); stroke: currentColor; fill: none; stroke-width: 2.1; stroke-linejoin: round; stroke-linecap: round; }   /* one currentColor = the whole portrait re-inks per theme */
+  .gtr-tabs { margin: 0 0 8px; }
+  .gtr-chips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; max-height: 172px; overflow-y: auto; padding: 2px; scrollbar-width: thin; scrollbar-color: var(--edge) transparent; }
+  .gtr-chips::-webkit-scrollbar { width: 6px; }
+  .gtr-chips::-webkit-scrollbar-thumb { background: var(--edge); border-radius: 3px; }
+  .gtr-chip { padding: 7px 3px; font-family: var(--mono); font-size: 10.5px; font-weight: 700; letter-spacing: 0.3px; background: var(--wood); border: 1px solid var(--edge); border-radius: 8px; color: var(--bone-dim); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: border-color .12s, color .12s, background .12s; }
+  .gtr-chip:hover { border-color: var(--brass-deep); color: var(--brass); background: var(--felt); }
+  .gtr-chip.on { border-color: var(--brass); color: var(--brass); background: var(--felt); box-shadow: inset 0 0 0 1px var(--brass-glow); }
   /* Press animation: foot plate tilts down; knee lever swings left (LKL) / right (LKR) about its pivot */
   .pedal-badge .ap-plate, .pedal-badge .ap-lever { transform-box: view-box; transition: transform .2s cubic-bezier(.34,1.3,.5,1); }
   .pedal-badge .ap-plate { transform-origin: 9px 30px; }
@@ -504,6 +520,10 @@
     #rightRail .ps-chips { gap: 5px; }
     #rightRail .ps-preset-fac, #rightRail .ps-preset-load { padding: 4px 9px; font-size: 11px; }
     #rightRail .ps-save { padding: 4px 10px; font-size: 11px; }
+    #rightRail #sec-guitar { margin: 0 0 12px; padding: 6px 14px 12px; }
+    #rightRail #sec-guitar .panel-hd { font-size: 15px; letter-spacing: 1.5px; }
+    #rightRail .gtr-preview { margin: 8px 0; }
+    #rightRail .gtr-chips { max-height: 150px; }
     /* Left column at this width — nav, Random, Current Tuning, Clipboard as distinct FLAT panels with breathing room */
     #sideNav .bench { box-shadow: none; background: var(--wood); margin-top: 18px; }
     #sideNav .str .wire::before { background: var(--chrome-dim); }
@@ -1054,6 +1074,15 @@
     <div id="pedalWrap"></div>
   </fieldset>
 
+  <fieldset class="panel" id="sec-guitar">
+    <legend class="panel-hd">Guitar</legend>
+    <div class="gtr-inner">
+      <div class="gtr-preview"><div class="gtr-name" id="gtrName">&mdash;</div><div class="gtr-cat" id="gtrCat"></div><div class="gtr-stage" id="gtrStage"></div></div>
+      <div class="seg gtr-tabs" id="gtrTabs"><button data-cat="electric">Electric</button><button data-cat="acoustic">Acoustic</button></div>
+      <div class="gtr-chips" id="gtrChips"></div>
+    </div>
+  </fieldset>
+
   <fieldset class="panel" id="sec-pan">
     <legend class="panel-hd">Panning</legend>
     <div id="panWrap"></div>
@@ -1389,13 +1418,166 @@ const EGTR_MODELS={ 'CLA-ST':0, 'MOD-ST':12, 'TE':23, 'LP':35, 'P-90':46, '335':
 const ACOUSTIC_MODELS={ 'MA28':0, 'TRP-0':16, 'GB45':32, 'GB SML':48, 'GLD 40':64, 'NYLON':79, 'RESO':95, 'BANJO':111, 'SITAR':127 };
 function modelSpec(name){ if(name in EGTR_MODELS) return {cat:'electric', cc:EGTR_CC, val:EGTR_MODELS[name]}; if(name in ACOUSTIC_MODELS) return {cat:'acoustic', cc:ACOUSTIC_CC, val:ACOUSTIC_MODELS[name]}; return null; }
 let lastModelName=null;   // the model of the last-applied tuning, so toggling auto-model on (or reconnecting) can re-send it
-function sendModel(name){
-  if(!midiOut || !settings.realBend || !settings.autoModel) return;   // Classic-preset feature, gated on the Settings toggle
+let curModelName=null;    // what the GUITAR card shows: the tuning's model when Auto is on, or the player's manual pick
+let gtrPicked=false;      // a model actually landed this session (auto or manual) — the boot seed alone must never reach the hardware
+function sendModel(name){   // automatic per-tuning path — respects the Auto gate; manual GUITAR-card picks go through sendModelRaw
+  if(settings.autoModel && modelSpec(name)){ const chg=curModelName!==name; curModelName=name; gtrPicked=true; gtrRender(chg); }   // only pull the card to the model's tab when the model really changed
+  else gtrRender(false);   // Auto off or unmapped tuning: hardware keeps its model, card just refreshes
+  if(!settings.autoModel) return;
+  sendModelRaw(name);
+}
+function sendModelRaw(name){   // the two-message send both paths share; a manual pick is explicit intent, so it skips the Auto gate
+  if(!midiOut || !settings.realBend) return;   // Classic-preset feature — these CCs mean pan/12-str in the Panning preset
   const m=modelSpec(name); if(!m) return;
   const st=0xB0|((settings.channel-1)&0x0F);
   midiOut.send([st, INST_TYPE_CC&0x7F, INST_TYPE_VAL[m.cat]&0x7F]);   // 1) category: electric vs acoustic
   midiOut.send([st, m.cc&0x7F, m.val&0x7F]);                          //  2) the model within it
 }
+
+/* ---- GUITAR card: line-art model portraits (viewBox 0 0 120 150, centerline x=60) ----
+   Stroke discipline: body outline 2.1 (inherited from .gtr-art) · details 1.0-1.6 · hairlines 0.8.
+   Everything draws in currentColor so the portraits re-ink themselves per theme. */
+const GTR_CX=60, GTR_NUT=24;
+function gtrFretY(joinY,i,F){ return GTR_NUT+(joinY-GTR_NUT)*(1-Math.pow(2,-i/12))/(1-Math.pow(2,-(F+1)/12)); }   // real 12th-root-of-2 spacing: fret gaps shrink toward the body
+function gtrNeck(hw, joinY, o={}){
+  const F=o.frets??5, head=o.head??'3x3', n=GTR_NUT; let s='';
+  if(head==='inline6'){          // Fender: sweeping 6-in-line with tuners down the bass side
+    s+=`<path d="M ${GTR_CX-hw} ${n} L ${GTR_CX-hw-3.6} 12 C ${GTR_CX-hw-4} 7.5 ${GTR_CX-hw+2} 5.5 ${GTR_CX+2} 7 C ${GTR_CX+hw+0.6} 7.9 ${GTR_CX+hw} 10.5 ${GTR_CX+hw} 13.5 L ${GTR_CX+hw} ${n} Z" fill="currentColor" fill-opacity="0.07" stroke-width="1.4"/>`;
+    for(let i=0;i<6;i++) s+=`<circle cx="${(GTR_CX-hw-1.5).toFixed(1)}" cy="${(9+i*2.45).toFixed(1)}" r="0.9" fill="currentColor" stroke="none"/>`;
+  } else if(head==='3x3'){       // Gibson/Martin: symmetric flare, three tuners a side
+    s+=`<path d="M ${GTR_CX-hw} ${n} C ${GTR_CX-hw-2.5} 16 ${GTR_CX-hw-1.5} 9 ${GTR_CX} 8 C ${GTR_CX+hw+1.5} 9 ${GTR_CX+hw+2.5} 16 ${GTR_CX+hw} ${n} Z" fill="currentColor" fill-opacity="0.07" stroke-width="1.4"/>`;
+    for(let i=0;i<3;i++){ const y=(11.5+i*3.4).toFixed(1); s+=`<circle cx="${GTR_CX-hw-3}" cy="${y}" r="1" fill="currentColor" stroke="none"/><circle cx="${GTR_CX+hw+3}" cy="${y}" r="1" fill="currentColor" stroke="none"/>`; }
+  } else if(head==='slot'){      // classical: squared slotted headstock, side-facing tuners
+    s+=`<path d="M ${GTR_CX-hw} ${n} L ${GTR_CX-hw-0.5} 9 C ${GTR_CX-hw-0.5} 6.5 ${GTR_CX-2.5} 5.5 ${GTR_CX} 5.5 C ${GTR_CX+2.5} 5.5 ${GTR_CX+hw+0.5} 6.5 ${GTR_CX+hw+0.5} 9 L ${GTR_CX+hw} ${n} Z" fill="currentColor" fill-opacity="0.07" stroke-width="1.4"/>`;
+    s+=`<rect x="${GTR_CX-4.4}" y="9.5" width="3.1" height="10.5" rx="1.55" stroke-width="1"/><rect x="${GTR_CX+1.3}" y="9.5" width="3.1" height="10.5" rx="1.55" stroke-width="1"/>`;
+    for(const sx of [-1,1]) for(let i=0;i<3;i++) s+=`<circle cx="${(GTR_CX+sx*(hw+2.8)).toFixed(1)}" cy="${(10.5+i*3.4).toFixed(1)}" r="1" fill="currentColor" stroke="none"/>`;
+  } else if(head==='banjo'){     // compact paddle, two tuners a side (the 5th peg lives on the neck)
+    s+=`<path d="M ${GTR_CX-hw} ${n} C ${GTR_CX-hw-2} 16 ${GTR_CX-hw-0.5} 10 ${GTR_CX} 9 C ${GTR_CX+hw+0.5} 10 ${GTR_CX+hw+2} 16 ${GTR_CX+hw} ${n} Z" fill="currentColor" fill-opacity="0.07" stroke-width="1.4"/>`;
+    for(const sx of [-1,1]) for(let i=0;i<2;i++) s+=`<circle cx="${(GTR_CX+sx*(hw+2.6)).toFixed(1)}" cy="${(12.5+i*3.6).toFixed(1)}" r="1" fill="currentColor" stroke="none"/>`;
+  }
+  s+=`<line x1="${GTR_CX-hw-0.8}" y1="${n}" x2="${GTR_CX+hw+0.8}" y2="${n}" stroke-width="1.8"/>`;
+  s+=`<line x1="${GTR_CX-hw}" y1="${n}" x2="${GTR_CX-hw}" y2="${joinY}" stroke-width="1.3"/><line x1="${GTR_CX+hw}" y1="${n}" x2="${GTR_CX+hw}" y2="${joinY}" stroke-width="1.3"/>`;
+  for(let i=1;i<=F;i++){ const y=gtrFretY(joinY,i,F).toFixed(1); s+=`<line x1="${GTR_CX-hw}" y1="${y}" x2="${GTR_CX+hw}" y2="${y}" stroke-width="0.8"/>`; }
+  return s;
+}
+function gtrAcBody(topY, botY, half){   // symmetric acoustic body: cubic segs down the RIGHT side (last seg must land on [60,botY]), mirrored back up the left
+  const mx=x=>+(2*GTR_CX-x).toFixed(1); let d=`M ${GTR_CX} ${topY}`;
+  for(const g of half) d+=` C ${g[0]} ${g[1]} ${g[2]} ${g[3]} ${g[4]} ${g[5]}`;
+  const st=[[GTR_CX,topY],...half.map(g=>[g[4],g[5]])];
+  for(let i=half.length-1;i>=0;i--){ const g=half[i]; d+=` C ${mx(g[2])} ${g[3]} ${mx(g[0])} ${g[1]} ${mx(st[i][0])} ${st[i][1]}`; }
+  return `<path d="${d} Z" fill="currentColor" fill-opacity="0.07"/>`;
+}
+const gtrSolid=(x,y,w,h,r=1.4)=>`<rect x="${(x-w/2).toFixed(1)}" y="${(y-h/2).toFixed(1)}" width="${w}" height="${h}" rx="${r}" fill="currentColor" stroke="none"/>`;
+const gtrSC=(x,y,w=20)=>gtrSolid(x,y,w,3.4,1.7);                                     // single coil: slim solid bar
+function gtrHB(x,y,w=16,h=7.5){ return gtrSolid(x-w/4-0.4,y,w/2-0.8,h,1.3)+gtrSolid(x+w/4+0.4,y,w/2-0.8,h,1.3); }   // humbucker: two coils with a seam
+const gtrP90=(x,y,w=17,h=6.5)=>`<rect x="${x-w/2}" y="${y-h/2}" width="${w}" height="${h}" rx="3" fill="currentColor" fill-opacity="0.13" stroke-width="1.3"/><line x1="${x}" y1="${y-h/2+1.4}" x2="${x}" y2="${y+h/2-1.4}" stroke-width="1"/>`;
+const gtrKnob=(x,y,r=2.2)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="currentColor" fill-opacity="0.13" stroke-width="1.3"/>`;
+const gtrRosette=(x,y,r)=>`<circle cx="${x}" cy="${y}" r="${r}" stroke-width="1.6"/><circle cx="${x}" cy="${y}" r="${(r+2.8).toFixed(1)}" stroke-width="0.8"/>`;
+function gtrFHole(x,y,flip=1,k=1){
+  return `<path d="M ${x+2*k*flip} ${y-9*k} C ${x-2*k*flip} ${y-7*k} ${x-3.4*k*flip} ${y-2*k} ${x-1.2*k*flip} ${y+2*k} C ${x+1*k*flip} ${y+6*k} ${x-2*k*flip} ${y+8*k} ${x-3.4*k*flip} ${y+10*k}" stroke-width="1.6"/><circle cx="${x+2*k*flip}" cy="${y-9*k}" r="${1.4*k}" fill="currentColor" stroke="none"/><circle cx="${x-3.4*k*flip}" cy="${y+10*k}" r="${1.4*k}" fill="currentColor" stroke="none"/>`;
+}
+/* electric body outlines (drawn in a 0-140 frame; the svg wrapper centers them in 150) */
+const GTR_BODY={
+  strat:`<path d="M 55 61 C 54 66 48 67 44 62 C 41 58 39 52 39 48 C 39 45.5 35.5 45.5 34.5 48 C 32 53 31 60 33 67 C 27 73 24 82 25 92 C 27 108 40 122 58 123 C 69 124 80 119 86 111 C 91 103 91 94 87 88 C 84 83 84 79 87 74 C 90 69 89 62 84 59 C 82 57 79 56 77 57.5 C 74 59 72 62 71 65 C 69 64 67 62.5 65 61 Z" fill="currentColor" fill-opacity="0.07"/>`,
+  sstrat:`<path d="M 55 61 C 54 67 47 68 43 62 C 40 57 38 50 36 45 C 33 46 31 52 32 60 C 33 66 34 69 36 71 C 27 77 24 87 26 97 C 29 113 42 123 59 123 C 74 123 87 116 90 105 C 92 97 90 90 86 85 C 90 80 93 72 91 65 C 89 58 84 53 79 54 C 75 57 73 61 72 64 C 70 63 67 62 65 61 Z" fill="currentColor" fill-opacity="0.07"/>`,
+  tele:`<path d="M 55 58 C 49 54 41 55 36 60 C 28 66 25 77 25 89 C 25 109 41 122 60 122 C 80 122 94 109 94 89 C 94 73 88 62 78 58 C 74 56 69 56.5 66 58.5 C 65.7 58.3 65.3 58.1 65 58 Z" fill="currentColor" fill-opacity="0.07"/>`,
+  lp:`<path d="M 55 56 C 49 52 41 53 37 58 C 30 64 27 74 28 85 C 29 106 44 121 62 121 C 81 121 94 106 93 86 C 92 74 89 65 83 60 C 79 56 73 55 69 57 C 67 54.5 66 55 65 56 Z" fill="currentColor" fill-opacity="0.07"/>`,
+  semi:`<path d="M 55 62 C 52 57 47 53 42 53 C 36 53 33 58 35 63 C 27 66 22 75 22 85 C 22 103 38 118 60 118 C 82 118 98 103 98 85 C 98 75 93 66 85 63 C 87 58 84 53 78 53 C 73 53 68 57 65 62 Z" fill="currentColor" fill-opacity="0.07"/>`,
+  ric:`<path d="M 55 58 C 50 52 43 49 38 52 C 33 55 33 62 37 66 C 28 72 25 83 27 94 C 30 110 44 120 61 120 C 79 120 93 110 94 94 C 95 81 90 70 82 65 C 85 59 83 52 77 51 C 71 50 66 53 64 58 Z" fill="currentColor" fill-opacity="0.07"/>`,
+  dano:`<path d="M 55 56 C 49 53 42 54 38 58 C 33 62 33 68 36 72 C 30 78 28 87 29 96 C 31 111 44 119 60 119 C 76 119 89 111 91 96 C 92 87 90 78 84 72 C 87 68 87 62 82 58 C 78 54 71 53 65 56 Z" fill="currentColor" fill-opacity="0.07"/>`,
+};
+const GTR_ART={
+  /* ---- electric ---- */
+  'CLA-ST':()=>gtrNeck(5,62,{head:'inline6'})+GTR_BODY.strat+
+    gtrSC(60,75)+gtrSC(60,85)+`<g transform="rotate(-8 60 95)">${gtrSC(60,95)}</g>`+gtrSolid(60,105,18,4,1)+gtrKnob(75,101)+gtrKnob(79,108)+gtrKnob(82,115,2),
+  'MOD-ST':()=>gtrNeck(5,62,{head:'inline6'})+GTR_BODY.strat+
+    gtrSC(60,75)+gtrSC(60,84)+gtrHB(60,95,16,7)+gtrSolid(60,106,18,4,1)+gtrKnob(76,103)+gtrKnob(80,110),
+  'TE':()=>gtrNeck(5,58,{head:'inline6'})+GTR_BODY.tele+
+    `<rect x="53" y="72" width="14" height="5.4" rx="2.4" fill="currentColor" fill-opacity="0.13" stroke-width="1.3"/>`+
+    `<rect x="49" y="90" width="22" height="14" rx="2" stroke-width="1.3"/>`+`<g transform="rotate(-8 60 97)">${gtrSC(60,97,15)}</g>`+
+    `<rect x="77" y="94" width="7" height="19" rx="3.5" stroke-width="1"/>`+gtrKnob(80.5,99,1.9)+gtrKnob(80.5,107,1.9),
+  'LP':()=>gtrNeck(5,56,{head:'3x3',frets:6})+GTR_BODY.lp+
+    gtrHB(60,71)+gtrHB(60,86)+gtrSolid(60,97,13,3,1)+gtrSolid(60,103,11,3,1.5)+
+    gtrKnob(46,97)+gtrKnob(53,103)+gtrKnob(69,97)+gtrKnob(76,103)+`<circle cx="42" cy="74" r="2" stroke-width="1"/>`,
+  'P-90':()=>gtrNeck(5,56,{head:'3x3',frets:6})+GTR_BODY.lp+
+    gtrP90(60,71)+gtrP90(60,86)+gtrSolid(60,97,13,3,1)+gtrSolid(60,103,11,3,1.5)+
+    gtrKnob(46,97)+gtrKnob(53,103)+gtrKnob(69,97)+gtrKnob(76,103),
+  '335':()=>gtrNeck(5,62,{head:'3x3'})+GTR_BODY.semi+
+    gtrFHole(38,86)+gtrFHole(82,86,-1)+gtrHB(60,80,15,7)+gtrHB(60,93,15,7)+gtrSolid(60,103,13,3,1)+
+    gtrKnob(45,105)+gtrKnob(52,110)+gtrKnob(68,105)+gtrKnob(75,110),
+  'RICK':()=>gtrNeck(5,58,{head:'3x3'})+GTR_BODY.ric+
+    `<ellipse cx="43" cy="80" rx="7" ry="2.6" transform="rotate(-24 43 80)" stroke-width="1.3"/>`+
+    gtrSolid(60,90,17,5,1)+gtrSolid(61,101,17,5,1)+gtrSolid(62,111,12,3,1)+
+    gtrKnob(76,103,1.9)+gtrKnob(81,108,1.9)+gtrKnob(72,109,1.9)+gtrKnob(77,114,1.9),
+  'LIPS':()=>gtrNeck(5,56,{head:'inline6'})+GTR_BODY.dano+
+    `<rect x="50" y="74" width="20" height="4" rx="2" fill="currentColor" fill-opacity="0.13" stroke-width="1.3"/>`+
+    `<rect x="50" y="90" width="20" height="4" rx="2" fill="currentColor" fill-opacity="0.13" stroke-width="1.3"/>`+
+    gtrSolid(60,102,12,3.5,1)+gtrKnob(48,107)+gtrKnob(72,107),
+  'WIDE RANGE':()=>gtrNeck(5,58,{head:'inline6'})+GTR_BODY.tele+
+    gtrFHole(40,76,1,0.9)+gtrHB(60,84,17,8)+gtrHB(60,98,17,8)+gtrSolid(60,108,15,4,1)+
+    `<rect x="78" y="96" width="6.5" height="17" rx="3.2" stroke-width="1"/>`+gtrKnob(81.2,100.5,1.8)+gtrKnob(81.2,108,1.8),
+  'BRIGHT HUM':()=>gtrNeck(5,62,{head:'inline6'})+GTR_BODY.sstrat+
+    gtrHB(60,82,15,7)+gtrHB(60,96,15,7)+gtrSolid(60,106,16,4.5,1)+gtrKnob(77,104)+gtrKnob(81,111),
+  'L4':()=>gtrNeck(5,56,{head:'3x3',frets:6})+gtrAcBody(52,132,[[74,52,88,55,88,64],[88,73,84,77,84,86],[84,96,96,98,96,111],[96,126,81,132,60,132]])+
+    gtrFHole(42,92,1,1.1)+gtrFHole(78,92,-1,1.1)+
+    `<rect x="47" y="64" width="26" height="6.5" rx="2" fill="currentColor" fill-opacity="0.13" stroke-width="1.3"/>`+
+    `<line x1="48" y1="104" x2="76" y2="104" stroke-width="1.8"/>`+
+    `<path d="M 52 132 L 56 112 L 68 112 L 72 132" stroke-width="1.3"/><line x1="55" y1="118" x2="69" y2="118" stroke-width="1"/>`,
+  'FRETLESS':()=>gtrNeck(5,62,{head:'inline6',frets:0})+
+    `<circle cx="60" cy="36" r="1.1" fill="currentColor" stroke="none"/><circle cx="60" cy="48" r="1.1" fill="currentColor" stroke="none"/>`+
+    GTR_BODY.sstrat+gtrSC(60,76)+gtrHB(60,90,15,7)+gtrSolid(60,104,16,4,1)+gtrKnob(77,102)+gtrKnob(81,109),
+  /* ---- acoustic ---- */
+  'MA28':()=>gtrNeck(5,54)+gtrAcBody(50,134,[[76,50,90,54,90,64],[90,73,85,77,85,86],[85,96,95,98,95,112],[95,128,81,134,60,134]])+
+    gtrRosette(60,86,10)+gtrSolid(60,106,21,4.5,1.5)+`<path d="M 71 92 C 79 96 81 104 78 111" stroke-width="1"/>`,
+  'TRP-0':()=>gtrNeck(5,57)+gtrAcBody(53,131,[[72,53,85,57,85,65],[85,72,81,76,81,84],[81,93,91,95,91,108],[91,124,78,131,60,131]])+
+    gtrRosette(60,86,9)+gtrSolid(60,104,18,4,1.5),
+  'GB45':()=>gtrNeck(5,54)+gtrAcBody(50,134,[[70,50,88,56,88,67],[88,74,84,78,84,87],[84,96,94,98,94,112],[94,128,80,134,60,134]])+
+    gtrRosette(60,87,9.5)+gtrSolid(60,107,20,4.5,2.2)+`<path d="M 71 93 C 79 97 81 105 78 112" stroke-width="1"/>`,
+  'GB SML':()=>gtrNeck(5,60,{frets:4})+gtrAcBody(56,128,[[69,56,79,59,79,67],[79,73,76,77,76,84],[76,91,85,93,85,105],[85,121,73,128,60,128]])+
+    gtrRosette(60,88,8)+gtrSolid(60,103,15,4,1.5),
+  'GLD 40':()=>gtrNeck(5,56)+gtrAcBody(52,136,[[74,52,87,55,87,64],[87,72,81,76,81,84],[81,95,96,96,96,112],[96,130,82,136,60,136]])+
+    gtrRosette(60,87,9.5)+gtrSolid(60,108,19,4.5,1.5),
+  'NYLON':()=>gtrNeck(6,57,{head:'slot'})+gtrAcBody(53,132,[[71,53,84,57,84,66],[84,73,80,77,80,85],[80,94,92,96,92,110],[92,126,79,132,60,132]])+
+    gtrRosette(60,87,9.5)+`<rect x="49" y="102" width="22" height="5" rx="1" stroke-width="1.3"/><line x1="53" y1="104.5" x2="67" y2="104.5" stroke-width="0.8"/>`,
+  'RESO':()=>gtrNeck(5,54)+gtrAcBody(50,134,[[70,50,88,56,88,67],[88,74,84,78,84,87],[84,96,94,98,94,112],[94,128,80,134,60,134]])+
+    `<circle cx="45" cy="63" r="3.6" stroke-width="1"/><circle cx="75" cy="63" r="3.6" stroke-width="1"/>`+
+    `<circle cx="60" cy="97" r="17" stroke-width="1.6"/><circle cx="60" cy="97" r="11.5" stroke-width="0.8"/><circle cx="60" cy="97" r="4.2" stroke-width="0.8"/>`+
+    (()=>{let s='';for(let i=0;i<8;i++){const a=i/8*Math.PI*2,c=Math.cos(a),n=Math.sin(a);s+=`<line x1="${(60+4.2*c).toFixed(1)}" y1="${(97+4.2*n).toFixed(1)}" x2="${(60+11.5*c).toFixed(1)}" y2="${(97+11.5*n).toFixed(1)}" stroke-width="0.8"/>`;}return s;})()+
+    gtrSolid(60,97,13,2.4,1),
+  'BANJO':()=>gtrNeck(4.5,66,{head:'banjo',frets:6})+
+    `<line x1="53" y1="50" x2="51.5" y2="52" stroke-width="1.3"/><circle cx="50.6" cy="53" r="2" fill="currentColor" fill-opacity="0.13" stroke-width="1.3"/>`+
+    `<circle cx="60" cy="98" r="30" fill="currentColor" fill-opacity="0.07"/>`+`<circle cx="60" cy="98" r="24" stroke-width="1"/>`+
+    (()=>{let s='';for(let i=0;i<16;i++){const a=i/16*Math.PI*2,c=Math.cos(a),n=Math.sin(a);s+=`<line x1="${(60+30*c).toFixed(1)}" y1="${(98+30*n).toFixed(1)}" x2="${(60+33*c).toFixed(1)}" y2="${(98+33*n).toFixed(1)}" stroke-width="1"/>`;}return s;})()+
+    gtrSolid(60,102,14,2.2,1)+`<path d="M 55 116 L 65 116 L 62.5 122 L 57.5 122 Z" stroke-width="1.3"/>`,
+  'SITAR':()=>
+    `<path d="M ${GTR_CX-7.5} ${GTR_NUT} C ${GTR_CX-8.5} 15 ${GTR_CX-6} 7 ${GTR_CX} 7 C ${GTR_CX+6} 7 ${GTR_CX+8.5} 15 ${GTR_CX+7.5} ${GTR_NUT} Z" fill="currentColor" fill-opacity="0.07" stroke-width="1.4"/>`+
+    `<circle cx="49" cy="12" r="2" fill="currentColor" fill-opacity="0.13" stroke-width="1.2"/><circle cx="71" cy="16" r="2" fill="currentColor" fill-opacity="0.13" stroke-width="1.2"/>`+
+    `<line x1="52.5" y1="${GTR_NUT}" x2="67.5" y2="${GTR_NUT}" stroke-width="1.8"/>`+
+    `<line x1="52.5" y1="${GTR_NUT}" x2="52.5" y2="78" stroke-width="1.3"/><line x1="67.5" y1="${GTR_NUT}" x2="67.5" y2="78" stroke-width="1.3"/>`+
+    (()=>{let s='';for(let i=0;i<5;i++){const y=33+i*9;s+=`<path d="M 52.5 ${y} Q 60 ${y-3.4} 67.5 ${y}" stroke-width="1"/>`;}return s;})()+   // raised, curved movable frets
+    (()=>{let s='';for(let i=0;i<4;i++){const y=36+i*9.5;s+=`<line x1="52.5" y1="${y}" x2="47.5" y2="${y-1}" stroke-width="1"/><circle cx="46.3" cy="${y-1.2}" r="1.3" fill="currentColor" stroke="none"/>`;}return s;})()+   // sympathetic-string pegs
+    `<path d="M 52.5 78 C 46 82 40 88 37 96 C 32 108 38 124 50 131 C 62 138 78 135 86 125 C 94 115 93 99 84 89 C 79 83 74 80 67.5 78 Z" fill="currentColor" fill-opacity="0.07"/>`+   // gourd
+    gtrSolid(60,101,16,3,1)+gtrSolid(60,94,9,1.8,0.9)+`<circle cx="77" cy="98" r="3" stroke-width="1"/>`,
+};
+const GTR_LISTS={ electric:['CLA-ST','MOD-ST','TE','LP','P-90','335','RICK','LIPS','WIDE RANGE','BRIGHT HUM','L4','FRETLESS'],   // display order; CC values always come from the model tables above
+                  acoustic:['MA28','TRP-0','GB45','GB SML','GLD 40','NYLON','RESO','BANJO','SITAR'] };
+let gtrTab='electric';
+function gtrSVG(name){ const art=GTR_ART[name]; return art?`<svg viewBox="0 0 120 150" class="gtr-art" aria-hidden="true"><g transform="translate(0,5)">${art()}</g></svg>`:''; }
+function gtrRender(follow=true){
+  const chips=document.getElementById('gtrChips'); if(!chips) return;
+  const m=modelSpec(curModelName);
+  if(follow&&m) gtrTab=m.cat;   // a tuning/manual change pulls the card to the model's own tab so the lit chip is visible
+  document.querySelectorAll('#gtrTabs button').forEach(b=>b.classList.toggle('on', b.dataset.cat===gtrTab));
+  document.getElementById('gtrName').textContent=curModelName||'—';
+  document.getElementById('gtrCat').textContent=m?(m.cat==='electric'?'Electric':'Acoustic'):'';
+  document.getElementById('gtrStage').innerHTML=curModelName?gtrSVG(curModelName):'';
+  chips.innerHTML=GTR_LISTS[gtrTab].map(n=>`<button class="gtr-chip${n===curModelName?' on':''}" data-model="${n}">${n}</button>`).join('');
+}
+document.getElementById('gtrTabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; gtrTab=b.dataset.cat; gtrRender(false); });
+document.getElementById('gtrChips').addEventListener('click',e=>{ const b=e.target.closest('.gtr-chip'); if(!b) return; curModelName=b.dataset.model; gtrPicked=true; sendModelRaw(curModelName); gtrRender(); });   // manual pick: explicit intent, skips the Auto gate
+curModelName='CLA-ST';   // boot baseline mirrors the string grid: Standard tuning's model, display-only (nothing is sent until a tuning or chip is picked)
+gtrRender();
+
 // Per-tuning model choices (keyed by tuning name; Modes use their C-template names, like TUNING_TIPS)
 const TUNING_MODELS={
   // Common
@@ -1739,7 +1921,7 @@ function sendBase(offsets){   // Classic-mode tuning path: write the base tuning
   });
   curOffsets=offsets.slice();
 }
-function rbHardwareSync(){ if(!midiOut||!settings.realBend) return; rbDepths=[-1,-1,-1,-1,-1,-1]; sendBase(baseOffsets); sendModel(lastModelName); if(held.size) rbApply(bendsFromEngaged()); }   // fresh port / mode flip / base re-send → push the resting state + current tuning, then glide any live held bend back in (never leave UI and hardware disagreeing)
+function rbHardwareSync(){ if(!midiOut||!settings.realBend) return; rbDepths=[-1,-1,-1,-1,-1,-1]; sendBase(baseOffsets); if(gtrPicked&&curModelName) sendModelRaw(curModelName); else if(settings.autoModel) sendModel(lastModelName); if(held.size) rbApply(bendsFromEngaged()); }   // re-push only a model that actually landed — the display-only boot seed (and Auto=Off with no pick) must leave the hardware's model alone   // fresh port / mode flip / base re-send → push the resting state + current tuning, then glide any live held bend back in (never leave UI and hardware disagreeing)
 function send(offsets){
   if(!midiOut){ toast('No MIDI output connected', true, {label:'Open Settings', fn:openSettings}); return false; }
   if(glideTimer){ clearInterval(glideTimer); glideTimer=null; }
@@ -2435,9 +2617,11 @@ function placeBench(){
     if(bench.parentElement!==wrap) wrap.appendChild(bench);
     if(hist && (hist.parentElement!==wrap || bench.nextElementSibling!==hist)) bench.after(hist);
   }
-  if(pedals && pan){   // very wide → the Bends panel is the whole right rail; otherwise it returns to its spot before Panning
+  const guitar=document.getElementById('sec-guitar');
+  if(pedals && pan){   // very wide → Bends + Guitar fill the right rail; otherwise they return to their spot before Panning
     if(wide&&rail){ if(pedals.parentElement!==rail) rail.appendChild(pedals); }
     else if(pedals.parentElement!==wrap) wrap.insertBefore(pedals, pan);
+    if(guitar && (guitar.parentElement!==pedals.parentElement || guitar.previousElementSibling!==pedals)) pedals.after(guitar);   // GUITAR rides directly under Bends in both layouts
   }
 }
 window.addEventListener('resize', placeBench);
