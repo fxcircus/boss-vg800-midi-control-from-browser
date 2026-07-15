@@ -30,9 +30,17 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('input'); ap.add_argument('output', nargs='?')
     ap.add_argument('--crop', help='L,T,R,B box in source pixels (inside any UI frame)')
+    ap.add_argument('--rotate', choices=['cw', 'ccw', '180'],
+                    help='rotate after cropping (cw puts a vertical guitar photo neck-right, bass side up)')
     ap.add_argument('--threshold', type=float, default=110, help='luminance cut for ink')
     ap.add_argument('--ink', choices=['bright', 'dark'], default='bright',
                     help='which side of the threshold is ink (bright = light-on-dark LCD)')
+    ap.add_argument('--edges', type=float, metavar='PCT',
+                    help='product-photo mode: ink = gradient-magnitude edges above this percentile '
+                         '(~92 works; use instead of --threshold for photos of real guitars)')
+    ap.add_argument('--silhouette', type=float, metavar='BG',
+                    help='with --edges: also ink the rim of the subject (background = luminance above BG, '
+                         '~246 for white product shots) so soft outer edges still get a complete outline')
     ap.add_argument('--scale', type=int, default=4)
     ap.add_argument('--blur', type=float, default=1.6)
     ap.add_argument('--dilate', type=int, default=0,
@@ -49,6 +57,8 @@ def main():
     if a.crop:
         box = tuple(int(v) for v in a.crop.split(','))
         im = im.crop(box)
+    if a.rotate:
+        im = im.transpose({'cw': Image.ROTATE_270, 'ccw': Image.ROTATE_90, '180': Image.ROTATE_180}[a.rotate])
     lum = np.asarray(im).astype(float).mean(axis=2)
 
     if a.histogram:
@@ -61,8 +71,20 @@ def main():
     if not a.output:
         sys.exit('output path required (or use --histogram)')
 
-    mask = (lum > a.threshold) if a.ink == 'bright' else (lum < a.threshold)
-    print(f'crop {im.size}  threshold {a.threshold} ({a.ink}=ink)  ink {mask.mean()*100:.1f}%')
+    if a.edges is not None:   # photo mode: lines = luminance-gradient ridges, works on filled/colored subjects
+        soft = np.asarray(im.filter(ImageFilter.GaussianBlur(0.8))).astype(float).mean(axis=2)
+        gy, gx = np.gradient(soft)
+        g = np.hypot(gx, gy)
+        mask = g > np.percentile(g, a.edges)
+        if a.silhouette is not None:
+            subj = Image.fromarray(((lum <= a.silhouette) * 255).astype(np.uint8))
+            rim = np.asarray(subj) > 128
+            rim = rim & ~(np.asarray(subj.filter(ImageFilter.MinFilter(5))) > 128)   # subject minus eroded subject = its rim
+            mask = mask | rim
+        print(f'crop {im.size}  edges>{a.edges}pct (grad {np.percentile(g, a.edges):.1f})  ink {mask.mean()*100:.1f}%')
+    else:
+        mask = (lum > a.threshold) if a.ink == 'bright' else (lum < a.threshold)
+        print(f'crop {im.size}  threshold {a.threshold} ({a.ink}=ink)  ink {mask.mean()*100:.1f}%')
 
     big = Image.fromarray((mask * 255).astype(np.uint8)) \
         .resize((im.width * a.scale, im.height * a.scale), Image.LANCZOS)
