@@ -30,8 +30,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('input'); ap.add_argument('output', nargs='?')
     ap.add_argument('--crop', help='L,T,R,B box in source pixels (inside any UI frame)')
-    ap.add_argument('--rotate', choices=['cw', 'ccw', '180'],
-                    help='rotate after cropping (cw puts a vertical guitar photo neck-right, bass side up)')
+    ap.add_argument('--rotate',
+                    help='rotate after cropping: cw|ccw|180, or float degrees (counter-clockwise, '
+                         'white-filled expand) to level a diagonally-shot guitar')
     ap.add_argument('--threshold', type=float, default=110, help='luminance cut for ink')
     ap.add_argument('--ink', choices=['bright', 'dark'], default='bright',
                     help='which side of the threshold is ink (bright = light-on-dark LCD)')
@@ -41,6 +42,9 @@ def main():
     ap.add_argument('--silhouette', type=float, metavar='BG',
                     help='with --edges: also ink the rim of the subject (background = luminance above BG, '
                          '~246 for white product shots) so soft outer edges still get a complete outline')
+    ap.add_argument('--sil-close', type=int, metavar='N', default=0,
+                    help='odd kernel: morphologically close the subject mask before taking its rim — '
+                         'seals specular-highlight holes on chrome/reflective bodies (try 25)')
     ap.add_argument('--scale', type=int, default=4)
     ap.add_argument('--blur', type=float, default=1.6)
     ap.add_argument('--dilate', type=int, default=0,
@@ -54,10 +58,13 @@ def main():
     a = ap.parse_args()
 
     im = Image.open(a.input).convert('RGB')
+    degrees = a.rotate not in (None, 'cw', 'ccw', '180')
+    if degrees:   # level a diagonal shot first — the crop is then given in leveled coordinates
+        im = im.rotate(float(a.rotate), expand=True, fillcolor=(255, 255, 255), resample=Image.BICUBIC)
     if a.crop:
         box = tuple(int(v) for v in a.crop.split(','))
         im = im.crop(box)
-    if a.rotate:
+    if a.rotate and not degrees:
         im = im.transpose({'cw': Image.ROTATE_270, 'ccw': Image.ROTATE_90, '180': Image.ROTATE_180}[a.rotate])
     lum = np.asarray(im).astype(float).mean(axis=2)
 
@@ -78,6 +85,8 @@ def main():
         mask = g > np.percentile(g, a.edges)
         if a.silhouette is not None:
             subj = Image.fromarray(((lum <= a.silhouette) * 255).astype(np.uint8))
+            if a.sil_close:
+                subj = subj.filter(ImageFilter.MaxFilter(a.sil_close)).filter(ImageFilter.MinFilter(a.sil_close))
             rim = np.asarray(subj) > 128
             rim = rim & ~(np.asarray(subj.filter(ImageFilter.MinFilter(5))) > 128)   # subject minus eroded subject = its rim
             mask = mask | rim
