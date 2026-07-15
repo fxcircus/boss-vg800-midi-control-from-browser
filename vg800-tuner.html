@@ -388,9 +388,10 @@
   .map-ico .km-ico { width: 15px; height: 15px; }
   .seg-wide { display: flex; max-width: 560px; margin: 4px auto 8px; }   /* primary mode switch — full content width */
   .util-row { display: flex; align-items: stretch; gap: 8px; max-width: 560px; margin: 0 auto 12px; flex-wrap: wrap; }   /* same column as the mode seg above */
-  .util-row .speed-seg { margin-left: auto; }   /* Momentary|Latch anchors the left corner, SPEED the right — deliberate negative space between */
+  .util-row #latchSeg { flex: 1 1 auto; }   /* stretches to meet SPEED at the midpoint */
+  .util-row .speed-seg { margin-left: auto; flex: 0 0 auto; }
   .speed-seg [data-rbms] { flex: 0 0 36px; width: 36px; padding: 7px 0; }   /* identical fixed cells — content-sized chevrons go lumpy */
-  .seg-lbl { display: flex; align-items: center; padding: 0 10px; font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--bone-dim); background: color-mix(in srgb, #000 22%, transparent); border-radius: 6px; cursor: default; user-select: none; }   /* recessed label cell — part of the control, not a dead button */
+  .seg-lbl { display: flex; align-items: center; padding: 0 10px; font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--bone); background: color-mix(in srgb, #000 22%, transparent); border-radius: 6px; cursor: default; user-select: none; }   /* recessed label cell — part of the control, not a dead button */
   /* Pedal Latch — a centered Latch | Off segmented toggle, same style as the app's other .seg switches */
   .map-btn { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10.5px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--bone-dim); background: transparent; border: 1px solid var(--edge); border-radius: 8px; padding: 6px 11px; cursor: pointer; transition: color .12s, border-color .12s, background .12s; }
   .map-btn:hover { color: var(--brass); border-color: var(--brass-deep); background: var(--felt); }
@@ -2289,6 +2290,7 @@ function renderKeymap(){
   box.querySelectorAll('.kb-chip[data-bind]').forEach(b=> b.addEventListener('click', ()=>{ bindingCtrl=b.dataset.bind; renderKeymap(); }));
   const rb=box.querySelector('.kb-chip[data-reset]'); if(rb) rb.addEventListener('click', ()=>{ bindableCtrls().forEach(c=> settings.keys[c.id]=c.key); settings.chordKeys={...CHORD_KEYS_DEFAULT}; rebuildKeymap(); saveSettingsLS(); bindingCtrl=null; renderKeymap(); renderPedals(); });
 }
+const LAP_NAMES=new Set(FAMILIES.filter(f=>f.section==='Lap Steel').flatMap(f=>f.tunings.map(t=>t.name)));   // the only non-pedal-steel tunings with real pedal/lever vocabulary
 function renderPedals(){
   const wrap=document.getElementById('pedalWrap'); if(!wrap) return;
   const psMode=!!settings.perStringOn;   // Per-String wins in every context
@@ -2298,26 +2300,25 @@ function renderPedals(){
   rebuildKeymap();
   ctrlStateCache={};
   controls.forEach(c=>{ ctrlStateCache[c.id]=controlState(c,curInfo,baseOffsets); });
-  let html=`<div class="seg seg-wide" id="psSeg" title="Switch between this context's preset bends and one-per-string manual bends"><button class="${!settings.perStringOn?'on':''}" data-ps="0">Preset</button><button class="${settings.perStringOn?'on':''}" data-ps="1">Per-String</button></div>`;   // the section's primary mode choice — full width, most prominent
+  let html=`<div class="seg seg-wide" id="psSeg" title="Switch between this context's preset bends and one-per-string manual bends"><button class="${!settings.perStringOn?'on':''}" data-ps="0" title="Ready-made benders for this tuning or section">Preset</button><button class="${settings.perStringOn?'on':''}" data-ps="1" title="Six manual benders — one per string, with savable presets">Per-String</button></div>`;   // the section's primary mode choice — full width, most prominent
   // utility row: Momentary|Latch names both of its states (no label needed); Speed keeps a label because chevrons can't say what they're the speed of
   const CHEV={700:'&gt;',300:'&gt;&gt;',120:'&gt;&gt;&gt;'};
   const utils=[
-    !sbMode?`<div class="seg" id="latchSeg" title="Momentary: press &amp; hold a pedal · Latch: one tap engages it, the next tap releases"><button class="${!settings.latch?'on':''}" data-latch="0">Momentary</button><button class="${settings.latch?'on':''}" data-latch="1">Latch</button></div>`:'',
-    settings.realBend?`<div class="seg speed-seg" id="btSeg"><span class="seg-lbl">Speed</span>${[...RB_MS_OPTS].reverse().map(([v,nm])=>`<button class="${(settings.rbMs||300)===v?'on':''}" data-rbms="${v}" title="${nm}">${CHEV[v]}</button>`).join('')}</div>`:''
+    !sbMode?`<div class="seg" id="latchSeg"><button class="${!settings.latch?'on':''}" data-latch="0" title="Press &amp; hold to bend — release to return">Momentary</button><button class="${settings.latch?'on':''}" data-latch="1" title="One tap engages the bend, the next tap releases it">Latch</button></div>`:'',
+    settings.realBend?`<div class="seg speed-seg" id="btSeg"><span class="seg-lbl">Speed</span>${[...RB_MS_OPTS].reverse().map(([v,nm])=>`<button class="${(settings.rbMs||300)===v?'on':''}" data-rbms="${v}" title="${nm} · ${v} ms glide">${CHEV[v]}</button>`).join('')}</div>`:''
   ].filter(Boolean);
   if(utils.length) html+=`<div class="util-row">${utils.join('')}</div>`;
   if(customMode){                                               // Tuning declares its own pedals (fixed per-string bends)
     const grp=g=> controls.filter(c=>c.group===g).map(c=>pedalBtnHTML(c.id,c.name,'',ctrlStateCache[c.id])).join('');
     const foot=grp('foot'), knee=grp('knee'), combo=grp('combo');
     html+=`<div class="pedal-info">${activeBendInfo||'This tuning\'s own pedals — hold to bend, release to return.'}</div>`;
-    if(foot)  html+=`<div class="fam-name">Foot Pedals</div><div class="pedals">${foot}</div>`;
-    if(knee)  html+=`<div class="fam-name">Knee Levers</div><div class="pedals">${knee}</div>`;
+    if(foot||knee) html+=`<div class="pedals">${foot+knee}</div>`;   // artist tunings aren't steels — no pedal/lever captions
     if(combo) html+=`<div class="fam-name">Combos</div><div class="pedals">${combo}</div>`;
   } else if(modesMode){                                         // Modes section — two foot pedals bend to the mode's 7th from opposite ends
     const mn=activeModeTuning.name, sev=NOTE[activeModeTuning.seventh], kind=(((activeModeTuning.seventh-(activeModeTuning.root||0))+12)%12)===11?'major 7th':'♭7';   // quality judged relative to the mode's root, not C
     const chNote=activeModeTuning.charIv!=null?NOTE[((((activeModeTuning.root||0)+activeModeTuning.charIv)%12)+12)%12]:null;
     html+=`<div class="pedal-info">Bends to the 7th of <b>${mn}</b> — the <b>${sev}</b> (${kind}). <b>7th ↑</b> lifts the high E up to it; <b>7th ↓</b> drops the low E down to it${chNote?`; <b>Color Tone</b> lifts string 3 to the mode's colour tone (<b>${chNote}</b>)`:''}. Retargets with each mode.</div>`;
-    html+=`<div class="fam-name">Foot Pedals · to the 7th</div><div class="pedals">${controls.map(c=>pedalBtnHTML(c.id,c.name,'',ctrlStateCache[c.id])).join('')}</div>`;
+    html+=`<div class="pedals">${controls.map(c=>pedalBtnHTML(c.id,c.name,'',ctrlStateCache[c.id])).join('')}</div>`;
   } else if(sbMode){                                            // Chords key mode — six string-pedals raise each string to the next scale tone
     html+=`<div class="pedal-info">Chord held in <b>${settings.keyRoot} ${settings.keyScale}</b> — each pedal raises one string to the next scale tone. Hold to bend, release to return.</div>`;
     html+=`<div class="fam-name">Scale Bends · one string each</div><div class="pedals">${controls.map(c=>pedalBtnHTML(c.id,c.name,'',ctrlStateCache[c.id])).join('')}</div>`;
@@ -2342,8 +2343,11 @@ function renderPedals(){
     const grp=g=> controls.filter(c=>c.group===g).map(c=>pedalBtnHTML(c.id,c.name,c.act,ctrlStateCache[c.id])).join('');
     const foot=grp('foot'), knee=grp('knee'), combo=grp('combo'), shifts=grp('shift');
     html+=`<div class="pedal-info">${info}</div>`;
-    if(foot)  html+=`<div class="fam-name">Foot Pedals</div><div class="pedals">${foot}</div>`;
-    if(knee)  html+=`<div class="fam-name">Knee Levers</div><div class="pedals">${knee}</div>`;
+    const steelish=steelRoot!=null||LAP_NAMES.has(active);   // only real steels use pedal/lever vocabulary
+    if(steelish){
+      if(foot)  html+=`<div class="fam-name">Foot Pedals</div><div class="pedals">${foot}</div>`;
+      if(knee)  html+=`<div class="fam-name">Knee Levers</div><div class="pedals">${knee}</div>`;
+    } else if(foot||knee) html+=`<div class="pedals">${foot+knee}</div>`;
     if(combo) html+=`<div class="fam-name">Combos</div><div class="pedals">${combo}</div>`;
     if(shifts) html+=`<div class="fam-name">Whole Neck · I → IV → V</div><div class="pedals">${shifts}</div>`;
   }
