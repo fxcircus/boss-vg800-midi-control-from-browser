@@ -2295,9 +2295,7 @@ function renderPedals(){
   } else if(psMode){                                            // Per-String — six pedals, one per string, each a saved semitone bend
     const psEq=a=>Array.isArray(a)&&a.length===6&&a.every((v,i)=>(v|0)===(settings.stringBend[i]|0));   // does a preset match the live amounts? (drives the lit cell)
     const lit=p=> p.name==='Clear' ? !settings.stringBend.some(x=>x|0) : psEq(p.amounts);   // radio feel: exactly one cell lights per state (Clear = everything zeroed)
-    html+= settings.realBend
-      ? `<div class="pedal-info">Each pedal bends <b>one string</b>. Set its semitones with <b>−</b>/<b>＋</b> — the full octave either way on every tuning (the bend rides on top of the ALT&nbsp;TUNE base) — then hold or latch to bend. <b>All Strings</b> pushes every set bender in one press.</div>`
-      : `<div class="pedal-info">Each pedal bends <b>one string</b>. Set its semitones with <b>−</b>/<b>＋</b> — kept within one octave of standard, minus what the current tuning already uses — then hold or latch to bend. <b>All Strings</b> pushes every set bender in one press.</div>`;
+    if(!settings.realBend) html+=`<div class="pedal-info">Base + bend share one ±12 range in Panning — a pedal greys out past what the current tuning leaves it.</div>`;   // Classic needs no prose; this line only explains Panning's grey-outs
     html+=`<div class="seg seg-wrap" id="psFacSeg">${FACTORY_PS.map((p,i)=>`<button class="${lit(p)?'on':''}" data-psfac="${i}" title="${p.tip||p.name}">${p.name}</button>`).join('')}</div>`;
     const psSingles=controls.filter(c=>!c.allStrings);   // the All-Strings pedal stays in the keymap (its key shows on every row) — it just has no card
     html+=`<div class="fam-name">Strings · one pedal each</div><div class="ps-list">${psSingles.map(c=>perStringRowHTML(c, ctrlStateCache[c.id])).join('')}</div>`;
