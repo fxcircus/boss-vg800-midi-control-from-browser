@@ -390,7 +390,7 @@
   .util-row { display: flex; align-items: stretch; gap: 8px; max-width: 560px; margin: 0 auto 12px; flex-wrap: wrap; }   /* same column as the mode seg above */
   .util-row #latchSeg { flex: 1 1 auto; }   /* stretches to meet SPEED at the midpoint */
   .util-row .speed-seg { margin-left: auto; flex: 0 0 auto; }
-  .speed-seg [data-rbms] { flex: 0 0 36px; width: 36px; padding: 7px 0; }   /* identical fixed cells — content-sized chevrons go lumpy */
+  .speed-seg button { flex: 0 0 36px; width: 36px; padding: 7px 0; }   /* identical fixed cells — content-sized chevrons go lumpy */
   .seg-lbl { display: flex; align-items: center; padding: 0 10px; font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--bone); background: color-mix(in srgb, #000 22%, transparent); border-radius: 6px; cursor: default; user-select: none; }   /* recessed label cell — part of the control, not a dead button */
   /* Pedal Latch — a centered Latch | Off segmented toggle, same style as the app's other .seg switches */
   .map-btn { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10.5px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--bone-dim); background: transparent; border: 1px solid var(--edge); border-radius: 8px; padding: 6px 11px; cursor: pointer; transition: color .12s, border-color .12s, background .12s; }
@@ -2647,16 +2647,16 @@ function renderEthnic(){
   const cards=ETHNIC.map(ethnicCardHTML).join('');
   const fx=`<div class="inst-fx">`
     +(settings.realBend
-      ? `<span class="fx-tog fx-static" title="CC 77 carries the electric model in the Classic preset — flip 12-string on the pedal itself">12-string: ▲ on the VG-800</span>`
+      ? `<span class="fx-tog fx-static" title="CC 77 carries the electric model in the Classic preset — flip 12-string on the pedal itself">Tip: to engage 12-string: click the ▲ on the VG-800</span>`
       : `<label class="fx-tog"><input type="checkbox" id="fxDoubler"${settings.fxDoubler?' checked':''}><span>String doubler</span></label>`)
-    +`<label class="fx-tog"><input type="checkbox" id="fxOctave"${settings.fxOctave?' checked':''}><span>+ Octave</span></label>`
+    +`<div class="seg speed-seg" id="fxOctSeg"><span class="seg-lbl">+ Octave</span><button class="${settings.fxOctave?'on':''}" data-oct="1" title="Lift octave-low instruments to true pitch">On</button><button class="${!settings.fxOctave?'on':''}" data-oct="0" title="Leave them an octave low — the capo hint shows where to capo">Off</button></div>`
     +`</div>`;
   const cluster=ethnicInst?clusterRowHTML(ethnicInst, ethnicStart):'';
   wrap.innerHTML=`${fx}<div class="grid">${cards}</div>${cluster}`;
   wrap.querySelectorAll('.card.inst').forEach(c=> c.addEventListener('click',()=>{ const inst=ETHNIC.find(x=>x.name===c.dataset.name); if(inst) applyInst(inst, inst===ethnicInst?ethnicStart:0); }));
   wrap.querySelectorAll('.clbtn').forEach(b=> b.addEventListener('click',()=>{ if(!b.classList.contains('disabled')&&ethnicInst) applyInst(ethnicInst, +b.dataset.start); }));
   const fd=wrap.querySelector('#fxDoubler'); if(fd) fd.addEventListener('change',()=>{ settings.fxDoubler=fd.checked; saveSettingsLS(); sendInstFx(); renderEthnic(); });
-  const fo=wrap.querySelector('#fxOctave'); if(fo) fo.addEventListener('change',()=>{ settings.fxOctave=fo.checked; saveSettingsLS(); sendInstFx(); rbHardwareSync(); renderEthnic(); });   // re-render updates the capo hints; Classic mode re-sends the base (the octave lift lives in the ALT TUNE pitches) and re-applies any held bend
+  wrap.querySelectorAll('#fxOctSeg [data-oct]').forEach(b=> b.addEventListener('click',()=>{ const on=b.dataset.oct==='1'; if(on===!!settings.fxOctave) return; settings.fxOctave=on; saveSettingsLS(); sendInstFx(); rbHardwareSync(); renderEthnic(); }));   // re-render updates the capo hints; Classic mode re-sends the base (the octave lift lives in the ALT TUNE pitches) and re-applies any held bend
 }
 /* ===== Pedal Steel section (3 tunings + 6-of-10 window) ===== */
 function steelCardHTML(t){
