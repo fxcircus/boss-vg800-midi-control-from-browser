@@ -65,6 +65,7 @@ Every tuning built into the app, with its open-string notes (low→high), the pe
 |---|---|---|---|---|
 | **Fripp NST** | C G D A E G | `[+3, +5, +2, 0, -2, -4]` | `LP` | Robert Fripp’s New Standard Tuning (all fifths) · King Crimson “Frame by Frame” (Discipline, 1981) |
 | **Gambale** | A D G C E A | `[-7, -7, +5, +5, +5, +5]` | `335` | Frank Gambale · fourths tuning |
+| **Kashmir** | D A D G A D | `[-2, -2, 0, 0, 0, -2]` | `LIPS` | Led Zeppelin · “Kashmir” (Jimmy Page, on his Danelectro) |
 | **Rain Song** | D G C G C D | `[-2, +1, 0, -2, -2, -2]` | `TRP-0` | Led Zeppelin · “The Rain Song” (Jimmy Page) |
 | **Ostrich** | G A B D E G | `[-9, -7, -5, -3, 0, +3]` | `P-90` | Sonic Youth · Ostrich tuning |
 | **Schizophrenia** | F# F# G G A A | `[+5, -2, 0, +5, -3, +2]` | `MOD-ST` | Sonic Youth · “Schizophrenia” (Thurston Moore) |
@@ -126,4 +127,4 @@ Maps an instrument's pitches onto a cluster of strings.
 
 ---
 
-_63 tunings in total. Generated from `vg800-tuner.html`._
+_64 tunings in total. Generated from `vg800-tuner.html`._

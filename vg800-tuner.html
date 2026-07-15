@@ -1525,7 +1525,7 @@ const TUNING_MODELS={
   // Drop
   'Drop D':'LP', 'Drop Db':'BRIGHT HUM', 'Drop C':'BRIGHT HUM', 'Drop B':'BRIGHT HUM', 'Drop Bb':'BRIGHT HUM', 'Drop A':'BRIGHT HUM',
   // Artists
-  'Fripp NST':'LP', 'Gambale':'335', 'Rain Song':'TRP-0', 'Ostrich':'P-90', 'Schizophrenia':'MOD-ST', 'Nick Drake':'TRP-0',
+  'Fripp NST':'LP', 'Gambale':'335', 'Kashmir':'LIPS', 'Rain Song':'TRP-0', 'Ostrich':'P-90', 'Schizophrenia':'MOD-ST', 'Nick Drake':'TRP-0',
   'Keith Richards':'TE', 'Am. Football':'MOD-ST', 'Soundgarden':'BRIGHT HUM', 'Joni Mitchell':'MA28', 'Both Sides':'MA28',
   'Pyramid Song':'L4', 'Radiohead':'RICK',
   // Modes — neutral clean electric for the theory playground
@@ -1605,6 +1605,9 @@ const FAMILIES = [
   { family:'Artists', tunings:[
     {name:'Fripp NST', notes:'C G D A E G', offsets:[3,5,2,0,-2,-4], ref:'Robert Fripp’s New Standard Tuning (all fifths) · King Crimson “Frame by Frame” (Discipline, 1981)'},
     {name:'Gambale', notes:'A D G C E A', offsets:[-7,-7,5,5,5,5], ref:'Frank Gambale · fourths tuning'},
+    {name:'Kashmir', notes:'D A D G A D', offsets:[-2,-2,0,0,0,-2], ref:'Led Zeppelin · “Kashmir” (Jimmy Page, on his Danelectro)',
+      pedals:[{id:'A', name:'Sus · resolve', group:'foot', key:'a', string:2, semis:2}],
+      pedalInfo:'<b>Sus · resolve</b> — the DADGAD move Page rides through Kashmir: the G lifts to <b>A</b>, the suspended 4th melting into pure fifths (D A D A A D). Glides in Classic mode.'},
     {name:'Rain Song', notes:'D G C G C D', offsets:[-2,1,0,-2,-2,-2], ref:'Led Zeppelin · “The Rain Song” (Jimmy Page)'},
     {name:'Ostrich', notes:'G A B D E G', offsets:[-9,-7,-5,-3,0,3], ref:'Sonic Youth · Ostrich tuning'},
     {name:'Schizophrenia', notes:'F# F# G G A A', offsets:[5,-2,0,5,-3,2], ref:'Sonic Youth · “Schizophrenia” (Thurston Moore)'},
