@@ -65,18 +65,19 @@ Every tuning built into the app, with its open-string notes (low→high), the pe
 |---|---|---|---|---|
 | **Fripp NST** | C G D A E G | `[+3, +5, +2, 0, -2, -4]` | `LP` | Robert Fripp’s New Standard Tuning (all fifths) · King Crimson “Frame by Frame” (Discipline, 1981) |
 | **Gambale** | A D G C E A | `[-7, -7, +5, +5, +5, +5]` | `335` | Frank Gambale · fourths tuning |
-| **Kashmir** | D A D G A D | `[-2, -2, 0, 0, 0, -2]` | `LIPS` | Led Zeppelin · “Kashmir” (Jimmy Page, on his Danelectro) |
-| **Rain Song** | D G C G C D | `[-2, +1, 0, -2, -2, -2]` | `TRP-0` | Led Zeppelin · “The Rain Song” (Jimmy Page) |
+| **Led Kashmir** | D A D G A D | `[-2, -2, 0, 0, 0, -2]` | `LIPS` | Led Zeppelin · “Kashmir” (Jimmy Page, on his Danelectro) |
+| **Led Rain** | D G C G C D | `[-2, +1, 0, -2, -2, -2]` | `TRP-0` | Led Zeppelin · “The Rain Song” (Jimmy Page) |
 | **Ostrich** | G A B D E G | `[-9, -7, -5, -3, 0, +3]` | `P-90` | Sonic Youth · Ostrich tuning |
 | **Schizophrenia** | F# F# G G A A | `[+5, -2, 0, +5, -3, +2]` | `MOD-ST` | Sonic Youth · “Schizophrenia” (Thurston Moore) |
 | **Nick Drake** | C G C F C E | `[0, +1, -2, -2, -2, -4]` | `TRP-0` | Nick Drake · “Pink Moon” (Open C) |
 | **Keith Richards** | G G D G B D | `[-2, 0, 0, 0, -2, +3]` | `TE` | Rolling Stones · “Start Me Up” (5-string Open G) |
 | **Am. Football** | F A C G C E | `[0, +1, 0, -2, 0, +1]` | `MOD-ST` | American Football · “Never Meant” (Fmaj9) |
-| **Soundgarden** | E E B B B B | `[-5, 0, +4, -3, -5, 0]` | `BRIGHT HUM` | Soundgarden · “The Day I Tried to Live” |
-| **Joni Mitchell** | E B E G# B E | `[0, 0, +1, +2, +2, 0]` | `MA28` | Joni Mitchell · “Big Yellow Taxi” (Open E) |
-| **Both Sides** | D A D F# A D | `[-2, -2, -1, 0, 0, -2]` | `MA28` | Joni Mitchell — Open D, no capo. Recording uses capo 4 (sounds in F# major); this is the no-capo base tuning. |
-| **Pyramid Song** | F# A# C# F# A# F# | `[+2, -1, -1, -1, +1, +2]` | `L4` | Radiohead — Open F# major. Let the top F# ring as a pedal; barre strings 6-2 for Gmaj7 (fret 1) and A6 (fret 3). |
-| **Radiohead** | C G C G G# C | `[-4, -3, 0, -2, -2, -4]` | `RICK` | Radiohead — "Everything In Its Right Place" voicing — open strings C G C G G# C with a C pedal on the top string. The G → C bender pushes the neutral G string (3) up a fourth to a second C. |
+| **SoundG Wave** | E E B B B B | `[-5, 0, +4, -3, -5, 0]` | `BRIGHT HUM` | Soundgarden · “My Wave” |
+| **SoundG Sun** | D A D G B E | `[0, 0, 0, 0, 0, -2]` | `BRIGHT HUM` | Soundgarden · “Black Hole Sun” (Drop D) |
+| **Joni Cab** | E B E G# B E | `[0, 0, +1, +2, +2, 0]` | `MA28` | Joni Mitchell · “Big Yellow Taxi” (Open E) |
+| **Joni Sides** | D A D F# A D | `[-2, -2, -1, 0, 0, -2]` | `MA28` | Joni Mitchell — Open D, no capo. Recording uses capo 4 (sounds in F# major); this is the no-capo base tuning. |
+| **Radio Pyramid** | F# A# C# F# A# F# | `[+2, -1, -1, -1, +1, +2]` | `L4` | Radiohead — Open F# major. Let the top F# ring as a pedal; barre strings 6-2 for Gmaj7 (fret 1) and A6 (fret 3). |
+| **Radio Everything** | C G C G G# C | `[-4, -3, 0, -2, -2, -4]` | `RICK` | Radiohead — "Everything In Its Right Place" voicing — open strings C G C G G# C with a C pedal on the top string. The G → C bender pushes the neutral G string (3) up a fourth to a second C. |
 
 ## Modes
 
@@ -127,4 +128,4 @@ Maps an instrument's pitches onto a cluster of strings.
 
 ---
 
-_64 tunings in total. Generated from `vg800-tuner.html`._
+_65 tunings in total. Generated from `vg800-tuner.html`._
