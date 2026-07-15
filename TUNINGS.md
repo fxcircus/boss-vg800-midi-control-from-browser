@@ -8,9 +8,9 @@ Every tuning built into the app, with its open-string notes (low→high), the pe
 |---|---|---|---|---|
 | **Standard** | E A D G B E | `[0, 0, 0, 0, 0, 0]` | `CLA-ST` |  |
 | **DADGAD** | D A D G A D | `[-2, -2, 0, 0, 0, -2]` | `MA28` |  |
-| **Nashville** | E A D G B E | `[0, 0, +12, +12, +12, +12]` | `MA28` |  |
+| **Nashville** | E A D G B E | `[0, 0, +12, +12, +12, +12]` | `TRP-0` |  |
 | **Baritone** | B E A D F# B | `[-5, -5, -5, -5, -5, -5]` | `TE` |  |
-| **Bass VI** | E A D G B E | `[-12, -12, -12, -12, -12, -12]` | `P-90` |  |
+| **Bass VI** | E A D G B E | `[-12, -12, -12, -12, -12, -12]` | `BRIGHT HUM` |  |
 | **Hendrix** | Eb Ab Db Gb Bb Eb | `[-1, -1, -1, -1, -1, -1]` | `CLA-ST` |  |
 
 ## Lap Steel
@@ -65,12 +65,12 @@ Every tuning built into the app, with its open-string notes (low→high), the pe
 |---|---|---|---|---|
 | **Fripp NST** | C G D A E G | `[+3, +5, +2, 0, -2, -4]` | `LP` | Robert Fripp’s New Standard Tuning (all fifths) · King Crimson “Frame by Frame” (Discipline, 1981) |
 | **Gambale** | A D G C E A | `[-7, -7, +5, +5, +5, +5]` | `335` | Frank Gambale · fourths tuning |
-| **Rain Song** | D G C G C D | `[-2, +1, 0, -2, -2, -2]` | `LIPS` | Led Zeppelin · “The Rain Song” (Jimmy Page) |
+| **Rain Song** | D G C G C D | `[-2, +1, 0, -2, -2, -2]` | `TRP-0` | Led Zeppelin · “The Rain Song” (Jimmy Page) |
 | **Ostrich** | G A B D E G | `[-9, -7, -5, -3, 0, +3]` | `P-90` | Sonic Youth · Ostrich tuning |
 | **Schizophrenia** | F# F# G G A A | `[+5, -2, 0, +5, -3, +2]` | `MOD-ST` | Sonic Youth · “Schizophrenia” (Thurston Moore) |
 | **Nick Drake** | C G C F C E | `[0, +1, -2, -2, -2, -4]` | `TRP-0` | Nick Drake · “Pink Moon” (Open C) |
 | **Keith Richards** | G G D G B D | `[-2, 0, 0, 0, -2, +3]` | `TE` | Rolling Stones · “Start Me Up” (5-string Open G) |
-| **Am. Football** | F A C G C E | `[0, +1, 0, -2, 0, +1]` | `TE` | American Football · “Never Meant” (Fmaj9) |
+| **Am. Football** | F A C G C E | `[0, +1, 0, -2, 0, +1]` | `MOD-ST` | American Football · “Never Meant” (Fmaj9) |
 | **Soundgarden** | E E B B B B | `[-5, 0, +4, -3, -5, 0]` | `BRIGHT HUM` | Soundgarden · “The Day I Tried to Live” |
 | **Joni Mitchell** | E B E G# B E | `[0, 0, +1, +2, +2, 0]` | `MA28` | Joni Mitchell · “Big Yellow Taxi” (Open E) |
 | **Both Sides** | D A D F# A D | `[-2, -2, -1, 0, 0, -2]` | `MA28` | Joni Mitchell — Open D, no capo. Recording uses capo 4 (sounds in F# major); this is the no-capo base tuning. |
@@ -118,10 +118,10 @@ Maps an instrument's pitches onto a cluster of strings.
 
 | Tuning | Spelling (low→high) | Model | Notes |
 |---|---|---|---|
-| **E9 Nashville** | B D E F# G# B E G# D# F# | `TE` | country · session sound |
-| **E9 Lanois** | B B E E G# B E G# D# F# | `335` | ambient variant · doubled low strings for 12-string shimmer |
+| **E9 Nashville** | B D E F# G# B E G# D# F# | `P-90` | country · session sound |
+| **E9 Lanois** | B B E E G# B E G# D# F# | `P-90` | ambient variant · doubled low strings for 12-string shimmer |
 | **C6 Swing/Jazz** | C F A C E G A C E D | `L4` | western swing · jazz |
-| **B6 Universal** | B D D F# G# B D G# D# F# | `335` | 6th-flavored hybrid |
+| **B6 Universal** | B D D F# G# B D G# D# F# | `P-90` | 6th-flavored hybrid |
 
 
 ---

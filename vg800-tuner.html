@@ -1517,7 +1517,7 @@ document.getElementById('gtrAutoSeg').addEventListener('click',e=>{   // Auto: t
 // Per-tuning model choices (keyed by tuning name; Modes use their C-template names, like TUNING_TIPS)
 const TUNING_MODELS={
   // Common
-  'Standard':'CLA-ST', 'DADGAD':'MA28', 'Nashville':'MA28', 'Baritone':'TE', 'Bass VI':'P-90', 'Hendrix':'CLA-ST',
+  'Standard':'CLA-ST', 'DADGAD':'MA28', 'Nashville':'TRP-0', 'Baritone':'TE', 'Bass VI':'BRIGHT HUM', 'Hendrix':'CLA-ST',
   // Lap steel (fat single-coil ≈ horseshoe-pickup steel voice; Cyrus's Gmaj9 leans jazz)
   'C6':'P-90', 'A6':'P-90', 'C6/A7':'P-90', 'E7':'P-90', 'E13':'P-90', 'E9 lap':'P-90', 'B11':'P-90', 'Cyrus Hybrid':'335',
   // Open majors
@@ -1525,8 +1525,8 @@ const TUNING_MODELS={
   // Drop
   'Drop D':'LP', 'Drop Db':'BRIGHT HUM', 'Drop C':'BRIGHT HUM', 'Drop B':'BRIGHT HUM', 'Drop Bb':'BRIGHT HUM', 'Drop A':'BRIGHT HUM',
   // Artists
-  'Fripp NST':'LP', 'Gambale':'335', 'Rain Song':'LIPS', 'Ostrich':'P-90', 'Schizophrenia':'MOD-ST', 'Nick Drake':'TRP-0',
-  'Keith Richards':'TE', 'Am. Football':'TE', 'Soundgarden':'BRIGHT HUM', 'Joni Mitchell':'MA28', 'Both Sides':'MA28',
+  'Fripp NST':'LP', 'Gambale':'335', 'Rain Song':'TRP-0', 'Ostrich':'P-90', 'Schizophrenia':'MOD-ST', 'Nick Drake':'TRP-0',
+  'Keith Richards':'TE', 'Am. Football':'MOD-ST', 'Soundgarden':'BRIGHT HUM', 'Joni Mitchell':'MA28', 'Both Sides':'MA28',
   'Pyramid Song':'L4', 'Radiohead':'RICK',
   // Modes — neutral clean electric for the theory playground
   'White Keys':'CLA-ST', 'C Lydian':'CLA-ST', 'C Ionian':'CLA-ST', 'C Mixolydian':'CLA-ST', 'C Dorian':'CLA-ST',
@@ -1536,7 +1536,7 @@ const TUNING_MODELS={
   'Saz / Bağlama':'NYLON', 'Cavaquinho':'GB SML', 'Ukulele':'NYLON', 'Baritone Uke':'NYLON', 'Cuatro':'NYLON',
   'Balalaika':'NYLON', 'Banjo':'BANJO', 'Sitar':'SITAR',
   // Pedal steel
-  'E9 Nashville':'TE', 'E9 Lanois':'335', 'C6 Swing/Jazz':'L4', 'B6 Universal':'335',
+  'E9 Nashville':'P-90', 'E9 Lanois':'P-90', 'C6 Swing/Jazz':'L4', 'B6 Universal':'P-90',
 };
 function nameOf(m){ const pc=((m%12)+12)%12; return {name:NOTE[pc], oct:Math.floor(m/12)-1}; }
 function toCC(s){ const c=Math.max(-12,Math.min(12,s)); return Math.round((c+12)/24*127); }
