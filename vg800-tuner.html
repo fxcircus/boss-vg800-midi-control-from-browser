@@ -331,9 +331,10 @@
   html:not(.realbend) #sec-guitar { display: none; }
   #sec-guitar { position: relative; }
   #sec-guitar .gtr-inner { max-width: 420px; margin: 0 auto; }
-  .gtr-auto { position: absolute; top: 4px; right: 14px; padding: 2px; gap: 2px; }   /* corner control, like Latch/Map on Bends */
-  .gtr-auto button { flex: 0 0 auto; font-size: 9px; padding: 4px 9px; letter-spacing: 0.5px; text-transform: uppercase; }
-  .gtr-preview { background: color-mix(in srgb, var(--ink) 55%, transparent); border: 1px solid var(--edge-soft); border-radius: 12px; padding: 11px 10px 6px; text-align: center; margin: 10px 0; }
+  .gtr-auto { position: absolute; right: -1px; bottom: -1px; padding: 2px; gap: 2px; border-color: var(--edge-soft); border-radius: 9px 0 11px 0; }   /* a tab notched into the preview's corner, sharing its border */
+  .gtr-auto button { flex: 0 0 auto; font-size: 9px; padding: 3px 8px; letter-spacing: 0.5px; text-transform: uppercase; }
+  .gtr-chip.ghost { visibility: hidden; pointer-events: none; }   /* pads the 9-chip acoustic grid to the electric grid's 12 cells so the card height never jumps */
+  .gtr-preview { position: relative; background: color-mix(in srgb, var(--ink) 55%, transparent); border: 1px solid var(--edge-soft); border-radius: 12px; padding: 11px 10px 6px; text-align: center; margin: 10px 0; }
   .gtr-name { font-family: var(--cond); font-weight: 700; font-size: 18px; letter-spacing: 2px; text-transform: uppercase; color: var(--bone); }
   .gtr-cat { font-family: var(--mono); font-size: 9.5px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--bone-faint); margin: 1px 0 4px; min-height: 12px; }
   .gtr-stage { display: flex; align-items: center; justify-content: center; height: 150px; }
@@ -1072,19 +1073,18 @@
     <div id="steelWrap"></div>
   </fieldset>
 
-  <fieldset class="panel" id="sec-pedals">
-    <legend class="panel-hd">Bends</legend>
-    <div id="pedalWrap"></div>
-  </fieldset>
-
   <fieldset class="panel" id="sec-guitar">
     <legend class="panel-hd">Guitar</legend>
-    <div class="seg gtr-auto" id="gtrAutoSeg" title="Auto: each tuning switches the VG-800 model &middot; Manual: your pick stays until you change it"><button data-am="1">Auto</button><button data-am="0">Manual</button></div>
     <div class="gtr-inner">
-      <div class="gtr-preview"><div class="gtr-name" id="gtrName">&mdash;</div><div class="gtr-cat" id="gtrCat"></div><div class="gtr-stage" id="gtrStage"></div></div>
+      <div class="gtr-preview"><div class="gtr-name" id="gtrName">&mdash;</div><div class="gtr-cat" id="gtrCat"></div><div class="gtr-stage" id="gtrStage"></div><div class="seg gtr-auto" id="gtrAutoSeg" title="Auto: each tuning switches the VG-800 model &middot; Manual: your pick stays until you change it"><button data-am="1">Auto</button><button data-am="0">Manual</button></div></div>
       <div class="seg gtr-tabs" id="gtrTabs"><button data-cat="electric">Electric</button><button data-cat="acoustic">Acoustic</button></div>
       <div class="gtr-chips" id="gtrChips"></div>
     </div>
+  </fieldset>
+
+  <fieldset class="panel" id="sec-pedals">
+    <legend class="panel-hd">Bends</legend>
+    <div id="pedalWrap"></div>
   </fieldset>
 
   <fieldset class="panel" id="sec-pan">
@@ -1502,7 +1502,8 @@ function gtrRender(follow=true){
   document.getElementById('gtrName').textContent=curModelName||'—';
   document.getElementById('gtrCat').textContent=curModelName?(GTR_FULLNAME[curModelName]||''):'';   // the real instrument behind the patch name
   document.getElementById('gtrStage').innerHTML=curModelName?gtrSVG(curModelName):'';
-  chips.innerHTML=GTR_LISTS[gtrTab].map(n=>`<button class="gtr-chip${n===curModelName?' on':''}" data-model="${n}">${n}</button>`).join('');
+  const pad=Math.max(...Object.values(GTR_LISTS).map(l=>l.length))-GTR_LISTS[gtrTab].length;   // ghost cells keep both tabs the same height
+  chips.innerHTML=GTR_LISTS[gtrTab].map(n=>`<button class="gtr-chip${n===curModelName?' on':''}" data-model="${n}">${n}</button>`).join('')+'<span class="gtr-chip ghost">&nbsp;</span>'.repeat(pad);
   document.querySelectorAll('#gtrAutoSeg button').forEach(b=>b.classList.toggle('on', (b.dataset.am==='1')===!!settings.autoModel));
 }
 document.getElementById('gtrTabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; gtrTab=b.dataset.cat; gtrRender(false); });
@@ -2559,10 +2560,10 @@ function placeBench(){
     if(hist && (hist.parentElement!==wrap || bench.nextElementSibling!==hist)) bench.after(hist);
   }
   const guitar=document.getElementById('sec-guitar');
-  if(pedals && pan){   // very wide → Bends + Guitar fill the right rail; otherwise they return to their spot before Panning
+  if(pedals && pan){   // very wide → Guitar + Bends fill the right rail; otherwise they return to their spot before Panning
     if(wide&&rail){ if(pedals.parentElement!==rail) rail.appendChild(pedals); }
     else if(pedals.parentElement!==wrap) wrap.insertBefore(pedals, pan);
-    if(guitar && (guitar.parentElement!==pedals.parentElement || guitar.previousElementSibling!==pedals)) pedals.after(guitar);   // GUITAR rides directly under Bends in both layouts
+    if(guitar && (guitar.parentElement!==pedals.parentElement || guitar.nextElementSibling!==pedals)) pedals.before(guitar);   // GUITAR rides directly above Bends in both layouts
   }
 }
 window.addEventListener('resize', placeBench);
