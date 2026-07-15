@@ -67,7 +67,7 @@ Every tuning built into the app, with its open-string notes (low→high), the pe
 | **Gambale** | A D G C E A | `[-7, -7, +5, +5, +5, +5]` | `335` | Frank Gambale · fourths tuning |
 | **Led Kashmir** | D A D G A D | `[-2, -2, 0, 0, 0, -2]` | `LIPS` | Led Zeppelin · “Kashmir” (Jimmy Page, on his Danelectro) |
 | **Led Rain** | D G C G C D | `[-2, +1, 0, -2, -2, -2]` | `TRP-0` | Led Zeppelin · “The Rain Song” (Jimmy Page) |
-| **Ostrich** | G A B D E G | `[-9, -7, -5, -3, 0, +3]` | `P-90` | Sonic Youth · Ostrich tuning |
+| **Blur Song2** | D A D G B E | `[0, 0, 0, 0, 0, -2]` | `WIDE RANGE` | Blur · “Song 2” (Drop D) |
 | **Schizophrenia** | F# F# G G A A | `[+5, -2, 0, +5, -3, +2]` | `MOD-ST` | Sonic Youth · “Schizophrenia” (Thurston Moore) |
 | **Nick Drake** | C G C F C E | `[0, +1, -2, -2, -2, -4]` | `TRP-0` | Nick Drake · “Pink Moon” (Open C) |
 | **Keith Richards** | G G D G B D | `[-2, 0, 0, 0, -2, +3]` | `TE` | Rolling Stones · “Start Me Up” (5-string Open G) |
