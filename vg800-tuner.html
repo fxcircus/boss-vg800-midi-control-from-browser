@@ -310,24 +310,10 @@
   .ps-step.up { border-left: 1px solid var(--edge); }
   .ps-val { min-width: 46px; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 15px; font-weight: 700; color: var(--amber); letter-spacing: 0.5px; }
   .ps-val.zero { color: var(--bone-faint); }
-  /* Per-String presets — table-style cluster rows: a fixed right-aligned label column, chips flowing from a shared left edge */
-  .ps-presets { display: flex; align-items: flex-start; gap: 8px; margin: 2px auto 9px; max-width: 560px; }
-  .ps-presets-lbl { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--bone-faint); flex: 0 0 60px; text-align: right; padding-top: 7px; }
-  .ps-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; flex: 1 1 auto; min-width: 0; }
-  .ps-none { font-family: var(--mono); font-size: 11px; color: var(--bone-faint); font-style: italic; }
-  .ps-preset-fac { padding: 6px 11px; font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: 0.4px; background: var(--wood); border: 1px solid var(--edge); border-radius: 8px; color: var(--bone-dim); cursor: pointer; transition: border-color .12s, color .12s, background .12s; }
-  .ps-preset-fac:hover { border-color: var(--brass-deep); color: var(--brass); background: var(--felt); }
-  /* The preset whose amounts match the current per-string values stays lit (drops as soon as a stepper diverges or Clear resets) */
-  .ps-preset-fac.on { border-color: var(--brass); color: var(--brass); background: var(--felt); box-shadow: inset 0 0 0 1px var(--brass-glow); }
-  .ps-preset.on { border-color: var(--brass); box-shadow: inset 0 0 0 1px var(--brass-glow); }
-  .ps-preset.on .ps-preset-load { color: var(--brass); background: var(--felt); }
-  .ps-preset { display: inline-flex; align-items: stretch; border: 1px solid var(--edge); border-radius: 8px; overflow: hidden; background: var(--wood); }
-  .ps-preset-load { padding: 6px 11px; font-family: var(--cond); font-size: 12.5px; font-weight: 600; letter-spacing: 0.3px; background: none; border: none; color: var(--bone); cursor: pointer; transition: background .12s, color .12s; }
-  .ps-preset-load:hover { background: var(--felt); color: var(--brass); }
-  .ps-preset-del { padding: 0 8px; font-size: 13px; line-height: 1; background: none; border: none; border-left: 1px solid var(--edge); color: var(--bone-faint); cursor: pointer; }
-  .ps-preset-del:hover { color: var(--err); background: var(--felt); }
-  .ps-save { padding: 6px 13px; font-family: var(--cond); font-size: 12.5px; font-weight: 700; letter-spacing: 0.3px; background: var(--wood); border: 1px solid var(--brass-deep); border-radius: 8px; color: var(--brass); cursor: pointer; transition: background .12s; }
-  .ps-save:hover { background: var(--felt); }
+  /* Per-String factory presets — one radio-style wrapping seg (exactly one cell lit at a time) */
+  .seg-wrap { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; max-width: 560px; margin: 2px auto 10px; }
+  .seg-wrap button { flex: 0 0 auto; padding: 6px 10px; }
+  .ps-key-all { opacity: 0.5; }   /* the All-Strings key, shown on every row: one press bends them all */
   /* GUITAR card — model picker for the Classic preset (CC70 category + CC77/78 model; those CCs don't exist in Panning) */
   html:not(.realbend) #sec-guitar { display: none; }
   #sec-guitar { position: relative; }
@@ -516,7 +502,7 @@
     #rightRail .pedal-badge { width: 21px; height: 21px; right: 9px; bottom: 8px; }
     #rightRail .pedal-badge.sb-dot { width: 12px; height: 12px; right: 11px; bottom: 11px; }
     /* per-string rows + preset clusters */
-    #rightRail .ps-list, #rightRail .ps-presets { max-width: none; }
+    #rightRail .ps-list, #rightRail .seg-wrap { max-width: none; }
     #rightRail .ps-list { gap: 6px; margin-bottom: 7px; }
     #rightRail .ps-row { gap: 7px; }
     #rightRail .ps-pad { min-height: 35px; padding: 0 11px; gap: 7px; }
@@ -524,11 +510,7 @@
     #rightRail .ps-preview { font-size: 11.5px; }
     #rightRail .ps-step { width: 34px; font-size: 17px; }
     #rightRail .ps-val { min-width: 38px; font-size: 13px; }
-    #rightRail .ps-presets { gap: 6px; margin: 0 auto 6px; }
-    #rightRail .ps-presets-lbl { font-size: 9px; flex-basis: 52px; padding-top: 6px; }
-    #rightRail .ps-chips { gap: 5px; }
-    #rightRail .ps-preset-fac, #rightRail .ps-preset-load { padding: 4px 9px; font-size: 11px; }
-    #rightRail .ps-save { padding: 4px 10px; font-size: 11px; }
+    #rightRail .seg-wrap button { padding: 5px 8px; font-size: 10px; }
     #rightRail #sec-guitar { margin: 0 0 12px; padding: 6px 14px 12px; }
     #rightRail #sec-guitar .panel-hd { font-size: 15px; letter-spacing: 1.5px; }
     #rightRail .gtr-preview { margin: 8px 0; }
@@ -1654,7 +1636,6 @@ const MODES=[
 let settings = loadSettings();
 try{ if(!localStorage.getItem('vg800_pgShort')){ settings.panMs=500; localStorage.setItem('vg800_pgShort','1'); localStorage.setItem('vg800_settings', JSON.stringify(settings)); } }catch(e){}   // Pan glide defaults to Short (one-time reset for existing users)
 let customs = loadCustom();
-let strPresets = loadStrPresets();
 let edOff = [0,0,0,0,0,0];
 let active = 'Standard', activeChord = null, lastVoiced = null;   // lastVoiced = previous voiced-cluster pitches, for Legato voice leading (not persisted)
 let midiAccess=null, midiOut=null, lastConnMsg=null;
@@ -1792,8 +1773,6 @@ function saveSettingsLS(){ localStorage.setItem('vg800_settings', JSON.stringify
 function loadCustom(){ try{ return JSON.parse(localStorage.getItem('vg800_custom'))||[]; }catch(e){ return []; } }
 function saveCustomLS(){ localStorage.setItem('vg800_custom', JSON.stringify(customs)); }
 // Per-String bend presets — named snapshots of the six per-string semitone amounts (tuning-independent). Own localStorage key.
-function loadStrPresets(){ try{ const a=JSON.parse(localStorage.getItem('vg800_strpresets')); return Array.isArray(a)?a.filter(p=>p&&typeof p.name==='string'&&Array.isArray(p.amounts)&&p.amounts.length===6).map(p=>({name:p.name.slice(0,24), amounts:p.amounts.map(x=>Math.max(-12,Math.min(12,Math.round(Number(x)||0))))})):[]; }catch(e){ return []; } }
-function saveStrPresetsLS(){ localStorage.setItem('vg800_strpresets', JSON.stringify(strPresets)); }
 
 async function initMIDI(){
   if(!navigator.requestMIDIAccess){ setLamp(false,'WebMIDI needs Chrome'); return; }
@@ -2061,17 +2040,8 @@ function adjustStringBend(s, d){   // step one string's amount. Classic: the dep
   if(v===(settings.stringBend[s]|0)) return;
   settings.stringBend[s]=v; saveSettingsLS(); renderPedals(); psResend();
 }
-function savePerStringPreset(){
-  if(!settings.stringBend.some(x=>x|0)){ toast('Set at least one bend first', true); return; }   // an all-zero preset is just Clear — and it would sit lit whenever the amounts are cleared
-  const nm=(prompt('Name this per-string preset:')||'').trim().slice(0,24); if(!nm) return;
-  const ex=strPresets.findIndex(p=>p.name===nm), rec={name:nm, amounts:[...settings.stringBend]};
-  if(ex>=0) strPresets[ex]=rec; else strPresets.push(rec);
-  saveStrPresetsLS(); renderPedals(); toast('Saved "'+nm+'"');
-}
 function applyPsAmounts(amounts){ settings.stringBend=amounts.map(x=>Math.max(-12,Math.min(12,x|0))); saveSettingsLS(); renderPedals(); psResend(); }
-function loadPerStringPreset(i){ const p=strPresets[i]; if(!p) return; applyPsAmounts(p.amounts); toast('“'+p.name+'”'); }
 function loadFactoryPreset(i){ const p=FACTORY_PS[i]; if(!p) return; applyPsAmounts(p.amounts); toast(p.name); }
-function delPerStringPreset(i){ const p=strPresets[i]; if(!p) return; if(!confirm('Delete preset “'+p.name+'”?')) return; strPresets.splice(i,1); saveStrPresetsLS(); renderPedals(); }
 // Pedal steel tunings — 10 strings, midi low→high (index 0 = string 10 lowest, 9 = string 1 highest).
 const STEEL=[
   {id:'e9', name:'E9 Nashville', sub:'country · session sound', root:4,  copedent:'e9', midi:[47,50,52,54,56,59,64,68,75,78], spell:'B D E F# G# B E G# D# F#'},
@@ -2249,7 +2219,7 @@ function perStringRowHTML(c, st){
     <button class="pedal ps-pad${greyed?' disabled':''}" data-ctrl="${c.id}"${greyed?' aria-disabled="true"':''}>
       <span class="ps-dot" style="background:${STR_COLORS[c.string]}"></span>
       <span class="ps-lbl">${c.name}</span>
-      ${key?`<span class="ps-key">${key}</span>`:''}
+      ${key?`<span class="ps-key">${key}</span>`:''}${(keyFor('PSALL')||'')?`<span class="ps-key ps-key-all" title="${(keyFor('PSALL')||'').toUpperCase()} engages every set bender at once">${(keyFor('PSALL')||'').toUpperCase()}</span>`:''}
       <span class="ps-preview${pcls}">${preview}</span>
     </button>
     <div class="ps-adjust">
@@ -2323,19 +2293,14 @@ function renderPedals(){
     html+=`<div class="pedal-info">Chord held in <b>${settings.keyRoot} ${settings.keyScale}</b> — each pedal raises one string to the next scale tone. Hold to bend, release to return.</div>`;
     html+=`<div class="fam-name">Scale Bends · one string each</div><div class="pedals">${controls.map(c=>pedalBtnHTML(c.id,c.name,'',ctrlStateCache[c.id])).join('')}</div>`;
   } else if(psMode){                                            // Per-String — six pedals, one per string, each a saved semitone bend
-    const psEq=a=>Array.isArray(a)&&a.length===6&&a.every((v,i)=>(v|0)===(settings.stringBend[i]|0));   // does a preset match the live amounts? (drives the lit chip)
-    const facChip=(p,i)=>`<button class="ps-preset-fac${p.name!=='Clear'&&psEq(p.amounts)?' on':''}" data-psfac="${i}" title="${p.tip||p.name}">${p.name}</button>`;
-    const facRows=[['shift','Shift'],['jump','Jump'],['bender','Benders']].map(([g,label])=>
-      `<div class="ps-presets"><span class="ps-presets-lbl">${label}</span><span class="ps-chips">${FACTORY_PS.map((p,i)=>p.group===g?facChip(p,i):'').join('')}</span></div>`).join('');
-    const userChips = strPresets.map((p,i)=>`<span class="ps-preset${p.amounts.some(x=>x|0)&&psEq(p.amounts)?' on':''}"><button class="ps-preset-load" data-psload="${i}" title="Recall">${p.name}</button><button class="ps-preset-del" data-psdel="${i}" title="Delete preset">×</button></span>`).join('');   // pre-existing all-zero presets never light (that state is "cleared", not "loaded")
+    const psEq=a=>Array.isArray(a)&&a.length===6&&a.every((v,i)=>(v|0)===(settings.stringBend[i]|0));   // does a preset match the live amounts? (drives the lit cell)
+    const lit=p=> p.name==='Clear' ? !settings.stringBend.some(x=>x|0) : psEq(p.amounts);   // radio feel: exactly one cell lights per state (Clear = everything zeroed)
     html+= settings.realBend
       ? `<div class="pedal-info">Each pedal bends <b>one string</b>. Set its semitones with <b>−</b>/<b>＋</b> — the full octave either way on every tuning (the bend rides on top of the ALT&nbsp;TUNE base) — then hold or latch to bend. <b>All Strings</b> pushes every set bender in one press.</div>`
       : `<div class="pedal-info">Each pedal bends <b>one string</b>. Set its semitones with <b>−</b>/<b>＋</b> — kept within one octave of standard, minus what the current tuning already uses — then hold or latch to bend. <b>All Strings</b> pushes every set bender in one press.</div>`;
-    html+=facRows;
-    html+=`<div class="ps-presets"><span class="ps-presets-lbl">Saved</span><span class="ps-chips">${userChips||'<span class="ps-none">none yet</span>'}<button class="ps-save" data-pssave>Save…</button></span></div>`;
-    const psAll=controls.find(c=>c.allStrings), psSingles=controls.filter(c=>!c.allStrings);
+    html+=`<div class="seg seg-wrap" id="psFacSeg">${FACTORY_PS.map((p,i)=>`<button class="${lit(p)?'on':''}" data-psfac="${i}" title="${p.tip||p.name}">${p.name}</button>`).join('')}</div>`;
+    const psSingles=controls.filter(c=>!c.allStrings);   // the All-Strings pedal stays in the keymap (its key shows on every row) — it just has no card
     html+=`<div class="fam-name">Strings · one pedal each</div><div class="ps-list">${psSingles.map(c=>perStringRowHTML(c, ctrlStateCache[c.id])).join('')}</div>`;
-    if(psAll) html+=`<div class="fam-name">All at once</div><div class="pedals" style="grid-template-columns:minmax(185px,560px)">${pedalBtnHTML(psAll.id, psAll.name, psAll.act, ctrlStateCache[psAll.id])}</div>`;
   } else {
     const info = curInfo.root==null
       ? 'No chord root here — pedals disabled.'
@@ -2364,10 +2329,7 @@ function renderPedals(){
   wrap.querySelectorAll('#latchSeg [data-latch]').forEach(b=> b.addEventListener('click',()=>{ const on=b.dataset.latch==='1'; if(on===!!settings.latch) return; settings.latch=on; saveSettingsLS(); renderPedals(); }));
   wrap.querySelectorAll('#psSeg [data-ps]').forEach(b=> b.addEventListener('click',()=>{ if(held.size){ held.clear(); if(midiOut) send(baseOffsets); renderStrings(baseOffsets); } settings.perStringOn=b.dataset.ps==='1'; saveSettingsLS(); rebuildKeymap(); renderPedals(); }));   // release any held bend when switching pedal mode
   wrap.querySelectorAll('.ps-step').forEach(b=> b.addEventListener('click', e=>{ e.stopPropagation(); const [s,d]=b.dataset.psadj.split(':').map(Number); adjustStringBend(s,d); }));
-  wrap.querySelectorAll('.ps-preset-fac').forEach(b=> b.addEventListener('click', ()=> loadFactoryPreset(+b.dataset.psfac)));
-  wrap.querySelectorAll('.ps-preset-load').forEach(b=> b.addEventListener('click', ()=> loadPerStringPreset(+b.dataset.psload)));
-  wrap.querySelectorAll('.ps-preset-del').forEach(b=> b.addEventListener('click', e=>{ e.stopPropagation(); delPerStringPreset(+b.dataset.psdel); }));
-  const psSave=wrap.querySelector('[data-pssave]'); if(psSave) psSave.addEventListener('click', savePerStringPreset);
+  wrap.querySelectorAll('[data-psfac]').forEach(b=> b.addEventListener('click', ()=> loadFactoryPreset(+b.dataset.psfac)));
   wrap.querySelectorAll('#btSeg [data-rbms]').forEach(b=> b.addEventListener('click', ()=>{ settings.rbMs=+b.dataset.rbms; saveSettingsLS(); wrap.querySelectorAll('#btSeg [data-rbms]').forEach(x=> x.classList.toggle('on', +x.dataset.rbms===settings.rbMs)); }));
 }
 // a control shows engaged (highlighted + animated) if it's held directly OR it's a part of a held combo
