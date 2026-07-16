@@ -657,7 +657,8 @@
   .root-seg { flex: 0 0 auto; }
   .root-seg .num { border: none; background-color: transparent; font-weight: 700; padding: 6px 28px 6px 10px; border-radius: 6px; }
   .root-seg .num:hover, .root-seg .num:focus { background-color: var(--felt); }
-  .key-rand { display: inline-flex; align-items: center; justify-content: center; padding: 7px; border: 1px solid var(--edge); border-radius: 8px; background: var(--wood); color: var(--bone-dim); cursor: pointer; transition: color .12s, border-color .12s, background .12s, transform .12s; }
+  .key-rand { display: inline-flex; align-items: center; justify-content: center; padding: 7px; border: 1px solid var(--edge); border-radius: 8px; background: var(--ink); color: var(--bone-dim); cursor: pointer; transition: color .12s, border-color .12s, background .12s, transform .12s; }
+  .chord-dice { display: flex; justify-content: center; margin: -4px 0 10px; }
   .key-rand:hover { color: var(--brass); border-color: var(--brass-deep); background: var(--felt); }
   .key-rand:active { transform: rotate(-12deg); }
   .key-rand .dice-ico { width: 16px; height: 16px; }
@@ -672,7 +673,7 @@
   .vcl-seg .clbtn { border: none; background: transparent; box-shadow: none; border-radius: 6px; }
   .vcl-seg .clbtn.on { background: var(--felt); box-shadow: inset 0 0 0 1px var(--brass); }
   .layers-seg .layer-tog, .layers-seg .layer-clear { border: none; background: transparent; border-radius: 6px; }
-  .layers-seg .layer-tog.on { background: var(--felt); box-shadow: inset 0 0 0 1px var(--brass); }
+  .layers-seg .layer-tog.on { background: var(--brass); color: var(--ink); }
   .chord-voice .seg button { padding: 5px 8px; font-size: 10px; }
   /* Voiced-only options — indented under the Voicing row (rule = "these belong to Voiced"), each group captioned */
   .voice-sub { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: -8px 0 14px; padding-left: 12px; border-left: 2px solid var(--edge-soft); }
@@ -695,7 +696,8 @@
   .layer-tog:hover:not(.locked) { border-color: var(--brass-deep); color: var(--bone); }
   .layer-tog.on { border-color: var(--brass); color: var(--brass); background: var(--felt); }
   .layer-tog.locked { opacity: 0.6; cursor: default; }
-  .layer-clear { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.3px; color: var(--bone-faint); background: transparent; border: 1px solid transparent; border-radius: 7px; padding: 5px 9px; cursor: pointer; transition: color .12s, background .12s; margin-left: 2px; }
+  .layer-clear { display: inline-flex; align-items: center; color: var(--bone-faint); background: transparent; border: 1px solid transparent; border-radius: 7px; padding: 5px 7px; cursor: pointer; transition: color .12s, background .12s; margin-left: 2px; }
+  .layer-clear .ps-trash { width: 13px; height: 13px; display: block; }
   .layer-clear:hover { color: var(--brass); background: var(--felt); }
   .clbtn { display: flex; flex-direction: column; align-items: center; gap: 7px; background: var(--wood); border: 1px solid var(--edge); border-radius: 9px; padding: 9px 13px; cursor: pointer; transition: transform .1s, border-color .12s, background .12s; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 5px rgba(0,0,0,0.28); }
   .clbtn:hover:not(.disabled) { border-color: var(--brass-deep); background: var(--felt); transform: translateY(-1px); }
@@ -3037,28 +3039,28 @@ function renderChords(){
   const rootOpts=CHORD_ROOTS.map(r=>`<option value="${r}"${r===settings.keyRoot?' selected':''}>${r}</option>`).join('');
   const scaleOpts=`<option value="off"${!keyOn?' selected':''}>Off · all chords</option>`+Object.keys(SCALES).map(s=>{ const a=SCALES[s].alt; return `<option value="${s}"${settings.keyScale===s?' selected':''}>${a?s+' / '+a:s}</option>`; }).join('');
   const legend = keyOn ? `<div class="chord-legend"><span><i class="lg-dot tonic"></i>Tonic</span><span><i class="lg-dot subdom"></i>Subdominant</span><span><i class="lg-dot dominant"></i>Dominant</span><span><i class="lg-dot borrow"></i>Borrowed</span></div>` : '';
-  const keyBar=`<div class="chord-key"><div class="seg root-seg"><span class="seg-lbl">Key</span><select id="keyRoot" class="num">${rootOpts}</select><select id="keyScale" class="num">${scaleOpts}</select></div><button class="key-rand" id="keyRandom" title="Random key & scale" aria-label="Random key and scale">${DICE_ICO}</button></div>`;
+  const diceRow=`<div class="chord-dice"><button class="key-rand" id="keyRandom" title="Roll a random key & scale" aria-label="Random key and scale">${DICE_ICO}</button></div>`;
+  const keyBar=`<div class="chord-key"><div class="seg root-seg"><span class="seg-lbl" title="The key the grid is colored around">Key</span><select id="keyRoot" class="num" title="Key root — the tonic note">${rootOpts}</select><select id="keyScale" class="num" title="Scale / mode — decides which chords are diatonic (Off = plain grid, no coloring)">${scaleOpts}</select></div></div>`;
   const voiced = settings.voicing==='voiced';
-  const vMode=`<div class="seg" id="voiceMode"><span class="seg-lbl">Voicing</span><button class="${!voiced?'on':''}" data-vmode="spread" title="Spread — the chord fanned across all six strings, low → high.">Spread</button><button class="${voiced?'on':''}" data-vmode="voiced" title="Voiced — a close 3- or 4-string cluster you choose; the other strings fill in the bass (root &amp; 5th).">Voiced</button></div>`;
+  const vMode=`<div class="seg" id="voiceMode"><span class="seg-lbl" title="How the chord is laid across the six strings">Voicing</span><button class="${!voiced?'on':''}" data-vmode="spread" title="Spread — the chord fanned across all six strings, low → high.">Spread</button><button class="${voiced?'on':''}" data-vmode="voiced" title="Voiced — a close 3- or 4-string cluster you choose; the other strings fill in the bass (root &amp; 5th).">Voiced</button></div>`;
   const voiceBar=`<div class="chord-key chord-voice">${vMode}</div>`;
   let voiceSubBar='';
   if(voiced){                                                     // Voiced-only options, shown indented under the Voicing row so the relationship is clear
     const N=settings.voiceSize; let cbtn='';
     for(let s=0;s<=6-N;s++){ const dots=[0,1,2,3,4,5].map(i=>`<i class="${i>=s&&i<s+N?'on':''}"></i>`).join(''); cbtn+=`<button class="clbtn${s===settings.voiceStart?' on':''}" data-vstart="${s}" title="Put the cluster on strings ${s+1}–${s+N}"><span class="cldots">${dots}</span><span class="cllbl">${s+1}–${s+N}</span></button>`; }
-    const vSize=`<div class="seg" id="voiceSize"><span class="seg-lbl">Notes</span><button class="${N===3?'on':''}" data-vsize="3" title="Three-note cluster">3</button><button class="${N===4?'on':''}" data-vsize="4" title="Four-note cluster — adds the 7th / colour tone">4</button></div>`;
-    const vFeel=`<div class="seg" id="voiceFeel"><span class="seg-lbl">Feel</span><button class="${settings.voiceFeel==='legato'?'on':''}" data-vfeel="legato" title="Legato — smooth voice leading: keeps common tones and moves each voice the least from the previous chord, so changes glide.">Legato</button><button class="${settings.voiceFeel==='grip'?'on':''}" data-vfeel="grip" title="Grip — block chords: every chord in root position, the same shape moved around. Predictable and identical every time.">Grip</button></div>`;
-    voiceSubBar=`<div class="voice-sub">${vSize}<div class="seg vcl-seg"><span class="seg-lbl">Strings</span>${cbtn}</div>${vFeel}</div>`;
+    const vSize=`<div class="seg" id="voiceSize"><span class="seg-lbl" title="How many notes in the cluster">Notes</span><button class="${N===3?'on':''}" data-vsize="3" title="Three-note cluster">3</button><button class="${N===4?'on':''}" data-vsize="4" title="Four-note cluster — adds the 7th / colour tone">4</button></div>`;
+    const vFeel=`<div class="seg" id="voiceFeel"><span class="seg-lbl" title="How voices move from chord to chord">Voicing</span><button class="${settings.voiceFeel==='legato'?'on':''}" data-vfeel="legato" title="Legato — smooth voice leading: keeps common tones and moves each voice the least from the previous chord, so changes glide.">Legato</button><button class="${settings.voiceFeel==='grip'?'on':''}" data-vfeel="grip" title="Grip — block chords: every chord in root position, the same shape moved around. Predictable and identical every time.">Grip</button></div>`;
+    voiceSubBar=`<div class="voice-sub">${vSize}<div class="seg vcl-seg"><span class="seg-lbl" title="Which strings carry the cluster">Strings</span>${cbtn}</div>${vFeel}</div>`;
   }
   const anyLayer = L.sevenths||L.borrowed||L.resolutions;
-  const layerBar = keyOn ? `<div class="chord-layers"><div class="seg layers-seg"><span class="seg-lbl">Layers</span>`
-    +`<button class="layer-tog locked on" disabled title="The seven diatonic triads — always shown">▣ Triads</button>`
+  const layerBar = keyOn ? `<div class="chord-layers"><div class="seg layers-seg"><span class="seg-lbl" title="Extra chord layers drawn onto the grid">Layers</span>`
     +`<button class="layer-tog${L.sevenths?' on':''}" data-layer="sevenths" title="Diatonic 7th chords — Imaj7, ii7, V7…">⑦ 7ths</button>`
     +`<button class="layer-tog${L.borrowed?' on':''}" data-layer="borrowed" title="Borrowed / modal-interchange chords from the parallel key">⌁ Borrowed</button>`
     +`<button class="layer-tog${L.resolutions?' on':''}" data-layer="resolutions" title="Hover a dominant chord to ring where it resolves">→ Resolve</button>`
-    +(anyLayer?`<button class="layer-clear" data-layer-clear title="Turn all layers off">✕ Clear</button>`:'')
-    +`</div></div>` : '';
-  const seg=CHORD_EXT.map(e=>`<button class="${e.key===settings.chordExt?'on':''}" data-ext="${e.key}">${e.label}</button>`).join('');
-  wrap.innerHTML=`${keyBar}${voiceBar}${voiceSubBar}${layerBar}<div class="chord-scroll"><div class="chord-matrix"><div class="chord-corner"></div>${colhd}${cells}</div></div><div class="chord-ext"><div class="seg"><span class="seg-lbl">Special row</span>${seg}</div>${legend}</div>`;
+    +(anyLayer?`<button class="layer-clear" data-layer-clear title="Turn all layers off"><svg class="ps-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6M10 11v6M14 11v6"/></svg></button>`:'')
+    +`</div>${legend}</div>` : '';
+  const extOpts=CHORD_EXT.map(e=>`<option value="${e.key}"${e.key===settings.chordExt?' selected':''}>${e.label}</option>`).join('');
+  wrap.innerHTML=`${diceRow}${keyBar}${voiceBar}${voiceSubBar}${layerBar}<div class="chord-scroll"><div class="chord-matrix"><div class="chord-corner"></div>${colhd}${cells}</div></div><div class="chord-ext"><div class="seg root-seg"><span class="seg-lbl" title="The chord type of the bottom matrix row">Special row</span><select class="num" id="extSel" title="Pick the chord type shown on the bottom matrix row">${extOpts}</select></div></div>`;
   wrap.querySelectorAll('.chord-layers [data-layer]').forEach(b=> b.addEventListener('click',()=>{ settings.chordLayers[b.dataset.layer]=!settings.chordLayers[b.dataset.layer]; saveSettingsLS(); renderChords(); }));
   const lclr=wrap.querySelector('[data-layer-clear]'); if(lclr) lclr.addEventListener('click',()=>{ settings.chordLayers={sevenths:false,borrowed:false,resolutions:false}; saveSettingsLS(); renderChords(); });
   if(keyOn && L.resolutions){                                   // Resolutions layer — ring a dominant's target tonic on hover (and while it's the active chord)
@@ -3072,7 +3074,7 @@ function renderChords(){
     }
   }
   wrap.querySelectorAll('.chord-cell').forEach(b=> b.addEventListener('click',()=>{ if(b.classList.contains('disabled')) return; const ri=+b.dataset.r, row=chordRows().find(x=>x.key===b.dataset.row); if(row) applyChord(ri, row.key, CHORD_ROOTS[ri]+row.suffix, row.formula); }));   // non-diatonic cells stay tappable (borrowed chords)
-  wrap.querySelectorAll('.chord-ext [data-ext]').forEach(b=> b.addEventListener('click',()=>{ settings.chordExt=b.dataset.ext; saveSettingsLS(); renderChords(); }));   // manual override of the special row
+  const extSel=wrap.querySelector('#extSel'); if(extSel) extSel.addEventListener('change',()=>{ settings.chordExt=extSel.value; saveSettingsLS(); renderChords(); });   // manual override of the special row
   const kr=wrap.querySelector('#keyRoot'); if(kr) kr.addEventListener('change',()=>{ const oR=settings.keyRoot, oS=settings.keyScale; settings.keyRoot=kr.value; saveSettingsLS(); if(!moveChordToKey(oR, oS)) renderChords(); renderPedals(); });   // changing the key transposes the active chord to the same degree + retargets scale bends
   const ks=wrap.querySelector('#keyScale'); if(ks) ks.addEventListener('change',()=>{ const oR=settings.keyRoot, oS=settings.keyScale; settings.keyScale=ks.value; if(ks.value!=='off' && SCALES[ks.value]) settings.chordExt=SCALES[ks.value].special; saveSettingsLS(); if(!moveChordToKey(oR, oS)) renderChords(); renderPedals(); });   // scale auto-sets the special row + moves the active chord + retargets scale bends
   const krnd=wrap.querySelector('#keyRandom'); if(krnd) krnd.addEventListener('click', randomKey);
