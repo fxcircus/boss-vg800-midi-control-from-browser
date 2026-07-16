@@ -129,9 +129,10 @@
 
   .bench {
     min-width: 0;
-    background: color-mix(in srgb, var(--wood) 18%, transparent);
+    background: color-mix(in srgb, var(--wood) 45%, transparent);
     border: 2px solid var(--edge);
     border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
     padding: 12px 6px 20px;
     margin-top: 30px;
     position: relative;
@@ -191,7 +192,9 @@
   .sec .rule { flex: 1; height: 1px; background: var(--edge); }
 
   /* Unified section panel — a fieldset so its legend header straddles (breaks) the top border */
-  .panel { min-width: 0; border: 2px solid var(--edge); border-radius: 15px; padding: 9px 18px 18px; margin: 0 0 18px; background: color-mix(in srgb, var(--wood) 18%, transparent); }
+  .panel { min-width: 0; border: 1px solid var(--edge-soft); border-radius: 15px; padding: 9px 18px 18px; margin: 0 0 18px; background: color-mix(in srgb, var(--wood) 18%, transparent); }
+  /* Layering — control chrome (Guitar, Bends, benches, nav, header) rides above the softer content well */
+  #sec-guitar, #sec-pedals, #rightRail #sec-pedals, #sideNav #sec-guitar { border: 2px solid var(--edge); background: color-mix(in srgb, var(--wood) 45%, transparent); box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
   .panel-hd { margin: 0 auto; padding: 0 14px; font-family: var(--cond); font-weight: 700; font-size: 20px; line-height: 1; text-transform: uppercase; letter-spacing: 1.5px; color: var(--bone); }
   .panel-sub { text-align: center; font-family: var(--mono); font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--bone-faint); margin: 7px 0 14px; }
 
@@ -541,7 +544,7 @@
   @media (min-width: 1280px) {
     /* Full-width header band: the title bar spans the whole screen; both columns start BELOW it */
     body { padding-top: 0; }
-    header { position: fixed; top: 0; left: 0; right: 0; margin: 0; padding: 13px 26px; background: var(--bg); background-attachment: fixed; border-bottom: 1px solid var(--edge-soft); justify-content: flex-end; }
+    header { position: fixed; top: 0; left: 0; right: 0; margin: 0; padding: 13px 26px; background: var(--bg); background-attachment: fixed; border-bottom: 2px solid var(--edge); justify-content: flex-end; }
     header.stuck { box-shadow: none; }
     header .mast { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }   /* title centered in the band; the buttons keep the right edge */
     header { padding-right: max(14px, calc(50vw - 626px)); }   /* buttons close ranks with the readout column's right border */
@@ -576,7 +579,7 @@
   /* Center-column nav row — compact preset-category buttons in the app's chip style; Random rides at the end */
   #navRow { display: none; }
   @media (min-width: 1280px) {
-    #navRow { display: flex; flex-wrap: nowrap; justify-content: center; align-items: stretch; gap: 9px; margin: 0 0 14px; position: sticky; top: var(--hdr-h, 74px); z-index: 45; padding: 12px 0 12px; background: var(--bg); background-attachment: fixed; border-bottom: 2px solid var(--edge); }
+    #navRow { display: flex; flex-wrap: nowrap; justify-content: center; align-items: stretch; gap: 9px; margin: 0 0 14px; position: sticky; top: var(--hdr-h, 74px); z-index: 45; padding: 12px 0 12px; background: var(--bg); background-attachment: fixed; border-bottom: 2px solid var(--edge); box-shadow: 0 10px 14px -12px rgba(0,0,0,0.25); }
     @media (min-width: 1660px) { #navRow { margin-left: -18px; margin-right: -18px; } .nav-strip { flex-wrap: nowrap; } }   /* full-width divider; the strip is guaranteed one row at this band */
     html .sec, html .bench, html .fam, html .panel, html .lapsec { scroll-margin-top: calc(var(--hdr-h, 74px) + var(--nav-land, 72px)); }   /* anchor jumps land just under the frozen nav row, so the previous card ends up hidden behind it (html-prefixed to outrank the later 24px base rule) */
   }
@@ -779,7 +782,7 @@
   .fam-name::before, .fam-name::after { content: ""; flex: 1; height: 1px; background: var(--edge-soft); }   /* centered title with the rule cut off on both sides */
 
   /* Grouped section (e.g. Lap Steel) with visually separated sub-areas */
-  .lapsec { min-width: 0; margin: 0 0 18px; border: 2px solid var(--edge); border-radius: 15px; padding: 9px 18px 3px; background: color-mix(in srgb, var(--wood) 18%, transparent); scroll-margin-top: 24px; }
+  .lapsec { min-width: 0; margin: 0 0 18px; border: 1px solid var(--edge-soft); border-radius: 15px; padding: 9px 18px 3px; background: color-mix(in srgb, var(--wood) 18%, transparent); scroll-margin-top: 24px; }
   .lapsec-hd { font-family: var(--cond); font-weight: 700; font-size: 15px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--brass); margin: 0 0 16px; display: flex; align-items: center; gap: 12px; }
   .lapsec-hd::after { content: ""; flex: 1; height: 1px; background: var(--brass-deep); opacity: 0.45; }
   .lapsec-body .fam { margin-bottom: 18px; }
