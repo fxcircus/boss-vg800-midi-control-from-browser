@@ -544,7 +544,7 @@
   @media (min-width: 1280px) {
     /* Full-width header band: the title bar spans the whole screen; both columns start BELOW it */
     body { padding-top: 0; }
-    header { position: fixed; top: 0; left: 0; right: 0; margin: 0; padding: 13px 26px; background: var(--bg); background-attachment: fixed; border-bottom: 2px solid var(--edge); justify-content: flex-end; }
+    header { position: fixed; top: 0; left: 0; right: 0; margin: 0; padding: 13px 26px; background: var(--bg); background-attachment: fixed; justify-content: flex-end; }
     header.stuck { box-shadow: none; }
     header .mast { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }   /* title centered in the band; the buttons keep the right edge */
     header { padding-right: max(14px, calc(50vw - 626px)); }   /* buttons close ranks with the readout column's right border */
@@ -580,7 +580,14 @@
   #navRow { display: none; }
   @media (min-width: 1280px) {
     #navRow { display: flex; flex-wrap: nowrap; justify-content: center; align-items: stretch; gap: 9px; margin: 0 0 14px; position: sticky; top: var(--hdr-h, 74px); z-index: 45; padding: 12px 0 12px; background: var(--bg); background-attachment: fixed; border-bottom: 2px solid var(--edge); box-shadow: 0 10px 14px -12px rgba(0,0,0,0.25); }
-    @media (min-width: 1660px) { #navRow { margin-left: -18px; margin-right: -18px; } .nav-strip { flex-wrap: nowrap; } }   /* full-width divider; the strip is guaranteed one row at this band */
+    @media (min-width: 1660px) {
+      #navRow { margin-left: -18px; margin-right: -18px; }
+      .nav-strip { flex-wrap: nowrap; }
+      /* the divider continues past the side columns' outer borders to the screen edges (stubs live in the gaps only) */
+      #navRow::before, #navRow::after { content: ""; position: absolute; bottom: -2px; height: 2px; background: var(--edge); width: max(16px, calc(50vw - 828px)); }
+      #navRow::before { left: calc(428px - 50vw); }
+      #navRow::after { right: calc(428px - 50vw); }
+    }
     html .sec, html .bench, html .fam, html .panel, html .lapsec { scroll-margin-top: calc(var(--hdr-h, 74px) + var(--nav-land, 72px)); }   /* anchor jumps land just under the frozen nav row, so the previous card ends up hidden behind it (html-prefixed to outrank the later 24px base rule) */
   }
   /* One segmented strip, styled as a sibling of the Bends toggles (same tokens); dividers between items,
