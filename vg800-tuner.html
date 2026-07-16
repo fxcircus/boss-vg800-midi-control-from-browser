@@ -295,7 +295,7 @@
   .ps-pad.disabled { opacity: 0.44; cursor: not-allowed; filter: grayscale(0.4); box-shadow: none; }
   .ps-dot { width: 13px; height: 13px; flex: 0 0 auto; border-radius: 50%; box-shadow: 0 0 7px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(255,255,255,0.28); }
   .ps-pad.on .ps-dot { box-shadow: 0 0 10px currentColor, inset 0 0 0 1px rgba(255,255,255,0.45); }
-  .ps-lbl { font-family: var(--cond); font-weight: 700; font-size: 15px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--bone); flex: 0 0 auto; }
+  .ps-lbl { font-family: var(--cond); font-weight: 700; font-size: 15px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--bone); flex: 0 0 auto; min-width: 88px; }   /* wide enough for ALL STRINGS so every key badge sits in the same column */
   .ps-pad.on .ps-lbl { color: var(--brass); }
   .ps-key { font-family: var(--mono); font-size: 9px; color: var(--bone-faint); border: 1px solid var(--edge); border-radius: 4px; padding: 1px 5px; flex: 0 0 auto; }
   .ps-preview { margin-left: auto; font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--amber); letter-spacing: 0.3px; white-space: nowrap; padding-left: 8px; overflow: hidden; text-overflow: ellipsis; }
@@ -2000,15 +2000,14 @@ const FACTORY_PS=[   // group → the labeled cluster row each chip renders unde
   {name:'+2',    amounts:[2,2,2,2,2,2],        group:'shift',  tip:'Every string up a whole step'},
   {name:'−1',    amounts:[-1,-1,-1,-1,-1,-1],  group:'shift',  tip:'Every string down a half step'},
   {name:'−2',    amounts:[-2,-2,-2,-2,-2,-2],  group:'shift',  tip:'Every string down a whole step'},
-  {name:'4th ↑', amounts:[5,5,5,5,5,5],        group:'jump',   tip:'Every string up a fourth — drone / power-chord jump'},
-  {name:'4th ↓', amounts:[-5,-5,-5,-5,-5,-5],  group:'jump',   tip:'Every string down a fourth — drone drops, half-time feels'},
-  {name:'5th ↑', amounts:[7,7,7,7,7,7],        group:'jump',   tip:'Every string up a fifth'},
-  {name:'Oct ↑', amounts:[12,12,12,12,12,12],  group:'jump',   tip:'Every string up an octave'},
-  {name:'Oct ↓', amounts:[-12,-12,-12,-12,-12,-12], group:'jump', tip:'Every string down an octave'},
+  {name:'−4th', amounts:[-5,-5,-5,-5,-5,-5],  group:'jump',   tip:'Every string down a fourth — drone drops, half-time feels'},
+  {name:'+4th', amounts:[5,5,5,5,5,5],        group:'jump',   tip:'Every string up a fourth — drone / power-chord jump'},
+  {name:'+5th', amounts:[7,7,7,7,7,7],        group:'jump',   tip:'Every string up a fifth'},
+  {name:'+Oct', amounts:[12,12,12,12,12,12],  group:'jump',   tip:'Every string up an octave'},
+  {name:'−Oct', amounts:[-12,-12,-12,-12,-12,-12], group:'jump', tip:'Every string down an octave'},
   {name:'B-Bender', amounts:[0,2,0,0,0,0],     group:'bender', tip:'B string up a whole step (B → C#) — Telecaster B-bender'},
   {name:'G-Bender', amounts:[0,0,2,0,0,0],     group:'bender', tip:'G string up a whole step (G → A) — Clarence White style'},
-  {name:'Drop Low', amounts:[0,0,0,0,0,-2],    group:'bender', tip:'Low E down to D — instant Drop D'},
-  {name:'Drop Hi', amounts:[-2,0,0,0,0,0],     group:'bender', tip:'High E down to D — the palm-bender / Hipshot drop'},
+  {name:'Drop', amounts:[0,0,0,0,0,-2],    group:'bender', tip:'Low E down to D — instant Drop D'},
   {name:'Nashville', amounts:[0,0,12,12,12,12], group:'bender', tip:'Strings 3–6 up an octave — high-strung shimmer while held'},
 ];
 function perStringControls(){
@@ -2300,7 +2299,7 @@ function renderPedals(){
     html+=`<div class="seg seg-wrap" id="psFacSeg">${FACTORY_PS.map((p,i)=>`<button class="${lit(p)?'on':''}" data-psfac="${i}" title="${p.tip||p.name}" aria-label="${p.name}">${p.name==='Clear'?TRASH_ICO:p.name}</button>`).join('')}</div>`;
     const psAll=controls.find(c=>c.allStrings), psSingles=controls.filter(c=>!c.allStrings);
     const allSt=psAll&&ctrlStateCache[psAll.id], allDis=allSt&&!allSt.avail, allKey=(keyFor('PSALL')||'').toUpperCase();
-    const allRow=psAll?`<div class="ps-row"><button class="pedal ps-pad${allDis?' disabled':''}" data-ctrl="PSALL"${allDis?' aria-disabled="true"':''}><span class="ps-dot" style="background:linear-gradient(135deg,${STR_COLORS.join(',')})"></span><span class="ps-lbl">All Strings</span>${allKey?`<span class="ps-key">${allKey}</span>`:''}<span class="ps-preview${allDis?' muted':''}">${allDis?'set a bend first':'every set bender · one press'}</span></button></div>`:'';
+    const allRow=psAll?`<div class="ps-row"><button class="pedal ps-pad${allDis?' disabled':''}" data-ctrl="PSALL"${allDis?' aria-disabled="true"':''}><span class="ps-dot" style="background:linear-gradient(135deg,${STR_COLORS.join(',')})"></span><span class="ps-lbl">All Strings</span>${allKey?`<span class="ps-key">${allKey}</span>`:''}</button></div>`:'';
     html+=`<div class="ps-list">${psSingles.map(c=>perStringRowHTML(c, ctrlStateCache[c.id])).join('')}${allRow}</div>`;
   } else {
     const info = curInfo.root==null
