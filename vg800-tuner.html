@@ -2532,10 +2532,10 @@ function placeBench(){
   const bench=document.getElementById('sec-current'), hist=document.getElementById('sec-history'), nav=document.getElementById('sideNav'), rail=document.getElementById('rightRail'), wrap=document.querySelector('.wrap'), pedals=document.getElementById('sec-pedals'), pan=document.getElementById('sec-pan'), guitar=document.getElementById('sec-guitar');
   if(!bench||!nav||!wrap) return;
   const wide=window.matchMedia('(min-width:1660px)').matches, mid=window.matchMedia('(min-width:1280px)').matches;
-  if(wide){   // three columns: [Current Tuning · Guitar · Clipboard] | presets | [Bends]
-    if(bench.parentElement!==nav) nav.appendChild(bench);
-    if(guitar && guitar.previousElementSibling!==bench) bench.after(guitar);
-    if(hist && hist.previousElementSibling!==(guitar||bench)) (guitar||bench).after(hist);
+  if(wide){   // three columns: [Guitar · Current Tuning · Clipboard] | presets | [Bends]
+    if(guitar && guitar.parentElement!==nav) nav.appendChild(guitar);
+    if(bench.parentElement!==nav || (guitar && bench.previousElementSibling!==guitar)){ if(guitar) guitar.after(bench); else nav.appendChild(bench); }
+    if(hist && hist.previousElementSibling!==bench) bench.after(hist);
     if(rail && pedals && pedals.parentElement!==rail) rail.appendChild(pedals);
   } else {
     if(mid){   // narrow sidebar keeps the readouts; Guitar + Bends flow inline in the center
