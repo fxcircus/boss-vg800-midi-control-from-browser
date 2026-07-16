@@ -549,7 +549,7 @@
     header .mast { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }   /* title centered in the band; the buttons keep the right edge */
     header { padding-right: max(14px, calc(50vw - 626px)); }   /* buttons close ranks with the readout column's right border */
     @media (min-width: 1660px) { header { padding-right: max(16px, calc(50vw - 828px)); } }
-    .wrap { padding-top: calc(var(--hdr-h, 74px) + 22px); }
+    .wrap { padding-top: var(--hdr-h, 74px); }   /* nav row rests exactly at its sticky pin — no dead-zone scroll before content moves */
     #sideNav {
       display: block; position: fixed; top: calc(var(--hdr-h, 74px) + 20px); left: calc(50% + 434px); width: 192px;
       max-height: calc(100vh - var(--hdr-h, 74px) - 14px); overflow-y: auto; z-index: 40; padding: 2px 0 8px;
