@@ -520,7 +520,7 @@
     nav#sideNav { left: calc(50% + 428px); right: auto; width: min(400px, calc(50vw - 428px - 16px)); height: calc(100vh - var(--hdr-h, 74px) - 34px); max-height: none; display: flex; flex-direction: column; }   /* wide: readout column on the RIGHT, full height (nav# outranks the later 1280-band rule) */
     #sideNav #sec-guitar, #sideNav .hist-bubble { flex: 0 0 auto; }
     #sideNav #curPanWrap { flex: 0 0 auto; height: var(--gtr-h, 393px); }   /* same footprint as the Guitar card (measured live in Classic; 407px fallback) so Current Tuning keeps its size across modes */
-    #sideNav #sec-current { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+    #sideNav #sec-current { flex: 0 0 auto; display: flex; flex-direction: column; min-height: 0; padding-bottom: 3px; }
     #sideNav #sec-current #strings { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-evenly; min-height: 0; }
     #sideNav #sec-guitar { margin: 10px 0 0; padding: 6px 14px 9px; position: relative; }
     #sideNav .panel-hd { font-size: 15px; letter-spacing: 1.5px; }
@@ -558,13 +558,13 @@
   }
   /* Compact "Current Tuning" bench when it lives in the sidebar (wide screens) */
   #sideNav .bench { margin: 10px 0 0; padding: 9px 4px 6px; border-radius: 10px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
-  #sideNav .bench-head { padding: 0 8px 4px; }
+  #sideNav .bench-head { padding: 0 8px 3px; }
   #sideNav .bench .fam-name { margin: 2px 4px 4px; }   /* tighter cut-line headers in the sidebar */
   #sideNav .bench-head .name { font-size: 15px; }
   #sideNav .bench-head .name.long { font-size: 13px; }
   #sideNav .bench-head .name.xlong { font-size: 11px; }
   #sideNav .bench-head .lbl { display: none; }   /* sidebar is tight — drop the label, give the name the full width */
-  #sideNav .str { grid-template-columns: 28px 1fr 30px; height: 33px; padding: 0 8px; }
+  #sideNav .str { grid-template-columns: 28px 1fr 30px; height: 28px; padding: 0 8px; }
   #sideNav .str[data-g="6"] .wire::before { height: 6.5px; }
   #sideNav .str[data-g="5"] .wire::before { height: 5.7px; }
   #sideNav .str[data-g="4"] .wire::before { height: 4.9px; }
@@ -572,8 +572,8 @@
   #sideNav .str[data-g="2"] .wire::before { height: 3.7px; }
   #sideNav .str[data-g="1"] .wire::before { height: 3.2px; }
   #sideNav .str-lbl { font-size: 10.5px; letter-spacing: 0; }
-  #sideNav .slide { min-width: 34px; height: 29px; font-size: 17.5px; padding: 0 7px; border-radius: 6px; }
-  #sideNav .slide .oct { font-size: 11.5px; }
+  #sideNav .slide { min-width: 31px; height: 26px; font-size: 15.5px; padding: 0 6px; border-radius: 6px; }
+  #sideNav .slide .oct { font-size: 10.5px; }
   #sideNav .str-off { font-size: 11.5px; }
   /* Center-column nav row — compact preset-category buttons in the app's chip style; Random rides at the end */
   #navRow { display: none; }
