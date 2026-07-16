@@ -517,7 +517,7 @@
     #rightRail .seg-wrap button { padding: 5px 8px; font-size: 10px; }
     nav#sideNav { left: calc(50% + 428px); right: auto; width: min(400px, calc(50vw - 428px - 16px)); height: calc(100vh - var(--hdr-h, 74px) - 34px); max-height: none; display: flex; flex-direction: column; }   /* wide: readout column on the RIGHT, full height (nav# outranks the later 1280-band rule) */
     #sideNav #sec-guitar, #sideNav .hist-bubble { flex: 0 0 auto; }
-    #sideNav #curPanWrap { flex: 0 0 auto; height: var(--gtr-h, 393px); }   /* same footprint as the Guitar card (measured live in Classic; 407px fallback) so Current Tuning keeps its size across modes */
+    #sideNav #curPanWrap { flex: 0 0 auto; height: calc(var(--gtr-h, 393px) / 2); }   /* half the Guitar card's footprint (measured live in Classic; 393px fallback) */
     #sideNav #sec-current { flex: 0 0 auto; display: flex; flex-direction: column; min-height: 0; padding-bottom: 3px; }
     #sideNav #sec-current #strings { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-evenly; min-height: 0; }
     #sideNav #sec-guitar { margin: 10px 0 0; padding: 6px 14px 9px; position: relative; }
