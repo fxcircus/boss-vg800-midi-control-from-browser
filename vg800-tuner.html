@@ -576,7 +576,7 @@
   /* Center-column nav row — compact preset-category buttons in the app's chip style; Random rides at the end */
   #navRow { display: none; }
   @media (min-width: 1280px) {
-    #navRow { display: flex; flex-wrap: nowrap; justify-content: center; align-items: stretch; gap: 9px; margin: 0 0 14px; position: sticky; top: var(--hdr-h, 74px); z-index: 45; padding: 12px 0 12px; background: var(--bg); background-attachment: fixed; border-bottom: 1px solid var(--edge-soft); }
+    #navRow { display: flex; flex-wrap: nowrap; justify-content: center; align-items: stretch; gap: 9px; margin: 0 0 14px; position: sticky; top: var(--hdr-h, 74px); z-index: 45; padding: 12px 0 12px; background: var(--bg); background-attachment: fixed; border-bottom: 2px solid var(--edge); }
     @media (min-width: 1660px) { #navRow { margin-left: -18px; margin-right: -18px; } .nav-strip { flex-wrap: nowrap; } }   /* full-width divider; the strip is guaranteed one row at this band */
     html .sec, html .bench, html .fam, html .panel, html .lapsec { scroll-margin-top: calc(var(--hdr-h, 74px) + 104px); }   /* anchor jumps land below the frozen nav row (html-prefixed to outrank the later 24px base rule) */
   }
