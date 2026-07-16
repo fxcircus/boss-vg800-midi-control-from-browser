@@ -644,6 +644,11 @@
   .chord-key { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 2px 0 14px; }
   .chord-key-lbl { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--bone-faint); }
   .chord-key .num { width: auto; font-size: 12px; padding: 8px 30px 8px 11px; }
+  /* Modes root — the label is a recessed cell inside the control (SPEED-pill recipe), so the centered object is the whole pill */
+  .root-key { justify-content: center; }
+  .root-seg { flex: 0 0 auto; }
+  .root-seg .num { border: none; background-color: transparent; font-weight: 700; padding: 6px 28px 6px 10px; border-radius: 6px; }
+  .root-seg .num:hover, .root-seg .num:focus { background-color: var(--felt); }
   .key-rand { display: inline-flex; align-items: center; justify-content: center; padding: 7px; border: 1px solid var(--edge); border-radius: 8px; background: var(--wood); color: var(--bone-dim); cursor: pointer; transition: color .12s, border-color .12s, background .12s, transform .12s; }
   .key-rand:hover { color: var(--brass); border-color: var(--brass-deep); background: var(--felt); }
   .key-rand:active { transform: rotate(-12deg); }
@@ -2474,8 +2479,8 @@ function renderModes(){
   wrap.innerHTML='';
   const r=settings.modesRoot|0, rb=!!settings.realBend;
   const opts=NOTE.map((n,i)=>{ const okR=rb||modesRootFits(i); return `<option value="${i}"${i===r?' selected':''}${okR?'':' disabled'}>${n}${okR?'':' · Switch to Classic mode'}</option>`; }).join('');
-  const bar=document.createElement('div'); bar.className='chord-key'; bar.style.justifyContent='center';
-  bar.innerHTML=`<label class="chord-key-lbl">Root</label><select class="num" id="modesRootSel" title="Re-root all seven modes to this note">${opts}</select>`;
+  const bar=document.createElement('div'); bar.className='chord-key root-key';
+  bar.innerHTML=`<div class="seg root-seg" title="Re-root all seven modes to this note"><span class="seg-lbl">Root</span><select class="num" id="modesRootSel">${opts}</select></div>`;
   wrap.appendChild(bar);
   const list=transposedModes();
   const mkFam=(id,title,tunings)=>{
