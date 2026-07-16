@@ -580,7 +580,7 @@
   @media (min-width: 1280px) {
     #navRow { display: flex; flex-wrap: nowrap; justify-content: center; align-items: stretch; gap: 9px; margin: 0 0 14px; position: sticky; top: var(--hdr-h, 74px); z-index: 45; padding: 12px 0 12px; background: var(--bg); background-attachment: fixed; border-bottom: 2px solid var(--edge); }
     @media (min-width: 1660px) { #navRow { margin-left: -18px; margin-right: -18px; } .nav-strip { flex-wrap: nowrap; } }   /* full-width divider; the strip is guaranteed one row at this band */
-    html .sec, html .bench, html .fam, html .panel, html .lapsec { scroll-margin-top: calc(var(--hdr-h, 74px) + 104px); }   /* anchor jumps land below the frozen nav row (html-prefixed to outrank the later 24px base rule) */
+    html .sec, html .bench, html .fam, html .panel, html .lapsec { scroll-margin-top: calc(var(--hdr-h, 74px) + var(--nav-land, 72px)); }   /* anchor jumps land just under the frozen nav row, so the previous card ends up hidden behind it (html-prefixed to outrank the later 24px base rule) */
   }
   /* One segmented strip, styled as a sibling of the Bends toggles (same tokens); dividers between items,
      suppressed around the selected chip so the blue fill never fights a hairline. */
@@ -1533,7 +1533,7 @@ function syncGtrH(){   // Current Panning borrows the Guitar card's exact height
   const g=document.getElementById('sec-guitar'), n=document.getElementById('sideNav');
   if(g && n && g.offsetHeight>0 && window.matchMedia('(min-width:1660px)').matches) n.style.setProperty('--gtr-h', g.getBoundingClientRect().height+'px');
 }
-if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>syncGtrH());   // webfonts nudge the card height after first paint
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>{ syncGtrH(); setNavLand(); });   // webfonts nudge both measured heights after first paint
 document.getElementById('gtrTabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; gtrTab=b.dataset.cat; gtrRender(false); });
 document.getElementById('gtrChips').addEventListener('click',e=>{ const b=e.target.closest('.gtr-chip'); if(!b) return; curModelName=b.dataset.model; gtrPicked=true; settings.curModel=curModelName; saveSettingsLS(); sendModelRaw(curModelName); gtrRender(); });   // manual pick: explicit intent, skips the Auto gate; persists across reloads
 document.getElementById('gtrAutoSeg').addEventListener('click',e=>{   // Auto: tunings drive the model · Manual: the current pick stays
@@ -2536,6 +2536,7 @@ function renderNav(){
       +`<button class="nav-dice" data-rand-tuning title="Apply a random tuning" aria-label="Random tuning">${DICE_ICO}</button>`;
   }
   buildJumpMenu();
+  setNavLand();
   updateSpy();
 }
 function buildJumpMenu(){   // mobile hamburger: same vertical menu as before the nav-row redesign
@@ -2591,7 +2592,12 @@ function placeBench(){
     }
   }
 }
+function setNavLand(){   // landing offset = the frozen nav row's real height + a hair of daylight
+  const nr=document.getElementById('navRow');
+  if(nr && nr.offsetParent!==null) document.documentElement.style.setProperty('--nav-land', (nr.offsetHeight+8)+'px');
+}
 window.addEventListener('resize', placeBench);
+window.addEventListener('resize', setNavLand);
 function updateSpy(){
   const links=[...document.querySelectorAll('#navRow a, #jumpMenu a')]; if(!links.length) return;
   let cur=null, best=-1e9; const nr=document.getElementById('navRow');
