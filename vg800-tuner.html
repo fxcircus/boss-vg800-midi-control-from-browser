@@ -369,7 +369,7 @@
   .sec-tools [data-mapjump] { margin-left: auto; }   /* Map holds the right corner (Chords section) */
   /* BENDS header/controls: Map is a compact icon capping the header (the <legend> keeps the title at true center by construction) */
   #sec-pedals { position: relative; }
-  .map-ico { position: absolute; top: -23px; right: 14px;   /* lands on the legend line — a fieldset's absolute origin sits below its legend */ display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 26px; color: var(--bone-faint); background: var(--wood); border: 1px solid var(--edge); border-radius: 8px; cursor: pointer; transition: color .12s, border-color .12s, background .12s; }
+  .map-ico { position: absolute; top: -23px; right: 14px;   /* lands on the legend line — a fieldset's absolute origin sits below its legend */ display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 0 9px; height: 26px; font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--bone-faint); background: var(--wood); border: 1px solid var(--edge); border-radius: 8px; cursor: pointer; transition: color .12s, border-color .12s, background .12s; }
   .map-ico:hover { color: var(--brass); border-color: var(--brass-deep); background: var(--felt); }
   .map-ico .km-ico { width: 15px; height: 15px; }
   .seg-wide { display: flex; max-width: 560px; margin: 4px auto 8px; }   /* primary mode switch — full content width */
@@ -479,7 +479,7 @@
   #rightRail { display: none; }
   @media (min-width: 1660px) {
     /* Three columns: [Current Tuning / Guitar / Clipboard] left, presets center, Bends alone right. */
-    #rightRail { display: block; position: fixed; top: calc(var(--hdr-h, 74px) + 20px); left: auto; right: calc(50% + 428px); width: min(400px, calc(50vw - 428px - 16px)); max-height: calc(100vh - var(--hdr-h, 74px) - 40px); overflow-y: auto; z-index: 40; padding: 2px 2px 8px; scrollbar-width: none; }
+    #rightRail { display: block; position: fixed; top: calc(var(--hdr-h, 74px) + 8px); left: auto; right: calc(50% + 428px); width: min(400px, calc(50vw - 428px - 16px)); max-height: calc(100vh - var(--hdr-h, 74px) - 28px); overflow-y: auto; z-index: 40; padding: 14px 2px 8px; scrollbar-width: none; }   /* 14px top padding = room for the Map button riding the legend line (panel position unchanged) */
     #rightRail::-webkit-scrollbar { width: 0; height: 0; }
     /* FLAT — no drop shadows in the rail (state glows on engaged pedals stay) */
     #rightRail .panel, #rightRail .ps-adjust, #rightRail .map-btn, #rightRail .seg button.on { box-shadow: none; }
@@ -487,7 +487,7 @@
     /* Bends — same layout and cluster grouping, one notch more air than the packed version */
     #rightRail #sec-pedals { margin: 0 0 12px; padding: 8px 14px 14px 14px; position: relative; }
     #rightRail #sec-pedals .panel-hd { font-size: 15px; letter-spacing: 1.5px; }
-    #rightRail .map-ico { top: -19.5px; right: 10px; width: 27px; height: 24px; }
+    #rightRail .map-ico { top: -19.5px; right: 10px; height: 24px; padding: 0 8px; }
     #rightRail .seg-wide, #rightRail .util-row { max-width: none; }
     #rightRail #pedalWrap { text-align: center; }
     #rightRail .pedal-info { display: none; }   /* the cards carry the moves; the prose lives in the normal-width layout */
@@ -511,7 +511,10 @@
     #rightRail .ps-step { width: 34px; font-size: 17px; }
     #rightRail .ps-val { min-width: 38px; font-size: 13px; }
     #rightRail .seg-wrap button { padding: 5px 8px; font-size: 10px; }
-    nav#sideNav { left: calc(50% + 428px); right: auto; width: min(400px, calc(50vw - 428px - 16px)); }   /* wide: readout column on the RIGHT (nav# outranks the later 1280-band rule) */
+    nav#sideNav { left: calc(50% + 428px); right: auto; width: min(400px, calc(50vw - 428px - 16px)); height: calc(100vh - var(--hdr-h, 74px) - 34px); max-height: none; display: flex; flex-direction: column; }   /* wide: readout column on the RIGHT, full height (nav# outranks the later 1280-band rule) */
+    #sideNav #sec-guitar, #sideNav .hist-bubble { flex: 0 0 auto; }
+    #sideNav #sec-current { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+    #sideNav #sec-current #strings { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-evenly; min-height: 0; }
     #sideNav #sec-guitar { margin: 10px 0 0; padding: 6px 14px 9px; position: relative; }
     #sideNav #sec-guitar .panel-hd { font-size: 15px; letter-spacing: 1.5px; }
     #sideNav #sec-guitar .map-ico { display: none; }
@@ -566,7 +569,7 @@
   @media (min-width: 1280px) {
     #navRow { display: flex; flex-wrap: nowrap; justify-content: center; align-items: stretch; gap: 9px; margin: 0 0 14px; position: sticky; top: var(--hdr-h, 74px); z-index: 45; padding: 12px 0 12px; background: var(--bg); background-attachment: fixed; border-bottom: 1px solid var(--edge-soft); }
     @media (min-width: 1660px) { #navRow { margin-left: -18px; margin-right: -18px; } .nav-strip { flex-wrap: nowrap; } }   /* full-width divider; the strip is guaranteed one row at this band */
-    .sec, .bench, .fam, .panel { scroll-margin-top: calc(var(--hdr-h, 74px) + 104px); }   /* anchor jumps land below the frozen nav row */
+    html .sec, html .bench, html .fam, html .panel, html .lapsec { scroll-margin-top: calc(var(--hdr-h, 74px) + 104px); }   /* anchor jumps land below the frozen nav row (html-prefixed to outrank the later 24px base rule) */
   }
   /* One segmented strip, styled as a sibling of the Bends toggles (same tokens); dividers between items,
      suppressed around the selected chip so the blue fill never fights a hairline. */
@@ -1090,7 +1093,7 @@
 
   <fieldset class="panel" id="sec-pedals">
     <legend class="panel-hd">Bends</legend>
-    <button class="map-ico" data-mapjump="bends" title="Configure keyboard shortcuts" aria-label="Key mapping"><svg class="km-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h.01M18 14h.01M9 14h6"/></svg></button>
+    <button class="map-ico" data-mapjump="bends" title="Configure keyboard shortcuts" aria-label="Key mapping">Map<svg class="km-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h.01M18 14h.01M9 14h6"/></svg></button>
     <div id="pedalWrap"></div>
   </fieldset>
 
@@ -2568,16 +2571,21 @@ function placeBench(){
 window.addEventListener('resize', placeBench);
 function updateSpy(){
   const links=[...document.querySelectorAll('#navRow a, #jumpMenu a')]; if(!links.length) return;
-  let cur=null, best=-1e9; const line=120;
+  let cur=null, best=-1e9; const nr=document.getElementById('navRow');
+  const sm=parseFloat(getComputedStyle(document.getElementById('fam-common')||document.body).scrollMarginTop)||0;
+  const line=(nr && nr.offsetParent!==null && sm) ? sm+6 : 120;   // same source as the anchors' landing position, so a click always credits its own section
   const spyEl=a=>{ const el=document.getElementById(a.getAttribute('href').slice(1)); return (el && el.offsetParent!==null && !el.closest('#rightRail')) ? el : null; };   // skip hidden sections (Panning in Classic mode) AND railed ones (fixed-position rects would poison the scroll math, and their links are hidden anyway)
   links.forEach(a=>{ const el=spyEl(a); if(!el) return; const top=el.getBoundingClientRect().top; if(top<=line && top>best){ best=top; cur=a.getAttribute('href'); } });
   if(!cur) cur='#fam-common';   // above the first section (page top) → the strip's first segment stays lit
   if(window.innerHeight+window.scrollY >= document.documentElement.scrollHeight-2){  // at page bottom → last VISIBLE in-flow section
     for(let i=links.length-1;i>=0;i--){ if(spyEl(links[i])){ cur=links[i].getAttribute('href'); break; } }
   }
+  if(spyPin) cur=spyPin;
   links.forEach(a=> a.classList.toggle('active', a.getAttribute('href')===cur));
 }
-window.addEventListener('scroll', updateSpy, {passive:true});
+let spyPin=null, spyPinAt=0;   // a clicked pill stays lit until the user scrolls away — Lap Steel and Pedal Steel share the page-bottom scroll position, so position alone can't tell them apart
+document.addEventListener('click', e=>{ const a=e.target.closest('#navRow a[href^="#"]'); if(a){ spyPin=a.getAttribute('href'); spyPinAt=Date.now(); updateSpy(); } });
+window.addEventListener('scroll', ()=>{ if(spyPin && Date.now()-spyPinAt>1000) spyPin=null; updateSpy(); }, {passive:true});
 window.addEventListener('resize', updateSpy);
 
 /* ===== Ethnic instruments: map N pitches onto a cluster of N strings ===== */
