@@ -623,7 +623,7 @@
   .chord-colhd { font-family: var(--mono); font-size: 10px; letter-spacing: 0.5px; color: var(--bone-faint); text-align: center; align-self: end; padding-bottom: 3px; }
   .chord-rowhd { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 1px; color: var(--bone-faint); display: flex; align-items: center; justify-content: flex-end; padding-right: 9px; white-space: nowrap; }
   .chord-rowhd.ext { color: var(--brass); padding-right: 4px; }
-  .chord-rowhd .ext-sel { width: auto; border: none; background-color: transparent; color: var(--amber); font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; padding: 2px 13px 2px 0; background-position: right 0 center; background-size: 9px; border-radius: 5px; cursor: pointer; }
+  .chord-rowhd .ext-sel { width: auto; border: none; background-color: transparent; color: color-mix(in srgb, var(--amber) 82%, var(--bone)); font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; padding: 2px 13px 2px 0; background-position: right 0 center; background-size: 9px; border-radius: 5px; cursor: pointer; }   /* amber pulled toward the theme's text colour — lifts contrast on light and dark themes alike */
   .chord-rowhd .ext-sel:hover, .chord-rowhd .ext-sel:focus { background-color: var(--felt); }
   .chord-cell { position: relative; font-family: var(--cond); font-weight: 700; font-size: 14px; color: var(--bone); background: var(--wood); border: 1px solid var(--edge-soft); border-radius: 8px; padding: 8px 3px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; user-select: none; -webkit-user-select: none; box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 5px rgba(0,0,0,0.28); transition: border-color .12s, background .12s, box-shadow .12s, color .12s, opacity .12s; }
   .chord-cell:hover:not(.disabled) { border-color: var(--brass-deep); background: var(--felt); }
@@ -676,6 +676,7 @@
   .chord-key .seg-lbl, .chord-voice .seg-lbl, .voice-sub .seg-lbl, .layers-seg .seg-lbl, .chord-ext .seg-lbl { font-size: 9px; padding: 0 9px; }
   .vcl-seg .clbtn { border: none; background: transparent; box-shadow: none; border-radius: 6px; }
   .vcl-seg .clbtn.on { background: var(--felt); box-shadow: inset 0 0 0 1px var(--brass); }
+  .layers-seg { flex-wrap: wrap; }   /* chips never break mid-label; on tiny screens they wrap between pills instead of overflowing the panel */
   .layers-seg .layer-tog { flex: 0 0 auto; border: none; background: transparent; border-radius: 6px; }
   .layers-seg .layer-tog.on { background: var(--brass); color: var(--ink); }
   .chord-voice .seg button { padding: 5px 8px; font-size: 10px; }
