@@ -619,7 +619,9 @@
   .chord-matrix { display: grid; grid-template-columns: auto repeat(12, minmax(44px, 1fr)); gap: 5px; min-width: 620px; }
   .chord-colhd { font-family: var(--mono); font-size: 10px; letter-spacing: 0.5px; color: var(--bone-faint); text-align: center; align-self: end; padding-bottom: 3px; }
   .chord-rowhd { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 1px; color: var(--bone-faint); display: flex; align-items: center; justify-content: flex-end; padding-right: 9px; white-space: nowrap; }
-  .chord-rowhd.ext { color: var(--brass); }
+  .chord-rowhd.ext { color: var(--brass); padding-right: 4px; }
+  .chord-rowhd .ext-sel { width: auto; border: none; background-color: transparent; color: var(--brass); font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; padding: 2px 13px 2px 0; background-position: right 0 center; background-size: 9px; border-radius: 5px; cursor: pointer; }
+  .chord-rowhd .ext-sel:hover, .chord-rowhd .ext-sel:focus { background-color: var(--felt); }
   .chord-cell { position: relative; font-family: var(--cond); font-weight: 700; font-size: 14px; color: var(--bone); background: var(--wood); border: 1px solid var(--edge-soft); border-radius: 8px; padding: 8px 3px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; user-select: none; -webkit-user-select: none; box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 5px rgba(0,0,0,0.28); transition: border-color .12s, background .12s, box-shadow .12s, color .12s, opacity .12s; }
   .chord-cell:hover:not(.disabled) { border-color: var(--brass-deep); background: var(--felt); }
   .chord-rn { font-family: var(--mono); font-size: 8.5px; font-weight: 700; line-height: 1; letter-spacing: 0.3px; min-height: 9px; }   /* min-height reserves the slot even when empty (off-key cells) */
@@ -3017,9 +3019,11 @@ function renderChords(){
   const d7map = keyOn && L.sevenths ? diatonic7Map(settings.keyRoot, settings.keyScale) : null;   // Area 2 layers — off by default
   const bmap  = keyOn && L.borrowed ? borrowedMap(settings.keyRoot, settings.keyScale) : null;
   const colhd=CHORD_ROOTS.map(r=>`<div class="chord-colhd">${r}</div>`).join('');
+  const extOpts=CHORD_EXT.map(e=>`<option value="${e.key}"${e.key===settings.chordExt?' selected':''}>${e.label}</option>`).join('');
+  const extSelHtml=`<select class="num ext-sel" id="extSel" title="Special row — pick the chord type of this row">${extOpts}</select>`;
   let cells='';
   rows.forEach(row=>{
-    cells+=`<div class="chord-rowhd${row.ext?' ext':''}">${row.label}</div>`;
+    cells+=`<div class="chord-rowhd${row.ext?' ext':''}">${row.ext?extSelHtml:row.label}</div>`;
     CHORD_ROOTS.forEach((rn,ri)=>{
       const name=rn+row.sym, dis=!voiceChord(ri, row.formula), on=activeChord&&activeChord.r===ri&&activeChord.row===row.key;
       let cls='', rnHtml='';
@@ -3059,8 +3063,7 @@ function renderChords(){
     +`<button class="layer-tog${L.resolutions?' on':''}" data-layer="resolutions" title="Hover a dominant chord to ring where it resolves">→ Resolve</button>`
     +(anyLayer?`<button class="layer-clear" data-layer-clear title="Turn all layers off"><svg class="ps-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6M10 11v6M14 11v6"/></svg></button>`:'')
     +`</div>${legend}</div>` : '';
-  const extOpts=CHORD_EXT.map(e=>`<option value="${e.key}"${e.key===settings.chordExt?' selected':''}>${e.label}</option>`).join('');
-  wrap.innerHTML=`${diceRow}${keyBar}${voiceBar}${voiceSubBar}${layerBar}<div class="chord-scroll"><div class="chord-matrix"><div class="chord-corner"></div>${colhd}${cells}</div></div><div class="chord-ext"><div class="seg root-seg"><span class="seg-lbl" title="The chord type of the bottom matrix row">Special row</span><select class="num" id="extSel" title="Pick the chord type shown on the bottom matrix row">${extOpts}</select></div></div>`;
+  wrap.innerHTML=`${diceRow}${keyBar}${voiceBar}${voiceSubBar}${layerBar}<div class="chord-scroll"><div class="chord-matrix"><div class="chord-corner"></div>${colhd}${cells}</div></div>`;
   wrap.querySelectorAll('.chord-layers [data-layer]').forEach(b=> b.addEventListener('click',()=>{ settings.chordLayers[b.dataset.layer]=!settings.chordLayers[b.dataset.layer]; saveSettingsLS(); renderChords(); }));
   const lclr=wrap.querySelector('[data-layer-clear]'); if(lclr) lclr.addEventListener('click',()=>{ settings.chordLayers={sevenths:false,borrowed:false,resolutions:false}; saveSettingsLS(); renderChords(); });
   if(keyOn && L.resolutions){                                   // Resolutions layer — ring a dominant's target tonic on hover (and while it's the active chord)
