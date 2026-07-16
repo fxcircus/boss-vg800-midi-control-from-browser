@@ -746,10 +746,10 @@
   #curPanWrap { display: flex; flex-direction: column; }   /* html.realbend hides it (id+class outranks this display) */
   .cv-pan { flex: 1 1 auto; display: flex; flex-direction: column; margin: 2px 6px 6px; }
   .cv-scale { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 8px; color: var(--bone-faint); letter-spacing: 1px; padding: 0 3px; margin-bottom: 4px; }
-  .cv-panfield { position: relative; flex: 1 1 auto; min-height: 48px; background: var(--ink); border: 1px solid var(--edge-soft); border-radius: 9px; }
+  .cv-panfield { position: relative; flex: 1 1 auto; min-height: 48px; border: 1px solid var(--edge-soft); border-radius: 9px; }
   .cv-panmid { position: absolute; left: 50%; top: 5px; bottom: 5px; width: 1px; background: var(--edge); }
   .cv-dot { position: absolute; width: 17px; height: 17px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--cond); font-weight: 700; font-size: 10px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.6); transform: translate(-50%, -50%); box-shadow: 0 1px 4px rgba(0,0,0,0.55); border: 1.5px solid rgba(0,0,0,0.3); transition: left 0.35s cubic-bezier(.34,1.35,.5,1); }
-  .str-sw { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; vertical-align: middle; box-shadow: 0 0 4px rgba(0,0,0,0.4); }
+  .str-sw { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; margin-right: 5px; vertical-align: middle; font-family: var(--cond); font-style: normal; font-weight: 700; font-size: 9.5px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.6); border: 1.5px solid rgba(0,0,0,0.3); box-shadow: 0 1px 4px rgba(0,0,0,0.4); }   /* numbered like the pan dots */
   /* Smaller-screen (inline) mode: the readout is parked in the main column, so scale it ~20% bigger for readability */
   @media (max-width: 1279px) {
     #sec-current .bench-head .name { font-size: 26px; }
@@ -758,7 +758,7 @@
     #sec-current .bench-head .lbl { font-size: 12px; }
     #sec-current .str { height: 48px; }
     #sec-current .str-lbl { font-size: 12px; }
-    #sec-current .str-sw { width: 9px; height: 9px; margin-right: 6px; }
+    #sec-current .str-sw { width: 20px; height: 20px; font-size: 11.5px; margin-right: 6px; }
     #sec-current .str .slide { min-width: 41px; height: 29px; padding: 0 9px; font-size: 18px; border-radius: 6px; }
     #sec-current .str .slide .oct { font-size: 10px; }
     #sec-current .str-off { font-size: 14px; }
@@ -1953,7 +1953,7 @@ function renderStrings(offsets){
     wrap.innerHTML='';
     for(let i=0;i<6;i++){
       const row=document.createElement('div'); row.className='str'; row.dataset.g=(i+1);   // row 0 is the high E — string 1, the thinnest
-      row.innerHTML=`<span class="str-lbl"><i class="str-sw" style="background:${STR_COLORS[i]}"></i></span><span class="wire"><span class="slide"><span class="sl-name"></span><span class="oct"></span></span></span><span class="str-off"></span>`;
+      row.innerHTML=`<span class="str-lbl"><i class="str-sw" style="background:${STR_COLORS[i]}">${i+1}</i></span><span class="wire"><span class="slide"><span class="sl-name"></span><span class="oct"></span></span></span><span class="str-off"></span>`;
       wrap.appendChild(row);
     }
   }
