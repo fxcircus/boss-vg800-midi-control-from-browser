@@ -512,10 +512,10 @@
     #rightRail .ps-val { min-width: 38px; font-size: 13px; }
     #rightRail .seg-wrap button { padding: 5px 8px; font-size: 10px; }
     nav#sideNav { left: calc(50% + 428px); right: auto; width: min(400px, calc(50vw - 428px - 16px)); }   /* wide: readout column on the RIGHT (nav# outranks the later 1280-band rule) */
-    #sideNav #sec-guitar { margin: 14px 0 0; padding: 6px 14px 12px; position: relative; }
+    #sideNav #sec-guitar { margin: 10px 0 0; padding: 6px 14px 9px; position: relative; }
     #sideNav #sec-guitar .panel-hd { font-size: 15px; letter-spacing: 1.5px; }
     #sideNav #sec-guitar .map-ico { display: none; }
-    #sideNav .gtr-preview { margin: 6px 0; }
+    #sideNav .gtr-preview { margin: 5px 0 6px; }
     #sideNav .gtr-inner { max-width: none; }
     /* Left column at this width — nav, Random, Current Tuning, Clipboard as distinct FLAT panels with breathing room */
     #sideNav .bench { box-shadow: none; background: var(--wood); margin-top: 18px; }
@@ -537,34 +537,35 @@
     .wrap { padding-top: calc(var(--hdr-h, 74px) + 22px); }
     #sideNav {
       display: block; position: fixed; top: calc(var(--hdr-h, 74px) + 20px); left: calc(50% + 434px); width: 192px;
-      max-height: calc(100vh - var(--hdr-h, 74px) - 20px); overflow-y: auto; z-index: 40; padding: 2px 0 10px;
+      max-height: calc(100vh - var(--hdr-h, 74px) - 14px); overflow-y: auto; z-index: 40; padding: 2px 0 8px;
       scrollbar-width: none;   /* hide the scrollbar (still scrollable) — the stacked panels can push the sidebar past viewport height */
     }
     #sideNav::-webkit-scrollbar { width: 0; height: 0; }
   }
   /* Compact "Current Tuning" bench when it lives in the sidebar (wide screens) */
-  #sideNav .bench { margin: 14px 0 0; padding: 9px 4px 6px; border-radius: 10px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
+  #sideNav .bench { margin: 10px 0 0; padding: 9px 4px 6px; border-radius: 10px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
   #sideNav .bench-head { padding: 0 8px 6px; }
   #sideNav .bench .fam-name { margin: 2px 4px 6px; }   /* tighter cut-line headers in the sidebar */
   #sideNav .bench-head .name { font-size: 15px; }
   #sideNav .bench-head .name.long { font-size: 13px; }
   #sideNav .bench-head .name.xlong { font-size: 11px; }
   #sideNav .bench-head .lbl { display: none; }   /* sidebar is tight — drop the label, give the name the full width */
-  #sideNav .str { grid-template-columns: 26px 1fr 26px; height: 25px; padding: 0 8px; }
+  #sideNav .str { grid-template-columns: 28px 1fr 28px; height: 29px; padding: 0 8px; }
   #sideNav .str[data-g="6"] .wire::before { height: 6.5px; }
   #sideNav .str[data-g="5"] .wire::before { height: 5.2px; }
   #sideNav .str[data-g="4"] .wire::before { height: 4.2px; }
   #sideNav .str[data-g="3"] .wire::before { height: 3.2px; }
   #sideNav .str[data-g="2"] .wire::before { height: 2.5px; }
   #sideNav .str[data-g="1"] .wire::before { height: 1.9px; }
-  #sideNav .str-lbl { font-size: 9px; letter-spacing: 0; }
-  #sideNav .slide { min-width: 25px; height: 21px; font-size: 13px; padding: 0 5px; border-radius: 5px; }
-  #sideNav .slide .oct { font-size: 8.5px; }
-  #sideNav .str-off { font-size: 10px; }
+  #sideNav .str-lbl { font-size: 10.5px; letter-spacing: 0; }
+  #sideNav .slide { min-width: 28px; height: 24px; font-size: 14.5px; padding: 0 6px; border-radius: 5px; }
+  #sideNav .slide .oct { font-size: 9.5px; }
+  #sideNav .str-off { font-size: 11.5px; }
   /* Center-column nav row — compact preset-category buttons in the app's chip style; Random rides at the end */
   #navRow { display: none; }
   @media (min-width: 1280px) {
     #navRow { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 0 0 14px; position: sticky; top: var(--hdr-h, 74px); z-index: 45; padding: 12px 0 12px; background: var(--bg); background-attachment: fixed; border-bottom: 1px solid var(--edge-soft); }
+    @media (min-width: 1660px) { #navRow { margin-left: -18px; margin-right: -18px; } }   /* the divider spans gutter-to-gutter, touching the Bends and Guitar borders */
     .sec, .bench, .fam, .panel { scroll-margin-top: calc(var(--hdr-h, 74px) + 104px); }   /* anchor jumps land below the frozen nav row */
   }
   .nav-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; font-family: var(--mono); font-size: 10.5px; font-weight: 700; letter-spacing: 0.4px; background: var(--wood); border: 1px solid var(--edge); border-radius: 8px; color: var(--bone-dim); text-decoration: none; cursor: pointer; white-space: nowrap; transition: border-color .12s, color .12s, background .12s; }
