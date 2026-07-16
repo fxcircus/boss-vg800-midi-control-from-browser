@@ -511,7 +511,7 @@
     #rightRail .ps-step { width: 34px; font-size: 17px; }
     #rightRail .ps-val { min-width: 38px; font-size: 13px; }
     #rightRail .seg-wrap button { padding: 5px 8px; font-size: 10px; }
-    #sideNav { left: calc(50% - 788px); width: 360px; }   /* wide: the sidebar becomes the 360px readout column */
+    nav#sideNav { left: auto; right: calc(50% + 428px); width: min(400px, calc(50vw - 428px - 16px)); }   /* wide: readout column at the old rail width (nav# outranks the later 1280-band rule) */
     #sideNav #sec-guitar { margin: 14px 0 0; padding: 6px 14px 12px; position: relative; }
     #sideNav #sec-guitar .panel-hd { font-size: 15px; letter-spacing: 1.5px; }
     #sideNav #sec-guitar .map-ico { display: none; }
@@ -558,7 +558,8 @@
   /* Center-column nav row — compact preset-category buttons in the app's chip style; Random rides at the end */
   #navRow { display: none; }
   @media (min-width: 1280px) {
-    #navRow { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 0 0 18px; }
+    #navRow { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 0 0 14px; position: sticky; top: var(--hdr-h, 74px); z-index: 45; padding: 12px 0 12px; background: var(--bg); background-attachment: fixed; border-bottom: 1px solid var(--edge-soft); }
+    .sec, .bench, .fam, .panel { scroll-margin-top: calc(var(--hdr-h, 74px) + 104px); }   /* anchor jumps land below the frozen nav row */
   }
   .nav-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; font-family: var(--mono); font-size: 10.5px; font-weight: 700; letter-spacing: 0.4px; background: var(--wood); border: 1px solid var(--edge); border-radius: 8px; color: var(--bone-dim); text-decoration: none; cursor: pointer; white-space: nowrap; transition: border-color .12s, color .12s, background .12s; }
   .nav-btn:hover { border-color: var(--brass-deep); color: var(--brass); background: var(--felt); }
