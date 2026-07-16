@@ -37,7 +37,7 @@ const engineSrc = DECLS.map(grab).join('\n\n');
 
 // Build a sandbox exposing the engine + control over its `settings`/`lastVoiced` globals.
 const api = new Function(`
-  let settings = { voicing:'voiced', voiceSize:3, voiceStart:0, voiceFeel:'grip' };
+  let settings = { voiceSize:3, voiceStart:0, voiceFeel:'grip' };
   let lastVoiced = null;
   ${engineSrc}
   return {
@@ -98,15 +98,6 @@ api.set('voiceFeel', 'grip'); api.set('voiceSize', 3); api.set('voiceStart', 0);
 api.resetLegato(); const d1 = api.voice(0, QUAL.dim7);
 api.resetLegato(); const d2 = api.voice(0, QUAL.dim7);
 if (JSON.stringify(d1) !== JSON.stringify(d2)) fail('dim7 not deterministic');
-
-// 7. Spread mode passthrough: voicing='spread' returns the stock voiceChord result
-api.set('voicing', 'spread');
-const stock = new Function(`${grab('const CHORD_STR_LO=')}\n${grab('function voiceChord(')}\nreturn voiceChord;`)();
-for (let root = 0; root < 12; root++) for (const f of Object.values(QUAL)) {
-  cases++;
-  if (JSON.stringify(api.voice(root, f)) !== JSON.stringify(stock(root, f))) fail('spread passthrough root' + root);
-}
-api.set('voicing', 'voiced');
 
 console.log(`voiceleading harness: ${cases} cases, ${fails} failures`);
 if (fails) { console.error('FAIL'); process.exit(1); }
