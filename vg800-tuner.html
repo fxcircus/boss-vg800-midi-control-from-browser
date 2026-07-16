@@ -263,7 +263,7 @@
   /* Steel pedals */
   .pedal-info { font-family: var(--mono); font-size: 11px; color: var(--bone-dim); margin: 0 2px 15px; letter-spacing: 0.3px; text-align: center; }
   .pedal-info b { color: var(--brass); font-weight: 700; }
-  .pedals { display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 240px)); justify-content: center; gap: 10px; margin-bottom: 8px; }
+  .pedals { display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 240px)); justify-content: start; gap: 10px; margin-bottom: 8px; }
   /* Bends captions — small teaching lines in the app's caption voice */
   .bend-cap { font-family: var(--mono); font-size: 10px; line-height: 1.55; color: var(--bone-faint); letter-spacing: 0.2px; text-align: center; margin: -6px auto 14px; max-width: 580px; }
   .bend-cap b { color: var(--brass); font-weight: 700; }
@@ -2487,7 +2487,6 @@ function renderModes(){
     const g=document.createElement('div'); g.className='grid'; tunings.forEach(t=>g.appendChild(makeCard(t,false))); b.appendChild(g);
     return b;
   };
-  if(!r) wrap.appendChild(mkFam('fam-modes-base','Base · C major white keys', list.filter(m=>m.base)));   // "White Keys" is C-specific — other roots just show the seven modes
   wrap.appendChild(mkFam('fam-modes-list','Modes · bright → dark', list.filter(m=>!m.base)));
   const sel=wrap.querySelector('#modesRootSel');
   if(sel) sel.addEventListener('change',()=>{
