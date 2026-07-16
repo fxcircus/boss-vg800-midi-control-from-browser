@@ -374,10 +374,8 @@
   .kb-chip.static { cursor: default; }
   .kb-chip.static:hover { border-color: var(--edge); background: var(--wood); }
   /* Per-section "Map ⌨" header button (Bends + Chords) */
-  .sec-tools { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; }
-  .sec-tools [data-mapjump] { margin-left: auto; }   /* Map holds the right corner (Chords section) */
   /* BENDS header/controls: Map is a compact icon capping the header (the <legend> keeps the title at true center by construction) */
-  #sec-pedals, #sec-guitar { position: relative; }
+  #sec-pedals, #sec-guitar, #sec-chords { position: relative; }
   .map-ico { position: absolute; top: -23px; right: 14px;   /* lands on the legend line — a fieldset's absolute origin sits below its legend */ display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 0 9px; height: 26px; font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--bone-faint); background: var(--wood); border: 1px solid var(--edge); border-radius: 8px; cursor: pointer; transition: color .12s, border-color .12s, background .12s; }
   .map-ico:hover { color: var(--brass); border-color: var(--brass-deep); background: var(--felt); }
   .map-ico .km-ico { width: 15px; height: 15px; }
@@ -388,9 +386,6 @@
   .speed-seg button { flex: 0 0 36px; width: 36px; padding: 7px 0; }   /* identical fixed cells — content-sized chevrons go lumpy */
   .seg-lbl { display: flex; align-items: center; padding: 0 10px; font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--bone); background: color-mix(in srgb, #000 22%, transparent); border-radius: 6px; cursor: default; user-select: none; }   /* recessed label cell — part of the control, not a dead button */
   /* Pedal Latch — a centered Latch | Off segmented toggle, same style as the app's other .seg switches */
-  .map-btn { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10.5px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--bone-dim); background: transparent; border: 1px solid var(--edge); border-radius: 8px; padding: 6px 11px; cursor: pointer; transition: color .12s, border-color .12s, background .12s; }
-  .map-btn:hover { color: var(--brass); border-color: var(--brass-deep); background: var(--felt); }
-  .map-btn .km-ico { width: 15px; height: 15px; }
   /* Keyboard-mapping — Chords modifier reference (in Settings) */
   .km-hint { font-family: var(--mono); font-size: 10.5px; line-height: 1.55; color: var(--bone-faint); margin: 0 2px 11px; letter-spacing: 0.2px; }
   .km-hint b { color: var(--brass); font-weight: 700; }
@@ -621,7 +616,7 @@
   .card-foot .card-capo { margin: 0; text-align: center; }   /* sits inline with the badges, vertically centered */
   /* Chords — omnichord matrix (12 roots × maj/min/7 + one dynamic extension row) */
   .chord-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 2px; margin: 2px 0 14px; }
-  .chord-matrix { display: grid; grid-template-columns: auto repeat(12, minmax(44px, 1fr)); gap: 6px; min-width: 620px; }
+  .chord-matrix { display: grid; grid-template-columns: auto repeat(12, minmax(44px, 1fr)); gap: 5px; min-width: 620px; }
   .chord-colhd { font-family: var(--mono); font-size: 10px; letter-spacing: 0.5px; color: var(--bone-faint); text-align: center; align-self: end; padding-bottom: 3px; }
   .chord-rowhd { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 1px; color: var(--bone-faint); display: flex; align-items: center; justify-content: flex-end; padding-right: 9px; white-space: nowrap; }
   .chord-rowhd.ext { color: var(--brass); }
@@ -631,7 +626,9 @@
   .chord-cell.tonic    { border-color: #45c07a; background: color-mix(in srgb, #45c07a 15%, var(--wood)); }   /* diatonic — tonic (home) */
   .chord-cell.subdom   { border-color: #5aa2ea; background: color-mix(in srgb, #5aa2ea 15%, var(--wood)); }   /* diatonic — subdominant (departure) */
   .chord-cell.dominant { border-color: #ea6a3c; background: color-mix(in srgb, #ea6a3c 15%, var(--wood)); }   /* diatonic — dominant (tension) */
+  .chord-cell.rootchord { border: 2px solid #45c07a; padding: 7px 2px; background: color-mix(in srgb, #45c07a 32%, var(--wood)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 0 12px color-mix(in srgb, #45c07a 40%, transparent); }   /* THE home chord — heavier than its tonic-function cousins */
   .chord-cell.tonic .chord-rn    { color: #74e0a3; }
+  .chord-cell.rootchord .chord-rn { color: #2f9e63; }
   .chord-cell.subdom .chord-rn   { color: #93c6ff; }
   .chord-cell.dominant .chord-rn { color: #ff9c72; }
   /* Chord layers (Area 2) — encode extra harmonic info on badge / border-style / glow, keeping fill for function */
@@ -647,9 +644,10 @@
   .chord-cell.on { border-color: var(--brass); background: var(--felt); color: var(--brass); opacity: 1; box-shadow: inset 0 0 0 1px var(--brass), 0 0 18px var(--brass-glow); }
   .chord-cell.offkey.on { opacity: 1; }   /* active borrowed chord stays fully lit even on hover (beats .offkey:hover) */
   .chord-cell.disabled { opacity: 0.3; cursor: not-allowed; filter: grayscale(0.5); box-shadow: none; }
-  .chord-ext { display: flex; justify-content: center; }
+  .chord-ext { display: flex; justify-content: center; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .chord-ext .chord-legend { margin-left: 0; }
   .chord-ext .seg { display: inline-flex; flex-wrap: wrap; justify-content: center; }   /* several options → wrap on narrow screens */
-  .chord-ext .seg button { flex: 0 0 auto; padding: 7px 13px; }
+  .chord-ext .seg button { flex: 0 0 auto; padding: 7px 11px; }
   /* Key mode — root/scale selectors + function legend */
   .chord-key { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 2px 0 14px; }
   .chord-key-lbl { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--bone-faint); }
@@ -670,6 +668,11 @@
   .chord-voice .cldots i { height: 9px; width: 3px; }
   .chord-voice .cllbl { font-size: 10px; }
   .chord-voice .seg { padding: 2px; gap: 2px; }
+  .chord-key .seg-lbl, .chord-voice .seg-lbl, .voice-sub .seg-lbl, .layers-seg .seg-lbl, .chord-ext .seg-lbl { font-size: 9px; padding: 0 9px; }
+  .vcl-seg .clbtn { border: none; background: transparent; box-shadow: none; border-radius: 6px; }
+  .vcl-seg .clbtn.on { background: var(--felt); box-shadow: inset 0 0 0 1px var(--brass); }
+  .layers-seg .layer-tog, .layers-seg .layer-clear { border: none; background: transparent; border-radius: 6px; }
+  .layers-seg .layer-tog.on { background: var(--felt); box-shadow: inset 0 0 0 1px var(--brass); }
   .chord-voice .seg button { padding: 5px 8px; font-size: 10px; }
   /* Voiced-only options — indented under the Voicing row (rule = "these belong to Voiced"), each group captioned */
   .voice-sub { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: -8px 0 14px; padding-left: 12px; border-left: 2px solid var(--edge-soft); }
@@ -681,10 +684,10 @@
   .voice-sub .clbtn { flex-direction: row; padding: 4px 7px; gap: 5px; border-radius: 7px; }
   .voice-sub .cldots i { height: 9px; width: 3px; }
   .voice-sub .cllbl { font-size: 10px; }
-  .chord-legend { display: flex; flex-wrap: wrap; gap: 14px; margin-left: auto; font-family: var(--mono); font-size: 10px; letter-spacing: 0.4px; color: var(--bone-dim); }
+  .chord-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-left: auto; font-family: var(--mono); font-size: 10px; letter-spacing: 0.4px; color: var(--bone-dim); }
   .chord-legend span { display: inline-flex; align-items: center; gap: 6px; }
   .lg-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
-  .lg-dot.tonic { background: #45c07a; } .lg-dot.subdom { background: #5aa2ea; } .lg-dot.dominant { background: #ea6a3c; }
+  .lg-dot.tonic { background: #45c07a; } .lg-dot.subdom { background: #5aa2ea; } .lg-dot.dominant { background: #ea6a3c; } .lg-dot.borrow { background: #a563d4; }
   /* Chord-layer toggle chips — sit under the Voicing row; compact toggles matching the app's chip language */
   .chord-layers { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin: -6px 0 14px; }
   .chord-layers .chord-key-lbl { font-size: 9px; letter-spacing: 1px; }
@@ -1076,6 +1079,7 @@
 
   <fieldset class="panel" id="sec-chords">
     <legend class="panel-hd">Chords</legend>
+    <button class="map-ico" data-mapjump="chords" title="Configure keyboard shortcuts" aria-label="Key mapping">Map<svg class="km-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h.01M18 14h.01M9 14h6"/></svg></button>
     <div id="chordWrap"></div>
   </fieldset>
 
@@ -2945,7 +2949,7 @@ function romanNumeral(deg,q){ const b=RN_BASE[deg];
 function diatonicMap(rootName, scaleName){   // "<pc>-<rowKey>" -> {func, rn}
   const sc=SCALES[scaleName], base=CHORD_ROOTS.indexOf(rootName), map={};
   if(!sc || base<0) return map;
-  sc.intervals.forEach((iv,i)=>{ const pc=(base+iv)%12, q=sc.quals[i]; map[pc+'-'+QUAL_ROW[q]]={func:CHORD_FUNC[i], rn:romanNumeral(i,q)}; });
+  sc.intervals.forEach((iv,i)=>{ const pc=(base+iv)%12, q=sc.quals[i]; map[pc+'-'+QUAL_ROW[q]]={func:CHORD_FUNC[i], rn:romanNumeral(i,q), deg:i}; });
   return map;
 }
 function roman7(deg, q7){                      // degree + 7th-quality → roman numeral (e.g. Imaj7, ii7, V7, viiø7)
@@ -3019,7 +3023,7 @@ function renderChords(){
       let cls='', rnHtml='';
       if(keyOn && !dis){
         const key=ri+'-'+row.key, d=dmap[key];
-        if(d){ cls=' '+d.func; rnHtml=`<span class="chord-rn">${d.rn}</span>`; }                      // diatonic triad (ships today)
+        if(d){ cls=' '+d.func+(d.deg===0?' rootchord':''); rnHtml=`<span class="chord-rn">${d.rn}</span>`; }   // diatonic triad; degree 1 wears the home emphasis
         else {
           const d7=d7map&&d7map[key], db=bmap&&bmap[key];
           if(d7){ cls=' '+d7.func+' lyr-seventh'; rnHtml=`<span class="chord-rn">${d7.rn}</span>`; }    // diatonic 7th → function colour + "7" badge
@@ -3032,30 +3036,29 @@ function renderChords(){
   });
   const rootOpts=CHORD_ROOTS.map(r=>`<option value="${r}"${r===settings.keyRoot?' selected':''}>${r}</option>`).join('');
   const scaleOpts=`<option value="off"${!keyOn?' selected':''}>Off · all chords</option>`+Object.keys(SCALES).map(s=>{ const a=SCALES[s].alt; return `<option value="${s}"${settings.keyScale===s?' selected':''}>${a?s+' / '+a:s}</option>`; }).join('');
-  const legend = keyOn ? `<div class="chord-legend"><span><i class="lg-dot tonic"></i>Tonic</span><span><i class="lg-dot subdom"></i>Subdominant</span><span><i class="lg-dot dominant"></i>Dominant</span></div>` : '';
-  const keyBar=`<div class="chord-key"><label class="chord-key-lbl">Key</label><select id="keyRoot" class="num">${rootOpts}</select><select id="keyScale" class="num">${scaleOpts}</select><button class="key-rand" id="keyRandom" title="Random key & scale" aria-label="Random key and scale">${DICE_ICO}</button>${legend}</div>`;
+  const legend = keyOn ? `<div class="chord-legend"><span><i class="lg-dot tonic"></i>Tonic</span><span><i class="lg-dot subdom"></i>Subdominant</span><span><i class="lg-dot dominant"></i>Dominant</span><span><i class="lg-dot borrow"></i>Borrowed</span></div>` : '';
+  const keyBar=`<div class="chord-key"><div class="seg root-seg"><span class="seg-lbl">Key</span><select id="keyRoot" class="num">${rootOpts}</select><select id="keyScale" class="num">${scaleOpts}</select></div><button class="key-rand" id="keyRandom" title="Random key & scale" aria-label="Random key and scale">${DICE_ICO}</button></div>`;
   const voiced = settings.voicing==='voiced';
-  const vMode=`<div class="seg" id="voiceMode"><button class="${!voiced?'on':''}" data-vmode="spread" title="Spread — the chord fanned across all six strings, low → high.">Spread</button><button class="${voiced?'on':''}" data-vmode="voiced" title="Voiced — a close 3- or 4-string cluster you choose; the other strings fill in the bass (root &amp; 5th).">Voiced</button></div>`;
-  const voiceBar=`<div class="chord-key chord-voice"><label class="chord-key-lbl">Voicing</label>${vMode}</div>`;
+  const vMode=`<div class="seg" id="voiceMode"><span class="seg-lbl">Voicing</span><button class="${!voiced?'on':''}" data-vmode="spread" title="Spread — the chord fanned across all six strings, low → high.">Spread</button><button class="${voiced?'on':''}" data-vmode="voiced" title="Voiced — a close 3- or 4-string cluster you choose; the other strings fill in the bass (root &amp; 5th).">Voiced</button></div>`;
+  const voiceBar=`<div class="chord-key chord-voice">${vMode}</div>`;
   let voiceSubBar='';
   if(voiced){                                                     // Voiced-only options, shown indented under the Voicing row so the relationship is clear
     const N=settings.voiceSize; let cbtn='';
     for(let s=0;s<=6-N;s++){ const dots=[0,1,2,3,4,5].map(i=>`<i class="${i>=s&&i<s+N?'on':''}"></i>`).join(''); cbtn+=`<button class="clbtn${s===settings.voiceStart?' on':''}" data-vstart="${s}" title="Put the cluster on strings ${s+1}–${s+N}"><span class="cldots">${dots}</span><span class="cllbl">${s+1}–${s+N}</span></button>`; }
-    const vSize=`<div class="seg" id="voiceSize"><button class="${N===3?'on':''}" data-vsize="3" title="Three-note cluster">3</button><button class="${N===4?'on':''}" data-vsize="4" title="Four-note cluster — adds the 7th / colour tone">4</button></div>`;
-    const vFeel=`<div class="seg" id="voiceFeel"><button class="${settings.voiceFeel==='legato'?'on':''}" data-vfeel="legato" title="Legato — smooth voice leading: keeps common tones and moves each voice the least from the previous chord, so changes glide.">Legato</button><button class="${settings.voiceFeel==='grip'?'on':''}" data-vfeel="grip" title="Grip — block chords: every chord in root position, the same shape moved around. Predictable and identical every time.">Grip</button></div>`;
-    voiceSubBar=`<div class="voice-sub"><span class="vsub-lbl">Notes</span>${vSize}<span class="vsub-lbl">Strings</span><div class="clrow vcl">${cbtn}</div><span class="vsub-lbl">Feel</span>${vFeel}</div>`;
+    const vSize=`<div class="seg" id="voiceSize"><span class="seg-lbl">Notes</span><button class="${N===3?'on':''}" data-vsize="3" title="Three-note cluster">3</button><button class="${N===4?'on':''}" data-vsize="4" title="Four-note cluster — adds the 7th / colour tone">4</button></div>`;
+    const vFeel=`<div class="seg" id="voiceFeel"><span class="seg-lbl">Feel</span><button class="${settings.voiceFeel==='legato'?'on':''}" data-vfeel="legato" title="Legato — smooth voice leading: keeps common tones and moves each voice the least from the previous chord, so changes glide.">Legato</button><button class="${settings.voiceFeel==='grip'?'on':''}" data-vfeel="grip" title="Grip — block chords: every chord in root position, the same shape moved around. Predictable and identical every time.">Grip</button></div>`;
+    voiceSubBar=`<div class="voice-sub">${vSize}<div class="seg vcl-seg"><span class="seg-lbl">Strings</span>${cbtn}</div>${vFeel}</div>`;
   }
   const anyLayer = L.sevenths||L.borrowed||L.resolutions;
-  const layerBar = keyOn ? `<div class="chord-layers"><span class="chord-key-lbl">Layers</span>`
+  const layerBar = keyOn ? `<div class="chord-layers"><div class="seg layers-seg"><span class="seg-lbl">Layers</span>`
     +`<button class="layer-tog locked on" disabled title="The seven diatonic triads — always shown">▣ Triads</button>`
     +`<button class="layer-tog${L.sevenths?' on':''}" data-layer="sevenths" title="Diatonic 7th chords — Imaj7, ii7, V7…">⑦ 7ths</button>`
     +`<button class="layer-tog${L.borrowed?' on':''}" data-layer="borrowed" title="Borrowed / modal-interchange chords from the parallel key">⌁ Borrowed</button>`
     +`<button class="layer-tog${L.resolutions?' on':''}" data-layer="resolutions" title="Hover a dominant chord to ring where it resolves">→ Resolve</button>`
     +(anyLayer?`<button class="layer-clear" data-layer-clear title="Turn all layers off">✕ Clear</button>`:'')
-    +`</div>` : '';
+    +`</div></div>` : '';
   const seg=CHORD_EXT.map(e=>`<button class="${e.key===settings.chordExt?'on':''}" data-ext="${e.key}">${e.label}</button>`).join('');
-  const tools=`<div class="sec-tools"><button class="map-btn" data-mapjump="chords" title="Configure keyboard shortcuts">${KBD_ICO}Map</button></div>`;
-  wrap.innerHTML=`${tools}${keyBar}${voiceBar}${voiceSubBar}${layerBar}<div class="chord-scroll"><div class="chord-matrix"><div class="chord-corner"></div>${colhd}${cells}</div></div><div class="chord-ext"><div class="seg">${seg}</div></div>`;
+  wrap.innerHTML=`${keyBar}${voiceBar}${voiceSubBar}${layerBar}<div class="chord-scroll"><div class="chord-matrix"><div class="chord-corner"></div>${colhd}${cells}</div></div><div class="chord-ext"><div class="seg"><span class="seg-lbl">Special row</span>${seg}</div>${legend}</div>`;
   wrap.querySelectorAll('.chord-layers [data-layer]').forEach(b=> b.addEventListener('click',()=>{ settings.chordLayers[b.dataset.layer]=!settings.chordLayers[b.dataset.layer]; saveSettingsLS(); renderChords(); }));
   const lclr=wrap.querySelector('[data-layer-clear]'); if(lclr) lclr.addEventListener('click',()=>{ settings.chordLayers={sevenths:false,borrowed:false,resolutions:false}; saveSettingsLS(); renderChords(); });
   if(keyOn && L.resolutions){                                   // Resolutions layer — ring a dominant's target tonic on hover (and while it's the active chord)
