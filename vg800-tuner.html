@@ -326,12 +326,12 @@
   html:not(.realbend) #sec-guitar { display: none; }
   #sec-guitar { position: relative; }
   #sec-guitar .gtr-inner { max-width: 420px; margin: 0 auto; }
-  .gtr-auto { position: absolute; right: -1px; bottom: -1px; padding: 2px; gap: 2px; border-color: var(--edge-soft); border-radius: 9px 0 11px 0; }   /* a tab notched into the preview's corner, sharing its border */
-  .gtr-auto button { flex: 0 0 auto; font-size: 9px; padding: 3px 8px; letter-spacing: 0.5px; text-transform: uppercase; }
+  .seg.gtr-auto { position: absolute; top: -21px; right: 14px; padding: 2px; gap: 2px; }   /* rides the legend line like the Bends Map button */
+  .seg.gtr-auto button { flex: 0 0 auto; font-size: 8.5px; padding: 2px 7px; letter-spacing: 0.5px; text-transform: uppercase; }
   .gtr-chip.ghost { visibility: hidden; pointer-events: none; }   /* pads the 9-chip acoustic grid to the electric grid's 12 cells so the card height never jumps */
   .gtr-preview { position: relative; background: color-mix(in srgb, var(--ink) 55%, transparent); border: 1px solid var(--edge-soft); border-radius: 12px; padding: 11px 10px 6px; text-align: center; margin: 10px 0; }
-  .gtr-name { font-family: var(--cond); font-weight: 700; font-size: 18px; letter-spacing: 2px; text-transform: uppercase; color: var(--bone); }
-  .gtr-cat { font-family: var(--mono); font-size: 9.5px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--bone-faint); margin: 1px 0 4px; min-height: 12px; }
+  .gtr-name { font-family: var(--cond); font-weight: 700; font-size: 18px; letter-spacing: 2px; text-transform: uppercase; color: var(--bone); margin-bottom: 4px; }
+  .gtr-name.long { font-size: 15px; letter-spacing: 1px; }
   .gtr-stage { display: flex; align-items: center; justify-content: center; height: 150px; }
   .gtr-stage svg { height: 150px; width: auto; max-width: 100%; }   /* wide traces (sitar) letterbox instead of overflowing narrow panes */
   .gtr-art { color: var(--bone); }   /* one currentColor = the whole traced portrait re-inks per theme */
@@ -376,7 +376,7 @@
   .sec-tools { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; }
   .sec-tools [data-mapjump] { margin-left: auto; }   /* Map holds the right corner (Chords section) */
   /* BENDS header/controls: Map is a compact icon capping the header (the <legend> keeps the title at true center by construction) */
-  #sec-pedals { position: relative; }
+  #sec-pedals, #sec-guitar { position: relative; }
   .map-ico { position: absolute; top: -23px; right: 14px;   /* lands on the legend line — a fieldset's absolute origin sits below its legend */ display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 0 9px; height: 26px; font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--bone-faint); background: var(--wood); border: 1px solid var(--edge); border-radius: 8px; cursor: pointer; transition: color .12s, border-color .12s, background .12s; }
   .map-ico:hover { color: var(--brass); border-color: var(--brass-deep); background: var(--felt); }
   .map-ico .km-ico { width: 15px; height: 15px; }
@@ -525,6 +525,7 @@
     #sideNav .panel-hd { font-size: 15px; letter-spacing: 1.5px; }
     #sideNav #sec-guitar .map-ico { display: none; }
     #sideNav .gtr-preview { margin: 5px 0 6px; }
+    #sideNav .seg.gtr-auto { top: -17px; right: 10px; }
     #sideNav .gtr-inner { max-width: none; }
     /* Left column at this width — nav, Random, Current Tuning, Clipboard as distinct FLAT panels with breathing room */
     #sideNav .bench { box-shadow: none; background: var(--wood); margin-top: 18px; }
@@ -1092,8 +1093,9 @@
 
   <fieldset class="panel" id="sec-guitar">
     <legend class="panel-hd">Guitar</legend>
+    <div class="seg gtr-auto" id="gtrAutoSeg" title="Auto: each tuning switches the VG-800 model &middot; Manual: your pick stays until you change it"><button data-am="1">Auto</button><button data-am="0">Manual</button></div>
     <div class="gtr-inner">
-      <div class="gtr-preview"><div class="gtr-name" id="gtrName">&mdash;</div><div class="gtr-cat" id="gtrCat"></div><div class="gtr-stage" id="gtrStage"></div><div class="seg gtr-auto" id="gtrAutoSeg" title="Auto: each tuning switches the VG-800 model &middot; Manual: your pick stays until you change it"><button data-am="1">Auto</button><button data-am="0">Manual</button></div></div>
+      <div class="gtr-preview"><div class="gtr-name" id="gtrName">&mdash;</div><div class="gtr-stage" id="gtrStage"></div></div>
       <div class="seg gtr-tabs" id="gtrTabs"><button data-cat="electric">Electric</button><button data-cat="acoustic">Acoustic</button></div>
       <div class="gtr-chips" id="gtrChips"></div>
     </div>
@@ -1517,8 +1519,8 @@ function gtrRender(follow=true){
   const m=modelSpec(curModelName);
   if(follow&&m) gtrTab=m.cat;   // a tuning/manual change pulls the card to the model's own tab so the lit chip is visible
   document.querySelectorAll('#gtrTabs button').forEach(b=>b.classList.toggle('on', b.dataset.cat===gtrTab));
-  document.getElementById('gtrName').textContent=curModelName||'—';
-  document.getElementById('gtrCat').textContent=curModelName?(GTR_FULLNAME[curModelName]||''):'';   // the real instrument behind the patch name
+  const gnm=document.getElementById('gtrName'), gfull=curModelName?(GTR_FULLNAME[curModelName]||curModelName):'—';
+  gnm.textContent=gfull; gnm.classList.toggle('long', gfull.length>24);   // the real instrument behind the patch name
   document.getElementById('gtrStage').innerHTML=curModelName?gtrSVG(curModelName):'';
   const pad=Math.max(...Object.values(GTR_LISTS).map(l=>l.length))-GTR_LISTS[gtrTab].length;   // ghost cells keep both tabs the same height
   chips.innerHTML=GTR_LISTS[gtrTab].map(n=>`<button class="gtr-chip${n===curModelName?' on':''}" data-model="${n}">${n}</button>`).join('')+'<span class="gtr-chip ghost">&nbsp;</span>'.repeat(pad);
