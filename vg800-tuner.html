@@ -243,7 +243,7 @@
   .jump-menu a.group, .jump-menu span.group { display: flex; align-items: center; gap: 9px; color: var(--bone); font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; margin-top: 8px; }
   .jump-menu a.group:first-child { margin-top: 0; }
   .jump-menu a.group .nav-ico, .jump-menu span.group .nav-ico { width: 15px; height: 15px; flex-shrink: 0; }
-  .jump-menu span.group, #sideNav span.group { cursor: default; }   /* the Tunings header is a label, not a jump target */
+  .jump-menu span.group { cursor: default; }   /* the Tunings header is a label, not a jump target */
   .jump-menu a.sub { padding-left: 22px; font-size: 12px; }
   .jump-menu a.sub2 { padding-left: 32px; }
   /* Random-tuning action item — a button in the jump menu / sidebar (brass accent to read as an action, not a nav link) */
@@ -328,10 +328,10 @@
   .gtr-stage svg { height: 150px; width: auto; max-width: 100%; }   /* wide traces (sitar) letterbox instead of overflowing narrow panes */
   .gtr-art { color: var(--bone); }   /* one currentColor = the whole traced portrait re-inks per theme */
   .gtr-tabs { margin: 0 0 8px; }
-  .gtr-chips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; max-height: 172px; overflow-y: auto; padding: 2px; scrollbar-width: thin; scrollbar-color: var(--edge) transparent; }
+  .gtr-chips { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; max-height: 172px; overflow-y: auto; padding: 2px; scrollbar-width: thin; scrollbar-color: var(--edge) transparent; }
   .gtr-chips::-webkit-scrollbar { width: 6px; }
   .gtr-chips::-webkit-scrollbar-thumb { background: var(--edge); border-radius: 3px; }
-  .gtr-chip { padding: 7px 3px; font-family: var(--mono); font-size: 10.5px; font-weight: 700; letter-spacing: 0.3px; background: var(--wood); border: 1px solid var(--edge); border-radius: 8px; color: var(--bone-dim); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: border-color .12s, color .12s, background .12s; }
+  .gtr-chip { padding: 7px 2px; font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.3px; background: var(--wood); border: 1px solid var(--edge); border-radius: 8px; color: var(--bone-dim); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: border-color .12s, color .12s, background .12s; }
   .gtr-chip:hover { border-color: var(--brass-deep); color: var(--brass); background: var(--felt); }
   .gtr-chip.on { border-color: var(--brass); color: var(--brass); background: var(--felt); box-shadow: inset 0 0 0 1px var(--brass-glow); }
   /* Press animation: foot plate tilts down; knee lever swings left (LKL) / right (LKR) about its pivot */
@@ -477,9 +477,9 @@
      Everything inside is scaled for the narrow column: a medium-size workbench (between the tiny sidebar version
      and the full inline one) and a single-column Bends panel with tightened type. */
   #rightRail { display: none; }
-  @media (min-width: 1500px) {
-    /* Right rail = the ACTING column: the Bends panel, with room to breathe. Sits below the header band. */
-    #rightRail { display: block; position: fixed; top: calc(var(--hdr-h, 74px) + 20px); left: calc(50% + 430px); width: min(400px, calc(50vw - 430px - 18px)); max-height: calc(100vh - var(--hdr-h, 74px) - 40px); overflow-y: auto; z-index: 40; padding: 2px 2px 8px; scrollbar-width: none; }
+  @media (min-width: 1660px) {
+    /* Three columns: [Current Tuning / Guitar / Clipboard] left, presets center, Bends alone right. */
+    #rightRail { display: block; position: fixed; top: calc(var(--hdr-h, 74px) + 20px); left: calc(50% + 428px); width: min(400px, calc(50vw - 428px - 16px)); max-height: calc(100vh - var(--hdr-h, 74px) - 40px); overflow-y: auto; z-index: 40; padding: 2px 2px 8px; scrollbar-width: none; }
     #rightRail::-webkit-scrollbar { width: 0; height: 0; }
     /* FLAT — no drop shadows in the rail (state glows on engaged pedals stay) */
     #rightRail .panel, #rightRail .ps-adjust, #rightRail .map-btn, #rightRail .seg button.on { box-shadow: none; }
@@ -511,10 +511,12 @@
     #rightRail .ps-step { width: 34px; font-size: 17px; }
     #rightRail .ps-val { min-width: 38px; font-size: 13px; }
     #rightRail .seg-wrap button { padding: 5px 8px; font-size: 10px; }
-    #rightRail #sec-guitar { margin: 0 0 12px; padding: 6px 14px 12px; }
-    #rightRail #sec-guitar .panel-hd { font-size: 15px; letter-spacing: 1.5px; }
-    #rightRail .gtr-preview { margin: 8px 0; }
-    #rightRail .gtr-chips { max-height: 150px; }
+    #sideNav { left: calc(50% - 788px); width: 360px; }   /* wide: the sidebar becomes the 360px readout column */
+    #sideNav #sec-guitar { margin: 14px 0 0; padding: 6px 14px 12px; position: relative; }
+    #sideNav #sec-guitar .panel-hd { font-size: 15px; letter-spacing: 1.5px; }
+    #sideNav #sec-guitar .map-ico { display: none; }
+    #sideNav .gtr-preview { margin: 8px 0; }
+    #sideNav .gtr-inner { max-width: none; }
     /* Left column at this width — nav, Random, Current Tuning, Clipboard as distinct FLAT panels with breathing room */
     #sideNav .bench { box-shadow: none; background: var(--wood); margin-top: 18px; }
     #sideNav .str .wire::before { background: var(--chrome-dim); }
@@ -522,7 +524,6 @@
     #sideNav .str .slide { background: #e6e0d2; box-shadow: 0 1px 3px rgba(0,0,0,0.25); }
     #sideNav .str.shifted.sharp .slide { background: #f2b871; }
     #sideNav .str.shifted.flat .slide { background: #a8c6de; }
-    #sideNav a.group[href="#sec-pedals"], #jumpMenu a.group[href="#sec-pedals"] { display: none; }   /* Bends is permanently on screen here (a.group carries the specificity to actually win) */
   }
 
   /* Left "jump to" nav — desktop only (needs room beside the centered content) */
@@ -536,32 +537,34 @@
     .wrap { padding-top: calc(var(--hdr-h, 74px) + 22px); }
     #sideNav {
       display: block; position: fixed; top: calc(var(--hdr-h, 74px) + 20px); left: calc(50% - 626px); width: 192px;
-      max-height: calc(100vh - var(--hdr-h, 74px) - 40px); overflow-y: auto; z-index: 40; padding: 2px 0 12px;
+      max-height: calc(100vh - var(--hdr-h, 74px) - 28px); overflow-y: auto; z-index: 40; padding: 2px 0 12px;
       scrollbar-width: none;   /* hide the scrollbar (still scrollable) — the stacked panels can push the sidebar past viewport height */
     }
     #sideNav::-webkit-scrollbar { width: 0; height: 0; }
   }
   /* Compact "Current Tuning" bench when it lives in the sidebar (wide screens) */
-  #sideNav .bench { margin: 18px 0 0; padding: 13px 4px 9px; border-radius: 10px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
-  #sideNav .bench-head { padding: 0 8px 9px; }
-  #sideNav .bench .fam-name { margin: 2px 4px 10px; }   /* tighter cut-line headers in the narrow sidebar */
+  #sideNav .bench { margin: 14px 0 0; padding: 9px 4px 6px; border-radius: 10px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
+  #sideNav .bench-head { padding: 0 8px 6px; }
+  #sideNav .bench .fam-name { margin: 2px 4px 6px; }   /* tighter cut-line headers in the sidebar */
   #sideNav .bench-head .name { font-size: 15px; }
   #sideNav .bench-head .name.long { font-size: 13px; }
   #sideNav .bench-head .name.xlong { font-size: 11px; }
   #sideNav .bench-head .lbl { display: none; }   /* sidebar is tight — drop the label, give the name the full width */
-  #sideNav .str { grid-template-columns: 24px 1fr 24px; height: 25px; padding: 0 8px; }
+  #sideNav .str { grid-template-columns: 24px 1fr 24px; height: 20px; padding: 0 8px; }
   #sideNav .str-lbl { font-size: 9px; letter-spacing: 0; }
   #sideNav .slide { min-width: 21px; height: 17px; font-size: 11px; padding: 0 4px; border-radius: 4px; }
   #sideNav .slide .oct { font-size: 7px; }
   #sideNav .str-off { font-size: 10px; }
-  #sideNav a { display: block; font-family: var(--mono); font-size: 11px; color: var(--bone-faint); text-decoration: none; padding: 5px 10px; border-left: 2px solid transparent; letter-spacing: 0.2px; transition: color .12s, background .12s, border-color .12s; }
-  #sideNav a:hover { color: var(--bone); background: var(--felt); }
-  #sideNav a.group, #sideNav span.group { display: flex; align-items: center; gap: 7px; color: var(--bone-dim); font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 1px; margin-top: 12px; }
-  #sideNav a.group .nav-ico, #sideNav span.group .nav-ico { width: 14px; height: 14px; flex-shrink: 0; opacity: 0.9; }
-  #sideNav a.group:hover .nav-ico, #sideNav a.group.active .nav-ico { opacity: 1; }
-  #sideNav a.sub { padding-left: 22px; }
-  #sideNav a.sub2 { padding-left: 34px; }
-  #sideNav a.active { color: var(--brass); border-left-color: var(--brass); background: var(--felt); }
+  /* Center-column nav row — compact preset-category buttons in the app's chip style; Random rides at the end */
+  #navRow { display: none; }
+  @media (min-width: 1280px) {
+    #navRow { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 0 0 18px; }
+  }
+  .nav-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; font-family: var(--mono); font-size: 10.5px; font-weight: 700; letter-spacing: 0.4px; background: var(--wood); border: 1px solid var(--edge); border-radius: 8px; color: var(--bone-dim); text-decoration: none; cursor: pointer; white-space: nowrap; transition: border-color .12s, color .12s, background .12s; }
+  .nav-btn:hover { border-color: var(--brass-deep); color: var(--brass); background: var(--felt); }
+  .nav-btn.active { border-color: var(--brass); color: var(--brass); background: var(--felt); box-shadow: inset 0 0 0 1px var(--brass-glow); }
+  .nav-btn.nav-rand { color: var(--bone-faint); }
+  .nav-btn.nav-rand svg { width: 12px; height: 12px; }
   .sec, .bench, .fam { scroll-margin-top: 24px; }
 
   /* Ethnic instruments + string-cluster picker */
@@ -978,7 +981,7 @@
 </style>
 </head>
 <body>
-<nav id="sideNav" aria-label="Jump to section"><div id="navLinks"></div></nav>
+<nav id="sideNav" aria-label="Workbench"></nav>
 <aside id="rightRail" aria-label="Workbench and bends"></aside>
 <div class="wrap">
   <svg class="svg-defs" aria-hidden="true"><symbol id="pedalIco" viewBox="0 0 24 24"><rect x="4.5" y="2.5" width="15" height="19" rx="2.6" fill="currentColor" stroke="#141414" stroke-width="1.4"/><circle cx="9" cy="6.3" r="1.4" fill="#141414"/><circle cx="15" cy="6.3" r="1.4" fill="#141414"/><rect x="7" y="11" width="10" height="9" rx="1.8" fill="#141414"/></symbol></svg>
@@ -1015,6 +1018,7 @@
     </div>
   </header>
 
+  <div id="navRow" aria-label="Jump to section"></div>
   <div id="sec-tunings">
     <div id="grid"></div>
   </div>
@@ -2486,56 +2490,69 @@ function renderGrid(){
 }
 function slug(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
 function renderNav(){
-  const box=document.getElementById('navLinks'); if(!box) return;
+  // Center-column nav row — the preset categories as compact buttons (UAD-style tight grid), Random at the end.
+  const row=document.getElementById('navRow');
+  if(row){
+    const items=[['Common','fam-common'],['Open Majors','fam-open-majors'],['Drop','fam-drop'],['Artists','fam-artists'],
+                 ['Ethnic','sec-ethnic'],['Transpose','sec-strings'],['Chords','sec-chords'],['User','sec-user'],
+                 ['Modes','sec-modes'],['Lap Steel','sec-lap-steel'],['Pedal Steel','sec-steel']];
+    row.innerHTML=items.map(([label,id])=>`<a class="nav-btn" href="#${id}">${label}</a>`).join('')
+      +`<button class="nav-btn nav-rand" data-rand-tuning title="Apply a random tuning">${DICE_ICO}Random</button>`;
+  }
+  buildJumpMenu();
+  updateSpy();
+}
+function buildJumpMenu(){   // mobile hamburger: same vertical menu as before the nav-row redesign
+  const jm=document.getElementById('jumpMenu'); if(!jm) return;
   const items=FAMILIES.slice();
   let links='', sections='', i=0; const seen=new Set();
   while(i<items.length){
     const f=items[i];
-    if(f.section){                                  // grouped section (Lap Steel): one link, no per-family sub-items
-      if(!seen.has(f.section)){ sections+=`<a class="sub" href="#sec-${slug(f.section)}">${f.section}</a>`; seen.add(f.section); }
-      i++;
-    } else { links+=`<a class="sub" href="#${f.id||('fam-'+slug(f.family))}">${f.family}</a>`; i++; }
+    if(f.section){ if(!seen.has(f.section)){ sections+=`<a class="sub" href="#sec-${slug(f.section)}">${f.section}</a>`; seen.add(f.section); } i++; }
+    else { links+=`<a class="sub" href="#${f.id||('fam-'+slug(f.family))}">${f.family}</a>`; i++; }
   }
   const I={
     tunings:'<svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v6M16 3v6M8 9a4 4 0 0 0 8 0M12 13v8"/></svg>',
     pedals:'<svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/><path d="M9 12H4M7.5 8.5 4 12l3.5 3.5"/><path d="M15 12h5M16.5 8.5 20 12l-3.5 3.5"/></svg>',
     pan:'<svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8.5a6.5 6.5 0 1 1 13 0c0 6-6 6-6 10a3.5 3.5 0 1 1-7 0"/><path d="M15 8.5a2.5 2.5 0 0 0-5 0v1a2 2 0 1 1 0 4"/></svg>' };
-  box.innerHTML='<button class="jump-rand" data-rand-tuning title="Apply a random tuning">'+DICE_ICO+'Random tuning</button>'
-    +'<span class="group">'+I.tunings+'Tunings</span>'+links   // header only — the family sub-links are the jump targets
+  jm.innerHTML='<button class="jump-rand" data-rand-tuning title="Apply a random tuning">'+DICE_ICO+'Random tuning</button>'
+    +'<span class="group">'+I.tunings+'Tunings</span>'+links
     +'<a class="sub" href="#sec-ethnic">Ethnic</a>'
     +'<a class="sub" href="#sec-strings">Transpose</a>'
     +'<a class="sub" href="#sec-chords">Chords</a>'
     +'<a class="sub" href="#sec-user">User</a>'
     +'<a class="sub" href="#sec-modes">Modes</a>'
-    + sections                                       // Lap Steel
+    + sections
     +'<a class="sub" href="#sec-steel">Pedal Steel</a>'
     +'<a class="group" href="#sec-pedals">'+I.pedals+'Bends</a>'
     +'<a class="group" href="#sec-pan">'+I.pan+'Panning</a>';
-  const jm=document.getElementById('jumpMenu'); if(jm) jm.innerHTML=box.innerHTML;   // mobile menu mirrors the sidebar
-  updateSpy();
 }
 function placeBench(){
-  const bench=document.getElementById('sec-current'), hist=document.getElementById('sec-history'), nav=document.getElementById('sideNav'), rail=document.getElementById('rightRail'), wrap=document.querySelector('.wrap'), pedals=document.getElementById('sec-pedals'), pan=document.getElementById('sec-pan');
+  const bench=document.getElementById('sec-current'), hist=document.getElementById('sec-history'), nav=document.getElementById('sideNav'), rail=document.getElementById('rightRail'), wrap=document.querySelector('.wrap'), pedals=document.getElementById('sec-pedals'), pan=document.getElementById('sec-pan'), guitar=document.getElementById('sec-guitar');
   if(!bench||!nav||!wrap) return;
-  const wide=window.matchMedia('(min-width:1500px)').matches, mid=window.matchMedia('(min-width:1280px)').matches;
-  if(mid){   // ≥1280: the left column stacks nav links → Current Tuning → Clipboard as distinct panels (browse & monitor left, act right)
+  const wide=window.matchMedia('(min-width:1660px)').matches, mid=window.matchMedia('(min-width:1280px)').matches;
+  if(wide){   // three columns: [Current Tuning · Guitar · Clipboard] | presets | [Bends]
     if(bench.parentElement!==nav) nav.appendChild(bench);
-    if(hist && hist.parentElement!==nav) nav.appendChild(hist);
-    if(hist && bench.nextElementSibling!==hist) nav.insertBefore(bench, hist);
-  } else {   // mobile: inline at the bottom of the main column, as always
-    if(bench.parentElement!==wrap) wrap.appendChild(bench);
-    if(hist && (hist.parentElement!==wrap || bench.nextElementSibling!==hist)) bench.after(hist);
-  }
-  const guitar=document.getElementById('sec-guitar');
-  if(pedals && pan){   // very wide → Guitar + Bends fill the right rail; otherwise they return to their spot before Panning
-    if(wide&&rail){ if(pedals.parentElement!==rail) rail.appendChild(pedals); }
-    else if(pedals.parentElement!==wrap) wrap.insertBefore(pedals, pan);
-    if(guitar && (guitar.parentElement!==pedals.parentElement || guitar.nextElementSibling!==pedals)) pedals.before(guitar);   // GUITAR rides directly above Bends in both layouts
+    if(guitar && guitar.previousElementSibling!==bench) bench.after(guitar);
+    if(hist && hist.previousElementSibling!==(guitar||bench)) (guitar||bench).after(hist);
+    if(rail && pedals && pedals.parentElement!==rail) rail.appendChild(pedals);
+  } else {
+    if(mid){   // narrow sidebar keeps the readouts; Guitar + Bends flow inline in the center
+      if(bench.parentElement!==nav) nav.appendChild(bench);
+      if(hist && (hist.parentElement!==nav || hist.previousElementSibling!==bench)) bench.after(hist);
+    } else {   // mobile: everything inline at the bottom of the main column
+      if(bench.parentElement!==wrap) wrap.appendChild(bench);
+      if(hist && (hist.parentElement!==wrap || bench.nextElementSibling!==hist)) bench.after(hist);
+    }
+    if(pedals && pan){
+      if(pedals.parentElement!==wrap) wrap.insertBefore(pedals, pan);
+      if(guitar && (guitar.parentElement!==pedals.parentElement || guitar.nextElementSibling!==pedals)) pedals.before(guitar);
+    }
   }
 }
 window.addEventListener('resize', placeBench);
 function updateSpy(){
-  const links=[...document.querySelectorAll('#sideNav a, #jumpMenu a')]; if(!links.length) return;
+  const links=[...document.querySelectorAll('#navRow a, #jumpMenu a')]; if(!links.length) return;
   let cur=null, best=-1e9; const line=120;
   const spyEl=a=>{ const el=document.getElementById(a.getAttribute('href').slice(1)); return (el && el.offsetParent!==null && !el.closest('#rightRail')) ? el : null; };   // skip hidden sections (Panning in Classic mode) AND railed ones (fixed-position rects would poison the scroll math, and their links are hidden anyway)
   links.forEach(a=>{ const el=spyEl(a); if(!el) return; const top=el.getBoundingClientRect().top; if(top<=line && top>best){ best=top; cur=a.getAttribute('href'); } });
