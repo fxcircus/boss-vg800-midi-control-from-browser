@@ -159,6 +159,13 @@
   .str[data-g="2"] .wire::before { height: 1.8px; }
   .str[data-g="1"] .wire::before { height: 1.3px; }
   .str.shifted .wire::before { background: linear-gradient(180deg, var(--brass-deep), var(--brass), var(--brass-deep)); filter: drop-shadow(0 0 5px var(--brass-glow)); }
+  /* Wound strings (gauges 4-6): fine near-vertical wrap ridges. The note pill sits above on z-index 2, so the texture never touches it. */
+  .str[data-g="6"] .wire::before, .str[data-g="5"] .wire::before, .str[data-g="4"] .wire::before {
+    background-image: repeating-linear-gradient(80deg, rgba(20,16,10,0.38) 0 1px, rgba(255,255,255,0.16) 1px 1.7px, transparent 1.7px 3px), linear-gradient(180deg, var(--chrome-dim), var(--chrome), var(--chrome-dim));
+  }
+  .str.shifted[data-g="6"] .wire::before, .str.shifted[data-g="5"] .wire::before, .str.shifted[data-g="4"] .wire::before {
+    background-image: repeating-linear-gradient(80deg, rgba(20,16,10,0.38) 0 1px, rgba(255,255,255,0.16) 1px 1.7px, transparent 1.7px 3px), linear-gradient(180deg, var(--brass-deep), var(--brass), var(--brass-deep));
+  }
   .str .slide {
     position: absolute; top: 50%; transform: translate(-50%, -50%);
     min-width: 34px; height: 24px; padding: 0 7px;
@@ -524,6 +531,7 @@
     #sideNav .bench { box-shadow: none; background: var(--wood); margin-top: 18px; }
     #sideNav .str .wire::before { background: var(--chrome-dim); }
     #sideNav .str.shifted .wire::before { background: var(--brass-deep); filter: none; }
+    #sideNav .str[data-g="6"] .wire::before, #sideNav .str[data-g="5"] .wire::before, #sideNav .str[data-g="4"] .wire::before { background-image: repeating-linear-gradient(80deg, rgba(20,16,10,0.32) 0 1px, rgba(255,255,255,0.3) 1px 1.7px, transparent 1.7px 3px); }
     #sideNav .str .slide { background: #e6e0d2; box-shadow: 0 1px 3px rgba(0,0,0,0.25); }
     #sideNav .str.shifted.sharp .slide { background: #f2b871; }
     #sideNav .str.shifted.flat .slide { background: #a8c6de; }
@@ -1936,7 +1944,7 @@ function renderStrings(offsets){
   if(wrap.children.length!==6){           // build the rows once…
     wrap.innerHTML='';
     for(let i=0;i<6;i++){
-      const row=document.createElement('div'); row.className='str'; row.dataset.g=(6-i);
+      const row=document.createElement('div'); row.className='str'; row.dataset.g=(i+1);   // row 0 is the high E — string 1, the thinnest
       row.innerHTML=`<span class="str-lbl"><i class="str-sw" style="background:${STR_COLORS[i]}"></i></span><span class="wire"><span class="slide"><span class="sl-name"></span><span class="oct"></span></span></span><span class="str-off"></span>`;
       wrap.appendChild(row);
     }
