@@ -129,10 +129,11 @@
   .conn select:focus { outline: none; border-color: var(--brass-deep); }
 
   .bench {
+    min-width: 0;
     background: linear-gradient(180deg, var(--felt), var(--wood));
-    border: 1px solid var(--edge);
+    border: 2px solid var(--edge);
     border-radius: 14px;
-    padding: 22px 6px 20px;
+    padding: 12px 6px 20px;
     margin-top: 30px;
     position: relative;
     box-shadow: inset 0 1px 0 rgba(236,227,210,0.05), 0 16px 40px rgba(0,0,0,0.35);
@@ -192,7 +193,7 @@
   .sec .rule { flex: 1; height: 1px; background: var(--edge); }
 
   /* Unified section panel — a fieldset so its legend header straddles (breaks) the top border */
-  .panel { min-width: 0; border: 1px solid var(--edge); border-radius: 15px; padding: 9px 18px 18px; margin: 0 0 18px; background: color-mix(in srgb, var(--wood) 18%, transparent); }
+  .panel { min-width: 0; border: 2px solid var(--edge); border-radius: 15px; padding: 9px 18px 18px; margin: 0 0 18px; background: color-mix(in srgb, var(--wood) 18%, transparent); }
   .panel-hd { margin: 0 auto; padding: 0 14px; font-family: var(--cond); font-weight: 700; font-size: 20px; line-height: 1; text-transform: uppercase; letter-spacing: 1.5px; color: var(--bone); }
   .panel-sub { text-align: center; font-family: var(--mono); font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--bone-faint); margin: 7px 0 14px; }
 
@@ -402,14 +403,12 @@
   @keyframes kmFlash { 0%,100% { color: var(--brass-deep); } 30% { color: var(--brass); text-shadow: 0 0 12px var(--brass-glow); } }
   /* ===== Clipboard (played history) — live strip + settings rows + trim-timeline modal ===== */
   /* Detached "Clipboard" bubble — its own bench-styled panel that sits right under the workbench (moves with it via placeBench) */
-  .hist-bubble { margin-top: 14px; padding: 16px 8px 15px; }
-  .hist-bubble > .fam-name { margin-top: 0; margin-bottom: 12px; }
+  .hist-bubble { margin-top: 14px; padding: 8px 8px 14px; }
   #sideNav .hist-bubble { margin-top: 12px; }
-  .hist-hide { position: absolute; top: 11px; right: 11px; z-index: 2; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border: 1px solid var(--edge); border-radius: 8px; background: var(--wood); color: var(--bone-faint); cursor: pointer; transition: color .12s, border-color .12s, background .12s; }
+  .hist-hide { position: absolute; top: -25px; right: 10px;   /* rides the legend line — a fieldset's absolute origin sits below its legend */ z-index: 2; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border: 1px solid var(--edge); border-radius: 8px; background: var(--wood); color: var(--bone-faint); cursor: pointer; transition: color .12s, border-color .12s, background .12s; }
   .hist-hide:hover { color: var(--brass); border-color: var(--brass-deep); background: var(--felt); }
   .hist-hide .hist-ico { width: 15px; height: 15px; }
   #sec-history.collapsed { padding-bottom: 16px; }
-  #sec-history.collapsed > .fam-name { margin-bottom: 0; }
   #sec-history.collapsed #histWrap { display: none; }
   #histWrap { margin-top: 2px; }
   .hist-strip { display: flex; gap: 5px; overflow-x: auto; padding: 3px 1px 7px; scrollbar-width: thin; scroll-behavior: smooth; }
@@ -523,7 +522,7 @@
     #sideNav #sec-current { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
     #sideNav #sec-current #strings { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-evenly; min-height: 0; }
     #sideNav #sec-guitar { margin: 10px 0 0; padding: 6px 14px 9px; position: relative; }
-    #sideNav #sec-guitar .panel-hd { font-size: 15px; letter-spacing: 1.5px; }
+    #sideNav .panel-hd { font-size: 15px; letter-spacing: 1.5px; }
     #sideNav #sec-guitar .map-ico { display: none; }
     #sideNav .gtr-preview { margin: 5px 0 6px; }
     #sideNav .gtr-inner { max-width: none; }
@@ -545,6 +544,8 @@
     header { position: fixed; top: 0; left: 0; right: 0; margin: 0; padding: 13px 26px; background: var(--bg); background-attachment: fixed; border-bottom: 1px solid var(--edge-soft); justify-content: flex-end; }
     header.stuck { box-shadow: none; }
     header .mast { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }   /* title centered in the band; the buttons keep the right edge */
+    header { padding-right: max(14px, calc(50vw - 626px)); }   /* buttons close ranks with the readout column's right border */
+    @media (min-width: 1660px) { header { padding-right: max(16px, calc(50vw - 828px)); } }
     .wrap { padding-top: calc(var(--hdr-h, 74px) + 22px); }
     #sideNav {
       display: block; position: fixed; top: calc(var(--hdr-h, 74px) + 20px); left: calc(50% + 434px); width: 192px;
@@ -744,7 +745,6 @@
   /* Combined compact view — pan strip sits above the pitch neck (renderStrings), linked by fixed per-string color */
   .cv-pan { margin: 2px 6px 14px; }
   #sec-current .fam-name { margin: 2px 10px 12px; }              /* "Current Panning" / "Current Tuning" cut-line headers */
-  #sec-current #curPanWrap + .fam-name { margin-top: 8px; }      /* extra breathing room above the tuning header */
   .cv-scale { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 8px; color: var(--bone-faint); letter-spacing: 1px; padding: 0 3px; margin-bottom: 4px; }
   .cv-panfield { position: relative; height: 48px; background: var(--ink); border: 1px solid var(--edge-soft); border-radius: 9px; }
   .cv-panmid { position: absolute; left: 50%; top: 5px; bottom: 5px; width: 1px; background: var(--edge); }
@@ -774,7 +774,7 @@
   .fam-name::before, .fam-name::after { content: ""; flex: 1; height: 1px; background: var(--edge-soft); }   /* centered title with the rule cut off on both sides */
 
   /* Grouped section (e.g. Lap Steel) with visually separated sub-areas */
-  .lapsec { min-width: 0; margin: 0 0 18px; border: 1px solid var(--edge); border-radius: 15px; padding: 9px 18px 3px; background: color-mix(in srgb, var(--wood) 18%, transparent); scroll-margin-top: 24px; }
+  .lapsec { min-width: 0; margin: 0 0 18px; border: 2px solid var(--edge); border-radius: 15px; padding: 9px 18px 3px; background: color-mix(in srgb, var(--wood) 18%, transparent); scroll-margin-top: 24px; }
   .lapsec-hd { font-family: var(--cond); font-weight: 700; font-size: 15px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--brass); margin: 0 0 16px; display: flex; align-items: center; gap: 12px; }
   .lapsec-hd::after { content: ""; flex: 1; height: 1px; background: var(--brass-deep); opacity: 0.45; }
   .lapsec-body .fam { margin-bottom: 18px; }
@@ -1110,7 +1110,8 @@
     <div id="panWrap"></div>
   </fieldset>
 
-  <div class="bench" id="sec-current">
+  <fieldset class="bench" id="sec-current">
+    <legend class="panel-hd">Current Tuning</legend>
     <div id="curPanWrap">
       <div class="fam-name">Current Panning</div>
       <div class="cv-pan">
@@ -1118,18 +1119,17 @@
         <div class="cv-panfield"><span class="cv-panmid"></span><div id="cvDots"></div></div>
       </div>
     </div>
-    <div class="fam-name">Current Tuning</div>
     <div class="bench-head">
       <span class="name std" id="nowName">Standard</span>
     </div>
     <div id="strings"></div>
-  </div>
+  </fieldset>
 
-  <div class="bench hist-bubble" id="sec-history">
+  <fieldset class="bench hist-bubble" id="sec-history">
+    <legend class="panel-hd">Clipboard</legend>
     <button class="hist-hide" id="histHide" aria-label="Show or hide the clipboard"></button>
-    <div class="fam-name">Clipboard</div>
     <div id="histWrap"></div>
-  </div>
+  </fieldset>
 </div>
 
 <div class="scrim" id="editorModal">
@@ -3660,7 +3660,7 @@ function renderHistory(){
   const H=settings.hist, manual=H.mode==='manual', recording=manual&&histTracking;
   const chips = history.length
     ? history.map(h=>`<span class="hist-chip">${escHtml(h.name)}</span>`).join('')
-    : `<span class="hist-empty">${manual&&!histTracking?'Press Start, then play…':'Play something to log it…'}</span>`;
+    : `<span class="hist-empty">${manual&&!histTracking?'Press Start, then play…':'Click on a tuning to log it…'}</span>`;
   const empty=!history.length, dis=empty?' disabled':'';   // nothing logged → Copy/Clear greyed out
   let ctrls = (manual && !histTracking) ? `<button class="hist-btn go" data-hist="start">● Start</button>`
                                         : `<button class="hist-btn" data-hist="copy"${dis}>${COPY_ICO}Copy</button>`;
