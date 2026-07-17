@@ -2377,7 +2377,7 @@ function renderPedals(){
     b.addEventListener('lostpointercapture', ()=> releaseCtrl(ctrl));
   });
   wrap.querySelectorAll('.pedal').forEach(b=> b.classList.toggle('on', ctrlEngaged(b.dataset.ctrl)));  // keep latched state after re-render
-  wrap.querySelectorAll('#latchSeg [data-latch]').forEach(b=> b.addEventListener('click',()=>{ const on=b.dataset.latch==='1'; if(on===!!settings.latch) return; settings.latch=on; saveSettingsLS(); renderPedals(); }));
+  wrap.querySelectorAll('#latchSeg [data-latch]').forEach(b=> b.addEventListener('click',()=>{ const on=b.dataset.latch==='1'; if(on===!!settings.latch) return; settings.latch=on; if(!on) [...held].forEach(c=> setCtrl(c,false)); saveSettingsLS(); renderPedals(); }));   // dropping back to Momentary releases every latched bend
   wrap.querySelectorAll('#psSeg [data-ps]').forEach(b=> b.addEventListener('click',()=>{ if(held.size){ held.clear(); if(midiOut) send(baseOffsets); renderStrings(baseOffsets); } settings.perStringOn=b.dataset.ps==='1'; saveSettingsLS(); rebuildKeymap(); renderPedals(); }));   // release any held bend when switching pedal mode
   wrap.querySelectorAll('.ps-step').forEach(b=> b.addEventListener('click', e=>{ e.stopPropagation(); const [s,d]=b.dataset.psadj.split(':').map(Number); adjustStringBend(s,d); }));
   wrap.querySelectorAll('[data-psfac]').forEach(b=> b.addEventListener('click', ()=> loadFactoryPreset(+b.dataset.psfac)));
