@@ -82,9 +82,9 @@
       linear-gradient(180deg, #f2ead7 0%, #e9e0cb 60%, #e2d8c1 100%);
   }
   /* Flat matte finish for the bold pedal-panel themes (CS3 / RC500 / DS1) — no drop shadows */
-  html[data-theme="cs3"]   :is(.card,.pedal,.panmode,.clbtn,.kb-chip,.bench,.pan-auto,.tbtn,.add,.gear):not(.active):not(.on),
-  html[data-theme="rc500"] :is(.card,.pedal,.panmode,.clbtn,.kb-chip,.bench,.pan-auto,.tbtn,.add,.gear):not(.active):not(.on),
-  html[data-theme="ds1"]   :is(.card,.pedal,.panmode,.clbtn,.kb-chip,.bench,.pan-auto,.tbtn,.add,.gear):not(.active):not(.on) { box-shadow: none; }
+  html[data-theme="cs3"]   :is(.card,.pedal,.panmode,.clbtn,.kb-chip,.bench,.tbtn,.add,.gear):not(.active):not(.on),
+  html[data-theme="rc500"] :is(.card,.pedal,.panmode,.clbtn,.kb-chip,.bench,.tbtn,.add,.gear):not(.active):not(.on),
+  html[data-theme="ds1"]   :is(.card,.pedal,.panmode,.clbtn,.kb-chip,.bench,.tbtn,.add,.gear):not(.active):not(.on) { box-shadow: none; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
   body {
@@ -523,18 +523,14 @@
     nav#sideNav::-webkit-scrollbar { width: 0; height: 0; }
     /* Panning controls parked in the sidebar — compact everything so the column reads as one unit */
     #sideNav #sec-pan { flex: 0 0 auto; margin: 0 0 12px; padding: 4px 13px 11px; }
-    #sideNav #sec-pan .pan-mode-group { padding: 8px 9px 10px; margin-bottom: 8px; }
-    #sideNav #sec-pan .fam-name { margin: 2px 2px 7px; }
+    #sideNav #sec-pan .panmode-seg { margin-bottom: 8px; }
     #sideNav #sec-pan .panmode-seg button { padding: 4px 7px; font-size: 9px; }
     #sideNav #sec-pan .panmode { font-size: 10px; padding: 6px 5px; }
     #sideNav #sec-pan .panmodes { grid-template-columns: repeat(auto-fill, minmax(82px, 1fr)); gap: 5px; margin-bottom: 8px; }
     #sideNav #sec-pan .glide-row { margin: 8px 0 0; }
-    #sideNav #sec-pan .pan-mode-or { margin: 8px 4px; }
-    #sideNav #sec-pan .pan-auto { padding: 8px 10px 10px; }
     #sideNav #sec-pan .apcap { margin: 9px 2px 5px; }
     #sideNav #sec-pan .seg button { padding: 4px 4px; font-size: 9.5px; }
-    #sideNav #sec-pan .apsub { font-size: 9px; }
-    #sideNav #sec-pan .apdesc { font-size: 10px; margin: 6px 2px 0; }
+    #sideNav #sec-pan .mini-seg button { padding: 2px 6px; font-size: 8.5px; }
     #sideNav #sec-pan .pg-lbl { font-size: 10px; margin-bottom: 6px; }
     #navRow a[href="#sec-pan"], #jumpMenu a[href="#sec-pan"] { display: none; }   /* the section lives in the always-visible sidebar here */
     #sideNav #sec-current { flex: 0 0 auto; display: flex; flex-direction: column; min-height: 0; padding-bottom: 13px; }
@@ -731,34 +727,30 @@
   .panmode { font-family: var(--mono); font-size: 11px; font-weight: 700; padding: 10px 8px; border-radius: 8px; cursor: pointer; border: 1px solid var(--edge); background: var(--wood); color: var(--bone-dim); transition: all .12s; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 5px rgba(0,0,0,0.28); }
   .panmode:hover { border-color: var(--brass); color: var(--bone); background: var(--felt); transform: translateY(-1px); }
   .panmode.on { border-color: var(--brass); color: var(--brass); background: var(--felt); box-shadow: inset 0 0 0 1px var(--brass-glow); }
-  /* Pan modes — one segmented toggle switch (matches the app's other .seg switches); wraps since there are 9 options */
+  /* Pan placement row — one segmented switch: cycling preset buttons, Custom, then Tremolo behind a thin divider */
   .panmode-seg { flex-wrap: wrap; justify-content: center; margin-bottom: 12px; }
   .panmode-seg button { flex: 0 0 auto; padding: 7px 12px; }
-  /* Mode group — Stereo Spread presets (+ glide) OR Auto-pan, framed as one mutually-exclusive choice */
-  .pan-mode-group { border: 1px solid var(--edge); border-radius: 12px; padding: 13px 13px 15px; margin-bottom: 14px; transition: border-color .16s; }
-  .pan-mode-group.auto-on { border-color: var(--brass-deep); }   /* auto-pan is the active mode → tint the frame */
-  .pan-spread { transition: opacity .18s; }
-  .pan-dim { opacity: 0.38; }   /* inactive mode → dim (still clickable: tapping a preset switches back to Spread mode) */
-  /* "or" — a lighter cut-line than fam-name, signalling the two choices are alternatives inside the group */
-  .pan-mode-or { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 13px 4px; font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--bone-faint); }
-  .pan-mode-or::before, .pan-mode-or::after { content: ""; flex: 1; height: 1px; background: var(--edge-soft); }
-  /* Auto-pan — a distinct dashed chip so it stands out as the alternative to the spreads */
-  .autopan-row { margin-bottom: 0; }
-  .autopan-row .panmode.autopan { width: 100%; }
-  /* Auto-pan toggle — a distinct dashed chip (not a static placement) */
-  .panmode.autopan { border-style: dashed; border-color: var(--brass-deep); color: var(--brass); background: transparent; }
-  .panmode.autopan:hover { border-color: var(--brass); background: var(--felt); transform: translateY(-1px); }
-  .panmode.autopan.on { color: var(--ink); background: linear-gradient(180deg, var(--brass), var(--brass-deep)); border-color: var(--brass-deep); box-shadow: 0 0 0 1px var(--brass-glow), 0 3px 12px var(--brass-glow); }
-  .apsub { font-family: var(--mono); font-size: 10px; color: var(--bone-faint); letter-spacing: 0.4px; margin: 2px 2px 0; }
+  .panmode-seg sup { font-size: 8px; margin-left: 2px; opacity: 0.85; }   /* which mirror of a paired preset is live */
+  .panmode-seg .trem { position: relative; margin-left: 9px; }
+  .panmode-seg .trem::before { content: ""; position: absolute; left: -5.5px; top: 18%; bottom: 18%; width: 1px; background: var(--edge); }
+  /* Tremolo body — fills the glide-time slot; Free/Sync rides the speed label as a mini seg */
+  .mini-seg { display: inline-flex; padding: 2px; gap: 2px; margin-left: 8px; vertical-align: middle; border-radius: 7px; }
+  .mini-seg button { flex: 0 0 auto; padding: 2px 8px; font-size: 8.5px; }
+  .trem-body .apcap { margin: 12px 2px 7px; }
+  .trem-chars { margin-bottom: 0; }
+  .trem-opts { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 11px; }
+  .topt { display: inline-flex; flex-direction: column; gap: 4px; }
+  .tcap { font-family: var(--mono); font-style: normal; font-size: 8.5px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--bone-faint); }
+  .topt .seg { padding: 2px; gap: 2px; }
+  .topt .seg button { flex: 0 0 auto; padding: 5px 8px; font-size: 10px; }
   /* Pan-glide duration — a subordinate setting of Spread mode (indented + rule), not a co-equal strip */
   .glide-row { margin: 12px 0 2px; padding-left: 12px; border-left: 2px solid var(--edge-soft); }
   .glide-cap { margin: 0 2px 7px; }                    /* small-caps label, tighter than a standalone apcap */
   .pg-lbl { display: flex; justify-content: space-between; align-items: baseline; font-family: var(--mono); font-size: 11px; color: var(--bone-dim); letter-spacing: 0.3px; margin-bottom: 9px; }
   .pg-lbl b { color: var(--brass); font-size: 12px; }
-  .pan-auto { margin-top: 0; padding: 13px 14px; background: var(--wood); border: 1px solid var(--edge); border-radius: 10px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
-  #apBody .panmodes { margin-bottom: 4px; }
   .apcap { font-family: var(--mono); font-size: 9.5px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--bone-faint); margin: 14px 2px 8px; }
-  .apdivs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 4px; }
+  .apdivs { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+  .apdivs .panmode { flex: 1 1 auto; padding: 6px 4px; font-size: 9.5px; }
   .apduo { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   /* Segmented toggle (Free/Sync, Shape) — deliberately lighter than the preset chips */
   .seg { display: flex; gap: 3px; padding: 3px; background: var(--ink); border: 1px solid var(--edge); border-radius: 9px; }
@@ -769,9 +761,7 @@
   .seg button, .panmode { transition: color .16s, background .16s, border-color .16s, box-shadow .16s; }   /* smoother toggle switch */
   @keyframes apReveal { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
   .ap-rv { animation: apReveal .24s cubic-bezier(.4,0,.2,1); }
-  .apdesc { font-family: var(--sans); font-size: 11px; font-style: italic; color: var(--bone-faint); margin: 8px 2px 2px; line-height: 1.45; }
   .aphdr span { font-weight: 700; color: var(--bone); }
-  #apFree, #apSync { margin-top: 10px; }
   /* Combined compact view — pan strip sits above the pitch neck (renderStrings), linked by fixed per-string color */
   #curPanWrap { display: flex; flex-direction: column; }   /* html.realbend hides it (id+class outranks this display) */
   .cv-pan { flex: 1 1 auto; display: flex; flex-direction: column; margin: 2px 6px 6px; }
@@ -1265,7 +1255,7 @@
 <div class="scrim" id="aboutModal">
   <div class="sheet">
     <h2 style="text-align: center">About</h2>
-    <p class="about-intro">Retune your <b>Boss VG-800</b> from the browser. Pick an alternate tuning and all six strings retune instantly over MIDI — no menu-diving. It also does pedal-steel <b>bends</b>, ethnic-instrument voicings and stereo <b>auto-panning</b>, all from one page.</p>
+    <p class="about-intro">Retune your <b>Boss VG-800</b> from the browser. Pick an alternate tuning and all six strings retune instantly over MIDI — no menu-diving. It also does pedal-steel <b>bends</b>, ethnic-instrument voicings and stereo <b>panning &amp; tremolo</b>, all from one page.</p>
     <div class="about-links">
       <a class="about-link coffee" href="https://buymeacoffee.com/fxcircus" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a3 3 0 0 1 0 6h-1"/><path d="M4 8h13v6a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z"/><path d="M7 2v2M11 2v2M15 2v2"/></svg>Buy me a coffee</a>
       <a class="about-link gh" href="https://github.com/fxcircus/boss-vg800-midi-control-from-browser" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.6.1-3.3 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.7.2 3 .1 3.3.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.3v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .3z"/></svg>View on GitHub</a>
@@ -1305,7 +1295,7 @@
         <p>The <em>⚙ Settings → Mode</em> toggle picks which of two VG-800 presets the app drives — each spends the pedal's 16 assign slots differently, so each mode is <b>for</b> something different:</p>
         <ul>
           <li><b>Classic</b> (default) — <b>for expressive playing</b>: bends that actually <em>glide</em>. The tuning lives on <em>ALT&nbsp;TUNE</em> (User mode, always ON) and every bend is the pedal's true two-step gesture — set the target <em>BEND&nbsp;DEPTH</em>, sweep <em>BEND&nbsp;CONTROL</em> 0→100 — so pedal-steel moves, per-string benders and scale bends slide into pitch like a real mechanical bender instead of stepping. It's also what lets Ethnic instruments sound at <b>true pitch</b>: the ±24 ALT&nbsp;TUNE range absorbs the <em>+ Octave</em> lift, so a mandolin plays from the open strings with no capo. The trade-off: <b>no stereo panning</b> — CC 71–76 are spent on the ALT&nbsp;TUNE pitches. Hardware preset: <a href="presets/royClassic.tsl" download>royClassic.tsl</a>.</li>
-          <li><b>Panning</b> — <b>for the stereo field</b>: per-string placement (Spread, Split, Zig-Zag…) and the auto-pan LFO engine (Rotate, Leslie, Drift…), with CC 71–76 driving <em>STRING · PAN 1–6</em>. Bends still work but write straight to BEND&nbsp;DEPTH, so notes <em>step</em> to pitch instantly rather than glide, and the Ethnic octave rides the preset's fixed +12 on CC 78. Hardware preset: <a href="presets/royPanning.tsl" download>royPanning.tsl</a>.</li>
+          <li><b>Panning</b> — <b>for the stereo field</b>: per-string placement (Spread, Split, Zig-Zag…) and the tremolo LFO engine (Rotate, Leslie, Drift…), with CC 71–76 driving <em>STRING · PAN 1–6</em>. Bends still work but write straight to BEND&nbsp;DEPTH, so notes <em>step</em> to pitch instantly rather than glide, and the Ethnic octave rides the preset's fixed +12 on CC 78. Hardware preset: <a href="presets/royPanning.tsl" download>royPanning.tsl</a>.</li>
         </ul>
         <p>Pick <b>Classic</b> when the bend gesture matters; pick <b>Panning</b> when the mix does. Match the toggle to whichever preset is loaded on the pedal — the CC numbers overlap, so the wrong mode sends real (wrong) commands.</p>
         <ul>
@@ -1378,11 +1368,11 @@
     </details>
 
     <details class="docgrp">
-      <summary>Panning &amp; auto-pan</summary>
+      <summary>Panning &amp; tremolo</summary>
       <div class="docgrp-body"><ul>
         <li>Available in <b>Panning mode</b> only (<em>⚙ Settings → Mode</em>) — in Classic those CC slots carry the ALT&nbsp;TUNE pitches, so the section hides.</li>
-        <li><b>Manual modes</b> (Center, Equal Spread, Split, Zig-Zag, Pairs…) place each string in the stereo field. Clicking a mode <b>glides</b> the strings so you feel the sweep; the <em>Pan glide</em> toggle sets the time (Instant → Long).</li>
-        <li><b>Auto-pan</b> — flip it on and each string runs its own pan LFO. Pick a <b>character</b> (Rotate, Leslie, Fan Breathe, Ping-Pong, Drift), then fine-tune Width, Shape and Phase spread — at a Free rate (Hz) or Tempo-synced (BPM + division).</li>
+        <li><b>Placements</b> (Center, Narrow, Equal Spread, Pairs, Split, Zig-Zag) put each string in the stereo field — clicking a paired mode again <b>flips its mirror image</b> (the small ¹/² shows which). Clicking a mode <b>glides</b> the strings so you feel the sweep; the <em>Pan glide</em> toggle sets the time (Instant → Long). Drag the <b>Current Panning balls</b> to place strings by hand — your layout appears as a <b>Custom</b> chip.</li>
+        <li><b>Tremolo</b> — the last chip in the row: each string runs its own pan LFO. Set the <b>speed</b> (Free Hz or Tempo-synced BPM + division), pick a <b>character</b> (Rotate, Leslie, Fan Breathe, Ping-Pong, Drift — hover for what each does), then fine-tune Width, Phase and Shape. Pick any placement to stop it.</li>
       </ul></div>
     </details>
 
@@ -1830,6 +1820,15 @@ const PANMODES=[
   {id:'split2',  name:'Split 2',        pos:[1,1,1,-1,-1,-1]},
   {id:'zig1',    name:'Zig-Zag 1',      pos:[-1,1,-1,1,-1,1]},           // hard-alternate L/R per string
   {id:'zig2',    name:'Zig-Zag 2',      pos:[1,-1,1,-1,1,-1]},
+];
+// Placement-row buttons — mirrored presets share one button that cycles its variants on repeat clicks.
+const PAN_GROUPS=[
+  {label:'Center', ids:['center']},
+  {label:'Narrow', ids:['narrow']},
+  {label:'Equal Spread', ids:['spread1','spread2']},
+  {label:'Pairs', ids:['pairs']},
+  {label:'Split', ids:['split1','split2']},
+  {label:'Zig-Zag', ids:['zig1','zig2']},
 ];
 // Fixed per-string colors (str 1 high E … str 6 low E) that link the two overview strips.
 const STR_COLORS=['#ef5350','#f2a33d','#c6d43f','#4cc178','#4f9dea','#a563d4'];
@@ -3205,13 +3204,16 @@ function ensurePanVisible(){ const wrap=document.getElementById('panWrap'); if(!
 function renderPan(){
   const wrap=document.getElementById('panWrap'); if(!wrap) return;
   const a=settings.ap, pm=settings.panMs|0;
-  const btns=PANMODES.map(m=>`<button class="${activePan===m.id?'on':''}" data-pan="${m.id}">${m.name}</button>`).join('')
-    +(customPan?`<button class="${activePan==='custom'?'on':''}" data-pan="custom" title="Your dragged ball layout — drag the Current Panning balls to shape it">Custom</button>`:'');
+  // Placement row — paired presets collapse into one cycling button; Tremolo (the pan LFO) closes the same row
+  const grpBtns=PAN_GROUPS.map(g=>{
+    const k=g.ids.indexOf(activePan), on=!autoPanOn&&k>=0;
+    return `<button class="${on?'on':''}" data-pangrp="${g.ids.join(',')}" title="${g.ids.length>1?g.label+' — click again to flip the sides':g.label}">${g.label}${g.ids.length>1&&on?`<sup>${k+1}</sup>`:''}</button>`;
+  }).join('');
+  const customBtn=customPan?`<button class="${!autoPanOn&&activePan==='custom'?'on':''}" data-pan="custom" title="Your dragged ball layout — drag the Current Panning balls to shape it">Custom</button>`:'';
+  const tremBtn=`<button class="trem${autoPanOn?' on':''}" data-tremolo title="Tremolo — each string sweeps the stereo field on its own LFO">Tremolo</button>`;
   const PG_OPTS=[[0,'Instant'],[500,'Short'],[2000,'Medium'],[5000,'Long']];
   const pgSnap = PG_OPTS.reduce((b,o)=> Math.abs(o[0]-pm)<Math.abs(b-pm)?o[0]:b, 0);   // nearest named option
-  const glideBlock = `<div class="glide-row"><div class="apcap glide-cap">Pan glide time</div>
-      <div class="seg">${PG_OPTS.map(([v,nm])=>`<button class="${pgSnap===v?'on':''}" data-glide="${v}">${nm}</button>`).join('')}</div></div>`;
-  const charBtns=AP_CHARLIST.map(([id,nm])=>`<button class="panmode${a.char===id?' on':''}" data-char="${id}">${nm}</button>`).join('');
+  const charBtns=AP_CHARLIST.map(([id,nm])=>`<button class="panmode${a.char===id?' on':''}" data-char="${id}" title="${AP_CHARDESC[id]||''}">${nm}</button>`).join('');
   const divBtns=AP_DIVS.map(([id])=>`<button class="panmode${a.div===id?' on':''}" data-div="${id}">${id}</button>`).join('');
   const leslieBlock = a.char==='leslie' ? `
       <div class="apcap">Leslie horn · top 3</div>
@@ -3228,53 +3230,37 @@ function renderPan(){
   const hasSpread = a.char==='rotate' || a.char==='leslie';   // others are always full-spread
   const hasShape  = a.char==='rotate' || a.char==='breathe';  // others are always sine
   const wSnap = [0.25,0.65,1].reduce((b,v)=> Math.abs(v-a.width)<Math.abs(b-a.width)?v:b, 0.25);   // nearest Width toggle option
-  const autoBody=`<div id="apBody">
-      <p class="apsub">Each string sweeps the stereo field</p>
-      <div class="apcap" style="margin-top:10px">Character</div>
-      <div class="panmodes">${charBtns}</div>
-      <p class="apdesc ap-rv">${AP_CHARDESC[a.char]||''}</p>
-      ${hasSpread?`<div class="apcap">Phase spread</div>
-      <div class="seg" style="margin-bottom:12px"><button class="${a.spread<0.5?'on':''}" data-spread="0">Block</button><button class="${a.spread>=0.5?'on':''}" data-spread="1">Spread</button></div>`:''}
-      <div class="apcap">Width</div>
-      <div class="seg" style="margin-bottom:2px"><button class="${wSnap===0.25?'on':''}" data-width="0.25">Narrow</button><button class="${wSnap===0.65?'on':''}" data-width="0.65">Wide</button><button class="${wSnap===1?'on':''}" data-width="1">Full</button></div>
-      ${hasShape?`<div class="apcap">Shape</div>
-      <div class="seg">${shapeBtns}</div>`:''}
-      ${leslieBlock?`<div class="ap-rv">${leslieBlock}</div>`:''}
-      <div class="apcap">Rate</div>
-      <div class="seg" style="margin-bottom:10px"><button class="${a.mode==='free'?'on':''}" data-mode="free">Free</button><button class="${a.mode==='sync'?'on':''}" data-mode="sync">Sync</button></div>
-      <div id="apFree" class="ap-rv"${a.mode==='sync'?' hidden':''}>
-        <div class="pg-lbl"><span>LFO speed</span><b id="apRateVal">${rateCycLbl(a.rate)}</b></div>
-        <input type="range" class="slider" id="apRate" min="1" max="100" value="${a.rate}">
-      </div>
-      <div id="apSync" class="ap-rv"${a.mode==='free'?' hidden':''}>
-        <div class="pg-lbl"><span>Tempo</span><b id="apBpmVal">${a.bpm} BPM</b></div>
-        <input type="range" class="slider" id="apBpm" min="60" max="170" value="${Math.min(170,a.bpm)}">
-        <div class="apcap">Division</div><div class="apdivs">${divBtns}</div>
-      </div>
+  // Tremolo body fills the glide-time slot: speed slider first (Free/Sync rides the label line), then character + one row of options
+  const rateMini=`<span class="seg mini-seg"><button class="${a.mode==='free'?'on':''}" data-mode="free">Free</button><button class="${a.mode==='sync'?'on':''}" data-mode="sync">Sync</button></span>`;
+  const speedRow = a.mode==='free'
+    ? `<div class="pg-lbl"><span>Speed ${rateMini}</span><b id="apRateVal">${rateCycLbl(a.rate)}</b></div><input type="range" class="slider" id="apRate" min="1" max="100" value="${a.rate}">`
+    : `<div class="pg-lbl"><span>Tempo ${rateMini}</span><b id="apBpmVal">${a.bpm} BPM</b></div><input type="range" class="slider" id="apBpm" min="60" max="170" value="${Math.min(170,a.bpm)}"><div class="apdivs">${divBtns}</div>`;
+  const tremOpts=`<div class="trem-opts">
+      <span class="topt"><i class="tcap">Width</i><span class="seg"><button class="${wSnap===0.25?'on':''}" data-width="0.25">Narrow</button><button class="${wSnap===0.65?'on':''}" data-width="0.65">Wide</button><button class="${wSnap===1?'on':''}" data-width="1">Full</button></span></span>
+      ${hasSpread?`<span class="topt"><i class="tcap">Phase</i><span class="seg"><button class="${a.spread<0.5?'on':''}" data-spread="0">Block</button><button class="${a.spread>=0.5?'on':''}" data-spread="1">Spread</button></span></span>`:''}
+      ${hasShape?`<span class="topt"><i class="tcap">Shape</i><span class="seg">${shapeBtns}</span></span>`:''}
     </div>`;
-  const autoBtn=`<button class="panmode autopan${autoPanOn?' on':''}" data-autopan title="Toggle auto-pan">Auto-pan</button>`;
-  // Mode group: Stereo Spread presets (+ their glide setting) OR Auto-pan — mutually exclusive, so the inactive side dims.
-  wrap.innerHTML=`<div class="pan-mode-group${autoPanOn?' auto-on':''}">
-      <div class="pan-spread${autoPanOn?' pan-dim':''}">
-        <div class="fam-name">Stereo Spread</div>
-        <div class="seg panmode-seg">${btns}</div>
-        ${glideBlock}
-      </div>
-      <div class="pan-mode-or">or</div>
-      <div class="autopan-row">${autoBtn}</div>
-    </div>
-    ${autoPanOn?`<div class="pan-auto">${autoBody}</div>`:''}`;
-  wrap.querySelectorAll('[data-pan]').forEach(b=> b.addEventListener('click',()=>applyPan(b.dataset.pan)));
-  const apbtn=wrap.querySelector('[data-autopan]');
-  if(apbtn) apbtn.addEventListener('click',()=>{ if(!autoPanOn){ startAutoPan(); renderPan(); ensurePanVisible(); } else { stopAutoPan(); renderPan(); applyPan(activePan); } });
+  const slot = autoPanOn
+    ? `<div class="glide-row trem-body ap-rv">${speedRow}
+        <div class="apcap">Character</div>
+        <div class="panmodes trem-chars">${charBtns}</div>
+        ${tremOpts}
+        ${leslieBlock?`<div class="ap-rv">${leslieBlock}</div>`:''}</div>`
+    : `<div class="glide-row"><div class="apcap glide-cap">Pan glide time</div>
+        <div class="seg">${PG_OPTS.map(([v,nm])=>`<button class="${pgSnap===v?'on':''}" data-glide="${v}">${nm}</button>`).join('')}</div></div>`;
+  wrap.innerHTML=`<div class="seg panmode-seg">${grpBtns}${customBtn}${tremBtn}</div>${slot}`;
+  wrap.querySelectorAll('[data-pangrp]').forEach(b=> b.addEventListener('click',()=>{
+    const ids=b.dataset.pangrp.split(','), k=ids.indexOf(activePan);
+    applyPan(autoPanOn||k<0 ? ids[0] : ids[(k+1)%ids.length]);           // active paired button → cycle to its mirror
+    renderPan();
+  }));
+  wrap.querySelectorAll('[data-pan]').forEach(b=> b.addEventListener('click',()=>{ applyPan(b.dataset.pan); renderPan(); }));
+  const tb=wrap.querySelector('[data-tremolo]');
+  if(tb) tb.addEventListener('click',()=>{ if(!autoPanOn){ startAutoPan(); renderPan(); ensurePanVisible(); } });   // leaving Tremolo = pick any placement
   wrap.querySelectorAll('[data-glide]').forEach(b=> b.addEventListener('click',()=>{ settings.panMs=+b.dataset.glide; saveSettingsLS(); wrap.querySelectorAll('[data-glide]').forEach(x=> x.classList.toggle('on', x===b)); }));
   wrap.querySelectorAll('[data-spread]').forEach(b=> b.addEventListener('click',()=>{ settings.ap.spread=+b.dataset.spread; saveSettingsLS(); wrap.querySelectorAll('[data-spread]').forEach(x=> x.classList.toggle('on', x===b)); }));
   wrap.querySelectorAll('[data-char]').forEach(b=> b.addEventListener('click',()=>{ const id=b.dataset.char; const p={...(AP_CHARS[id]||{})}; delete p.shape; delete p.width; delete p.spread; Object.assign(settings.ap, p); settings.ap.char=id; saveSettingsLS(); renderPan(); ensurePanVisible(); }));   // keep the user's shape/width/spread across modes; only rate/mode come from the preset
-  wrap.querySelectorAll('[data-mode]').forEach(b=> b.addEventListener('click',()=>{ const m=b.dataset.mode; settings.ap.mode=m; saveSettingsLS();
-    wrap.querySelectorAll('[data-mode]').forEach(x=> x.classList.toggle('on', x.dataset.mode===m));
-    const f=document.getElementById('apFree'), s=document.getElementById('apSync');
-    if(f&&s){ f.hidden=m!=='free'; s.hidden=m!=='sync'; const sh=m==='free'?f:s; sh.classList.remove('ap-rv'); void sh.offsetWidth; sh.classList.add('ap-rv'); }
-    ensurePanVisible(); }));
+  wrap.querySelectorAll('[data-mode]').forEach(b=> b.addEventListener('click',()=>{ settings.ap.mode=b.dataset.mode; saveSettingsLS(); renderPan(); ensurePanVisible(); }));   // the speed slider swaps Hz ↔ BPM+divisions
   const ar=document.getElementById('apRate'), arv=document.getElementById('apRateVal');
   if(ar) ar.addEventListener('input',()=>{ settings.ap.rate=+ar.value; if(arv) arv.textContent=rateCycLbl(settings.ap.rate); saveSettingsLS(); });
   const bpm=document.getElementById('apBpm'), bpmv=document.getElementById('apBpmVal');
@@ -3724,7 +3710,7 @@ function logHistory(name, chord){
 // Panning-mode pan state as text — preset name, auto-pan character + rate, or the dragged Custom layout per string.
 function panPosLbl(p){ const v=Math.round(Math.abs(p)*50); return v===0?'C':(p<0?'L':'R')+v; }   // matches the VG-800's L50…C…R50 readout
 function panSettingDesc(){
-  if(autoPanOn){ const a=settings.ap, nm=(AP_CHARLIST.find(([id])=>id===a.char)||[,'Auto'])[1]; return 'Auto-pan '+nm+' · '+(a.mode==='sync'? a.bpm+' BPM '+a.div : rateCycLbl(a.rate)); }
+  if(autoPanOn){ const a=settings.ap, nm=(AP_CHARLIST.find(([id])=>id===a.char)||[,'Auto'])[1]; return 'Tremolo '+nm+' · '+(a.mode==='sync'? a.bpm+' BPM '+a.div : rateCycLbl(a.rate)); }
   if(activePan==='custom' && customPan) return 'Custom '+customPan.map(panPosLbl).join(' ');
   const m=PANMODES.find(x=>x.id===activePan); return m?m.name:'';
 }
