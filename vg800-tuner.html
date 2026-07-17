@@ -519,6 +519,24 @@
     nav#sideNav { left: calc(50% + 428px); right: auto; width: min(400px, calc(50vw - 428px - 16px)); height: calc(100vh - var(--hdr-h, 74px) - 34px); max-height: none; display: flex; flex-direction: column; }   /* wide: readout column on the RIGHT, full height (nav# outranks the later 1280-band rule) */
     #sideNav #sec-guitar, #sideNav .hist-bubble { flex: 0 0 auto; }
     #sideNav #curPanWrap { flex: 0 0 auto; height: calc(var(--gtr-h, 393px) / 2); }   /* half the Guitar card's footprint (measured live in Classic; 393px fallback) */
+    nav#sideNav { overflow-y: auto; scrollbar-width: none; }   /* Panning mode stacks four cards — let the column scroll like the rail */
+    nav#sideNav::-webkit-scrollbar { width: 0; height: 0; }
+    /* Panning controls parked in the sidebar — compact everything so the column reads as one unit */
+    #sideNav #sec-pan { flex: 0 0 auto; margin: 0 0 12px; padding: 4px 13px 11px; }
+    #sideNav #sec-pan .pan-mode-group { padding: 8px 9px 10px; margin-bottom: 8px; }
+    #sideNav #sec-pan .fam-name { margin: 2px 2px 7px; }
+    #sideNav #sec-pan .panmode-seg button { padding: 4px 7px; font-size: 9px; }
+    #sideNav #sec-pan .panmode { font-size: 10px; padding: 6px 5px; }
+    #sideNav #sec-pan .panmodes { grid-template-columns: repeat(auto-fill, minmax(82px, 1fr)); gap: 5px; margin-bottom: 8px; }
+    #sideNav #sec-pan .glide-row { margin: 8px 0 0; }
+    #sideNav #sec-pan .pan-mode-or { margin: 8px 4px; }
+    #sideNav #sec-pan .pan-auto { padding: 8px 10px 10px; }
+    #sideNav #sec-pan .apcap { margin: 9px 2px 5px; }
+    #sideNav #sec-pan .seg button { padding: 4px 4px; font-size: 9.5px; }
+    #sideNav #sec-pan .apsub { font-size: 9px; }
+    #sideNav #sec-pan .apdesc { font-size: 10px; margin: 6px 2px 0; }
+    #sideNav #sec-pan .pg-lbl { font-size: 10px; margin-bottom: 6px; }
+    #navRow a[href="#sec-pan"], #jumpMenu a[href="#sec-pan"] { display: none; }   /* the section lives in the always-visible sidebar here */
     #sideNav #sec-current { flex: 0 0 auto; display: flex; flex-direction: column; min-height: 0; padding-bottom: 13px; }
     #sideNav #sec-current #strings { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-evenly; min-height: 0; }
     #sideNav #sec-guitar { margin: 10px 0 0; padding: 6px 14px 9px; position: relative; }
@@ -717,7 +735,7 @@
   .panmode-seg { flex-wrap: wrap; justify-content: center; margin-bottom: 12px; }
   .panmode-seg button { flex: 0 0 auto; padding: 7px 12px; }
   /* Mode group — Stereo Spread presets (+ glide) OR Auto-pan, framed as one mutually-exclusive choice */
-  .pan-mode-group { border: 1px solid var(--edge); border-radius: 12px; padding: 13px 13px 15px; background: var(--wood); box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 6px rgba(0,0,0,0.22); margin-bottom: 14px; transition: border-color .16s; }
+  .pan-mode-group { border: 1px solid var(--edge); border-radius: 12px; padding: 13px 13px 15px; margin-bottom: 14px; transition: border-color .16s; }
   .pan-mode-group.auto-on { border-color: var(--brass-deep); }   /* auto-pan is the active mode → tint the frame */
   .pan-spread { transition: opacity .18s; }
   .pan-dim { opacity: 0.38; }   /* inactive mode → dim (still clickable: tapping a preset switches back to Spread mode) */
@@ -760,7 +778,8 @@
   .cv-scale { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 8px; color: var(--bone-faint); letter-spacing: 1px; padding: 0 3px; margin-bottom: 4px; }
   .cv-panfield { position: relative; flex: 1 1 auto; min-height: 48px; border: 1px solid var(--edge-soft); border-radius: 9px; }
   .cv-panmid { position: absolute; left: 50%; top: 5px; bottom: 5px; width: 1px; background: var(--edge); }
-  .cv-dot { position: absolute; width: 17px; height: 17px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-weight: 700; font-size: 10px; color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,0.55), 0 -1px 0 rgba(0,0,0,0.55), 1px 0 0 rgba(0,0,0,0.55), -1px 0 0 rgba(0,0,0,0.55); transform: translate(-50%, -50%); box-shadow: 0 1px 4px rgba(0,0,0,0.55); border: 1.5px solid rgba(0,0,0,0.3); transition: left 0.35s cubic-bezier(.34,1.35,.5,1); }
+  .cv-dot { position: absolute; width: 17px; height: 17px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-weight: 700; font-size: 10px; color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,0.55), 0 -1px 0 rgba(0,0,0,0.55), 1px 0 0 rgba(0,0,0,0.55), -1px 0 0 rgba(0,0,0,0.55); transform: translate(-50%, -50%); box-shadow: 0 1px 4px rgba(0,0,0,0.55); border: 1.5px solid rgba(0,0,0,0.3); transition: left 0.35s cubic-bezier(.34,1.35,.5,1); cursor: grab; touch-action: none; }
+  .cv-dot.drag { transition: none !important; cursor: grabbing; box-shadow: 0 0 10px currentColor, 0 1px 4px rgba(0,0,0,0.55); }
   .str-sw { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; margin-right: 5px; vertical-align: middle; font-family: var(--mono); font-style: normal; font-weight: 700; font-size: 10.5px; line-height: 1; color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,0.55), 0 -1px 0 rgba(0,0,0,0.55), 1px 0 0 rgba(0,0,0,0.55), -1px 0 0 rgba(0,0,0,0.55); border: 1.5px solid rgba(0,0,0,0.3); box-shadow: 0 1px 4px rgba(0,0,0,0.4); }   /* numbered like the pan dots; outlined digits stay readable on the light colors */
   /* Smaller-screen (inline) mode: the readout is parked in the main column, so scale it ~20% bigger for readability */
   @media (max-width: 1279px) {
@@ -1800,7 +1819,7 @@ const TUNING_TIPS = {
 function tipFor(t){ const tip=TUNING_TIPS[t.tipKey||t.name]; if(tip) return tip; const fb=t.ref||t.sub; return fb?{desc:fb}:null; }   // tipKey lets re-rooted Modes cards reuse their C-template copy
 function escAttr(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
 // Per-string pan positions, index 0 = high E (str 1) … 5 = low E (str 6). −1 = hard L (L50), +1 = hard R (R50).
-let activePan='center';
+let activePan='center', customPan=null;   // customPan = per-string positions forked by dragging the Current Panning balls
 const PANMODES=[
   {id:'center',  name:'Center',         pos:[0,0,0,0,0,0]},
   {id:'narrow',  name:'Narrow',         pos:[0.5,0.3,0.1,-0.1,-0.3,-0.5]}, // gentle spread
@@ -2577,10 +2596,11 @@ function placeBench(){
   const bench=document.getElementById('sec-current'), hist=document.getElementById('sec-history'), nav=document.getElementById('sideNav'), rail=document.getElementById('rightRail'), wrap=document.querySelector('.wrap'), pedals=document.getElementById('sec-pedals'), pan=document.getElementById('sec-pan'), guitar=document.getElementById('sec-guitar'), curpan=document.getElementById('curPanWrap');
   if(!bench||!nav||!wrap) return;
   const wide=window.matchMedia('(min-width:1660px)').matches, mid=window.matchMedia('(min-width:1280px)').matches;
-  if(wide){   // three columns: [Guitar / Current Panning · Current Tuning · Clipboard] | presets | [Bends]
+  if(wide){   // three columns: [Guitar / Panning / Current Panning · Current Tuning · Clipboard] | presets | [Bends]
     if(guitar && guitar.parentElement!==nav) nav.appendChild(guitar);
-    if(curpan && guitar && curpan.previousElementSibling!==guitar) guitar.after(curpan);   // Panning mode shows it in the Guitar slot
-    const anchor=curpan||guitar;
+    if(pan && guitar && pan.previousElementSibling!==guitar) guitar.after(pan);            // Panning controls ride above their readout (hidden in Classic)
+    if(curpan && pan && curpan.previousElementSibling!==pan) pan.after(curpan);
+    const anchor=curpan||pan||guitar;
     if(bench.parentElement!==nav || (anchor && bench.previousElementSibling!==anchor)){ if(anchor) anchor.after(bench); else nav.appendChild(bench); }
     if(hist && hist.previousElementSibling!==bench) bench.after(hist);
     if(rail && pedals && pedals.parentElement!==rail) rail.appendChild(pedals);
@@ -2596,6 +2616,7 @@ function placeBench(){
       if(hist && (hist.parentElement!==wrap || bench.nextElementSibling!==hist)) bench.after(hist);
     }
     if(pedals && pan){
+      if(pan.parentElement!==wrap) wrap.insertBefore(pan, (curpan && curpan.parentElement===wrap) ? curpan : null);   // bring Panning home from the wide sidebar
       if(pedals.parentElement!==wrap) wrap.insertBefore(pedals, pan);
       if(guitar && (guitar.parentElement!==pedals.parentElement || guitar.nextElementSibling!==pedals)) pedals.before(guitar);
     }
@@ -2612,7 +2633,7 @@ function updateSpy(){
   let cur=null, best=-1e9; const nr=document.getElementById('navRow');
   const sm=parseFloat(getComputedStyle(document.getElementById('fam-common')||document.body).scrollMarginTop)||0;
   const line=(nr && nr.offsetParent!==null && sm) ? sm+6 : 120;   // same source as the anchors' landing position, so a click always credits its own section
-  const spyEl=a=>{ const el=document.getElementById(a.getAttribute('href').slice(1)); return (el && el.offsetParent!==null && !el.closest('#rightRail')) ? el : null; };   // skip hidden sections (Panning in Classic mode) AND railed ones (fixed-position rects would poison the scroll math, and their links are hidden anyway)
+  const spyEl=a=>{ const el=document.getElementById(a.getAttribute('href').slice(1)); return (el && el.offsetParent!==null && !el.closest('#rightRail, #sideNav')) ? el : null; };   // skip hidden sections (Panning in Classic mode) AND railed/sidebar ones (fixed-position rects would poison the scroll math, and their links are hidden anyway)
   links.forEach(a=>{ const el=spyEl(a); if(!el) return; const top=el.getBoundingClientRect().top; if(top<=line && top>best){ best=top; cur=a.getAttribute('href'); } });
   if(!cur) cur='#fam-common';   // above the first section (page top) → the strip's first segment stays lit
   if(window.innerHeight+window.scrollY >= document.documentElement.scrollHeight-2){  // at page bottom → last VISIBLE in-flow section
@@ -3092,13 +3113,14 @@ function apShapeVal(x,shape){
 }
 function sendPan(pos){ if(!midiOut||settings.realBend) return; const st=0xB0|((settings.channel-1)&0x0F); pos.forEach((p,i)=> midiOut.send([st, settings.panCCs[i]&0x7F, panToCC(p)&0x7F])); }   // Classic: never send pan — those CC slots drive ALT TUNE pitch on that preset
 function applyPan(id){
-  const m=PANMODES.find(x=>x.id===id); if(!m) return;
+  const m=PANMODES.find(x=>x.id===id);
+  if(!m && !(id==='custom' && customPan)) return;   // 'custom' = the user's dragged layout
   const wasAuto=autoPanOn;
   if(autoPanOn) stopAutoPan();
   activePan=id;
   if(wasAuto){ renderPan(); }   // picking a preset exits auto-pan → revert the UI (Auto-pan button de-activates)
   else document.querySelectorAll('[data-pan]').forEach(b=> b.classList.toggle('on', b.dataset.pan===id));
-  panGlide(m.pos.slice());
+  panGlide((m?m.pos:customPan).slice());
 }
 function panGlide(target){
   const ms=Math.max(0, settings.panMs|0);
@@ -3183,7 +3205,8 @@ function ensurePanVisible(){ const wrap=document.getElementById('panWrap'); if(!
 function renderPan(){
   const wrap=document.getElementById('panWrap'); if(!wrap) return;
   const a=settings.ap, pm=settings.panMs|0;
-  const btns=PANMODES.map(m=>`<button class="${activePan===m.id?'on':''}" data-pan="${m.id}">${m.name}</button>`).join('');
+  const btns=PANMODES.map(m=>`<button class="${activePan===m.id?'on':''}" data-pan="${m.id}">${m.name}</button>`).join('')
+    +(customPan?`<button class="${activePan==='custom'?'on':''}" data-pan="custom" title="Your dragged ball layout — drag the Current Panning balls to shape it">Custom</button>`:'');
   const PG_OPTS=[[0,'Instant'],[500,'Short'],[2000,'Medium'],[5000,'Long']];
   const pgSnap = PG_OPTS.reduce((b,o)=> Math.abs(o[0]-pm)<Math.abs(b-pm)?o[0]:b, 0);   // nearest named option
   const glideBlock = `<div class="glide-row"><div class="apcap glide-cap">Pan glide time</div>
@@ -3271,10 +3294,41 @@ function updateOverview(posOverride){
   if(dots.children.length!==6){                    // build the six colored, numbered pan dots once…
     dots.innerHTML='';
     for(let i=0;i<6;i++){ const d=document.createElement('div'); d.className='cv-dot';
-      d.style.background=STR_COLORS[i]; d.style.top=((i+0.5)/6*100)+'%'; d.textContent=(i+1); dots.appendChild(d); }   // percentage rows scale with the field height
+      d.style.background=STR_COLORS[i]; d.style.top=((i+0.5)/6*100)+'%'; d.textContent=(i+1); wireDotDrag(d,i); dots.appendChild(d); }   // percentage rows scale with the field height
   }
-  const pan=posOverride||(PANMODES.find(m=>m.id===activePan)||PANMODES[0]).pos;
+  const pan=posOverride||(activePan==='custom'&&customPan)||(PANMODES.find(m=>m.id===activePan)||PANMODES[0]).pos;
   for(let i=0;i<6;i++){ const d=dots.children[i]; if(d) d.style.left=(8+(pan[i]+1)/2*84)+'%'; }   // …then slide L↔R
+}
+// Drag a ball L↔R to place that string in the stereo field live. Grabbing one exits auto-pan / takes over a
+// running glide and forks the LIVE positions into the "Custom" placement (a chip appears beside the presets).
+let panDragLast=0;
+function wireDotDrag(dot, i){
+  dot.addEventListener('pointerdown', e=>{
+    if(settings.realBend) return;                                        // Classic mode has no pan strip
+    e.preventDefault();
+    try{ dot.setPointerCapture(e.pointerId); }catch(_){}
+    if(panTimer){ clearInterval(panTimer); panTimer=null; }
+    if(autoPanOn) stopAutoPan();
+    if(activePan!=='custom' || !customPan) customPan=panCur.slice();
+    activePan='custom'; renderPan();
+    dot.classList.add('drag');
+    const field=dot.closest('.cv-panfield')||dot.parentElement;
+    const move=ev=>{
+      const r=field.getBoundingClientRect(); if(!r.width) return;
+      let p=(((ev.clientX-r.left)/r.width*100-8)/84)*2-1;                // inverse of the dots' 8%–92% lane
+      p=Math.max(-1,Math.min(1,p));
+      customPan[i]=p; panCur[i]=p;
+      dot.style.left=(8+(p+1)/2*84)+'%';
+      const now=performance.now();
+      if(now-panDragLast>=AUTOPAN_MS){ panDragLast=now; sendPan(panCur); }   // live MIDI, throttled like the auto-pan engine
+    };
+    const up=ev=>{ dot.classList.remove('drag'); try{ dot.releasePointerCapture(ev.pointerId); }catch(_){}
+      dot.removeEventListener('pointermove', move); dot.removeEventListener('pointerup', up); dot.removeEventListener('pointercancel', up);
+      sendPan(panCur); };
+    dot.addEventListener('pointermove', move);
+    dot.addEventListener('pointerup', up);
+    dot.addEventListener('pointercancel', up);
+  });
 }
 function notesOf(offsets){ return offsets.map((s,i)=>nameOf(STD_MIDI[i]+s).name).reverse().join(' '); }
 function apply(t){
@@ -3515,7 +3569,7 @@ function setRealBend(on){
       midiOut.send([0xB0|((settings.channel-1)&0x0F), (settings.bendCC||69)&0x7F, 127]);   // Panning mode rests at BEND CONTROL 100 — essential, or its depth writes are ignored
       sendInstFx(); send(baseOffsets); applyPan(activePan); }             // base back on the BEND DEPTH CCs + restore the chosen pan placement
   }
-  renderPedals(); renderPan(); renderModes(); renderEthnic();   // the Modes root picker gates F/F#/G on the active engine; Ethnic swaps its 12-string control
+  renderPedals(); renderPan(); renderModes(); renderEthnic(); renderHistory();   // the Modes root picker gates F/F#/G on the active engine; Ethnic swaps its 12-string control; Copy's enabled state tracks the mode
   toast((on ? 'Classic mode — glide bends' : 'Panning mode — stereo panning')+resetNote);
 }
 document.querySelectorAll('#rbSeg button').forEach(b=> b.addEventListener('click',()=>{ const on=b.dataset.rb==='1'; if(on===!!settings.realBend) return; setRealBend(on); renderRbSettings(); renderPanCcRows(); updateAbLock(); }));   // re-clicking the active mode is a no-op; a real flip swaps only the pan/alt CC rows (pitch-row edits survive) + refreshes the scoop-control lock
@@ -3667,11 +3721,19 @@ function logHistory(name, chord){
   if(H.mode==='rolling' && history.length>H.n) history=history.slice(-H.n);   // rolling window keeps the last N
   renderHistory();
 }
+// Panning-mode pan state as text — preset name, auto-pan character + rate, or the dragged Custom layout per string.
+function panPosLbl(p){ const v=Math.round(Math.abs(p)*50); return v===0?'C':(p<0?'L':'R')+v; }   // matches the VG-800's L50…C…R50 readout
+function panSettingDesc(){
+  if(autoPanOn){ const a=settings.ap, nm=(AP_CHARLIST.find(([id])=>id===a.char)||[,'Auto'])[1]; return 'Auto-pan '+nm+' · '+(a.mode==='sync'? a.bpm+' BPM '+a.div : rateCycLbl(a.rate)); }
+  if(activePan==='custom' && customPan) return 'Custom '+customPan.map(panPosLbl).join(' ');
+  const m=PANMODES.find(x=>x.id===activePan); return m?m.name:'';
+}
 // Always dashes; prefix the current key ONLY if a chord was played in the selection (tunings carry their own root, so a key prefix there would mislead).
 function formatHistory(items){
   const body=items.map(i=> i.name + (settings.hist.model && i.model ? ' ('+i.model+')' : '')).join(' - ');
-  if(items.some(i=>i.chord) && chordKeyOn()) return '['+settings.keyRoot+' '+settings.keyScale.toLowerCase()+'] '+body;
-  return body;
+  const pan=!settings.realBend && panSettingDesc() ? ' [pan: '+panSettingDesc()+']' : '';   // Panning mode: the stereo placement rides along
+  if(items.some(i=>i.chord) && chordKeyOn()) return '['+settings.keyRoot+' '+settings.keyScale.toLowerCase()+'] '+body+pan;
+  return body+pan;
 }
 function copyHistText(text){
   if(!text){ toast('Nothing to copy yet', true); return; }
@@ -3685,9 +3747,10 @@ function renderHistory(){
   const chips = history.length
     ? history.map(h=>`<span class="hist-chip">${escHtml(h.name)}</span>`).join('')
     : `<span class="hist-empty">${manual&&!histTracking?'Press Start, then play…':'Click on a tuning to log it…'}</span>`;
-  const empty=!history.length, dis=empty?' disabled':'';   // nothing logged → Copy/Clear greyed out
+  const empty=!history.length, dis=empty?' disabled':'';   // nothing logged → Clear greyed out
+  const copyDis=(empty && settings.realBend)?' disabled':'';   // Panning mode: Copy stays live — it can carry just the pan setting
   let ctrls = (manual && !histTracking) ? `<button class="hist-btn go" data-hist="start">● Start</button>`
-                                        : `<button class="hist-btn" data-hist="copy"${dis}>${COPY_ICO}Copy</button>`;
+                                        : `<button class="hist-btn" data-hist="copy"${copyDis}>${COPY_ICO}Copy</button>`;
   ctrls += `<button class="hist-btn ghost" data-hist="clear"${dis}>${CLEAR_ICO}Clear</button>`;
   wrap.innerHTML=`<div class="hist-strip${recording?' rec':''}">${chips}</div><div class="hist-ctrls">${ctrls}</div>`;
   wrap.querySelector('[data-hist="clear"]').addEventListener('click', ()=>{ history=[]; histTracking=false; renderHistory(); });
@@ -3704,6 +3767,7 @@ function applyHistHidden(){                         // the eye toggle next to "C
 document.getElementById('histHide').addEventListener('click', ()=>{ settings.hist.hidden=!settings.hist.hidden; saveSettingsLS(); applyHistHidden(); });
 function histCopyAction(){
   const H=settings.hist;
+  if(!history.length && !settings.realBend && panSettingDesc()){ copyHistText('[pan: '+panSettingDesc()+']'); return; }   // nothing played → copy just the pan setting
   if(H.mode==='rolling' && H.timeline){ openTimelineModal(); return; }    // Rolling + Trim-on-copy → draggable timeline
   if(!history.length){ toast('Nothing to copy yet', true); return; }
   copyHistText(formatHistory(history));
