@@ -735,8 +735,7 @@
   .panmode-seg .pm-row button { flex: 0 0 auto; padding: 7px 12px; }
   .panmode-seg .pm-div { height: 1px; background: var(--edge); margin: 2px 6px; }
   .panmode-seg .pm-row .trem { flex: 1 1 auto; }
-  .panmode-seg sup { font-size: 8px; margin-left: 2px; opacity: 0.85; }   /* which mirror of a paired preset is live */
-  .seg button.on.v2 { background: var(--ok); }                            /* mirror variant 2 wears the alternate colour */
+  .seg button.on.v2 { background: var(--ok); }   /* mirror variant 2 wears the alternate colour — the only variant marker, so the button width never shifts */
   /* Tremolo body — fills the glide-time slot; Free/Sync rides the speed label as a mini seg */
   .mini-seg { display: inline-flex; padding: 2px; gap: 2px; margin-left: 8px; vertical-align: middle; border-radius: 7px; }
   .mini-seg button { flex: 0 0 auto; padding: 2px 8px; font-size: 8.5px; }
@@ -1379,7 +1378,7 @@
       <summary>Panning &amp; tremolo</summary>
       <div class="docgrp-body"><ul>
         <li>Available in <b>Panning mode</b> only (<em>⚙ Settings → Mode</em>) — in Classic those CC slots carry the ALT&nbsp;TUNE pitches, so the section hides.</li>
-        <li><b>Placements</b> (Center, Narrow, Equal Spread, Pairs, Split, Zig-Zag) put each string in the stereo field — every mode but Center has a mirrored twin: click again to <b>flip the sides</b> (the ¹/² marker and the alternate colour show which is live). Clicking a mode <b>glides</b> the strings so you feel the sweep; the <em>Pan glide</em> toggle sets the time (Instant → Long). <b>Custom</b> freezes the live positions for hand-editing — drag the <b>Current Panning balls</b> to place strings yourself.</li>
+        <li><b>Placements</b> (Center, Narrow, Equal Spread, Pairs, Split, Zig-Zag) put each string in the stereo field — every mode but Center has a mirrored twin: click again to <b>flip the sides</b> (the alternate colour shows the flipped one is live). Clicking a mode <b>glides</b> the strings so you feel the sweep; the <em>Pan glide</em> toggle sets the time (Instant → Long). <b>Custom</b> freezes the live positions for hand-editing — drag the <b>Current Panning balls</b> to place strings yourself.</li>
         <li><b>Tremolo</b> — the last chip in the row: each string runs its own pan LFO. Set the <b>speed</b> (Free Hz or Tempo-synced BPM + division), pick a <b>character</b> (Rotate, Leslie, Fan Breathe, Ping-Pong, Drift — hover for what each does), then fine-tune Width, Phase and Shape. Pick any placement to stop it.</li>
       </ul></div>
     </details>
@@ -3218,7 +3217,7 @@ function renderPan(){
   // Placement row — paired presets collapse into one cycling button; Tremolo (the pan LFO) closes the same row
   const grpBtns=PAN_GROUPS.map(g=>{
     const k=g.ids.indexOf(activePan), on=!autoPanOn&&k>=0;
-    return `<button class="${on?'on':''}${on&&k>0?' v2':''}" data-pangrp="${g.ids.join(',')}" title="${g.ids.length>1?g.label+' — click again to flip the sides':g.label}">${g.label}${g.ids.length>1&&on?`<sup>${k+1}</sup>`:''}</button>`;
+    return `<button class="${on?'on':''}${on&&k>0?' v2':''}" data-pangrp="${g.ids.join(',')}" title="${g.ids.length>1?g.label+' — click again to flip the sides':g.label}">${g.label}</button>`;
   }).join('');
   const customBtn=`<button class="${!autoPanOn&&activePan==='custom'?'on':''}" data-pan="custom" title="Custom — drag the Current Panning balls to place each string by hand">Custom</button>`;
   const tremBtn=`<button class="trem${autoPanOn?' on':''}" data-tremolo title="Tremolo — each string sweeps the stereo field on its own LFO">Tremolo</button>`;
