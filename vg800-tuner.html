@@ -483,7 +483,9 @@
   #rightRail { display: none; }
   @media (min-width: 1660px) {
     /* Three columns: [Current Tuning / Guitar / Clipboard] left, presets center, Bends alone right. */
-    #rightRail { display: block; position: fixed; top: calc(var(--hdr-h, 74px) + 8px); left: auto; right: calc(50% + 428px); width: min(400px, calc(50vw - 428px - 16px)); max-height: calc(100vh - var(--hdr-h, 74px) - 28px); overflow-y: auto; z-index: 40; padding: 14px 2px 8px; scrollbar-width: none; }   /* 14px top padding = room for the Map button riding the legend line (panel position unchanged) */
+    #rightRail { display: flex; flex-direction: column; position: fixed; top: calc(var(--hdr-h, 74px) + 8px); left: auto; right: calc(50% + 428px); width: min(400px, calc(50vw - 428px - 16px)); height: calc(100vh - var(--hdr-h, 74px) - 28px); overflow-y: auto; z-index: 40; padding: 14px 2px 8px; scrollbar-width: none; }   /* 14px top padding = room for the Map button riding the legend line; fixed height + flex so the Clipboard can hug the bottom corner */
+    #rightRail #sec-pedals { flex: 0 0 auto; }
+    #rightRail #sec-history { flex: 0 0 auto; margin-top: auto; }   /* Clipboard pinned to the bottom-left corner */
     #rightRail::-webkit-scrollbar { width: 0; height: 0; }
     /* FLAT — no drop shadows in the rail (state glows on engaged pedals stay) */
     #rightRail .panel, #rightRail .ps-adjust, #rightRail .map-btn, #rightRail .seg button.on { box-shadow: none; }
@@ -727,12 +729,14 @@
   .panmode { font-family: var(--mono); font-size: 11px; font-weight: 700; padding: 10px 8px; border-radius: 8px; cursor: pointer; border: 1px solid var(--edge); background: var(--wood); color: var(--bone-dim); transition: all .12s; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 5px rgba(0,0,0,0.28); }
   .panmode:hover { border-color: var(--brass); color: var(--bone); background: var(--felt); transform: translateY(-1px); }
   .panmode.on { border-color: var(--brass); color: var(--brass); background: var(--felt); box-shadow: inset 0 0 0 1px var(--brass-glow); }
-  /* Pan placement row — one segmented switch: cycling preset buttons, Custom, then Tremolo behind a thin divider */
-  .panmode-seg { flex-wrap: wrap; justify-content: center; margin-bottom: 12px; }
-  .panmode-seg button { flex: 0 0 auto; padding: 7px 12px; }
+  /* Pan placement switch — two rows inside one seg: cycling presets + Custom, a rule, then Tremolo full-width */
+  .panmode-seg { flex-direction: column; align-items: stretch; gap: 3px; margin-bottom: 12px; }
+  .panmode-seg .pm-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; }
+  .panmode-seg .pm-row button { flex: 0 0 auto; padding: 7px 12px; }
+  .panmode-seg .pm-div { height: 1px; background: var(--edge); margin: 2px 6px; }
+  .panmode-seg .pm-row .trem { flex: 1 1 auto; }
   .panmode-seg sup { font-size: 8px; margin-left: 2px; opacity: 0.85; }   /* which mirror of a paired preset is live */
-  .panmode-seg .trem { position: relative; margin-left: 9px; }
-  .panmode-seg .trem::before { content: ""; position: absolute; left: -5.5px; top: 18%; bottom: 18%; width: 1px; background: var(--edge); }
+  .seg button.on.v2 { background: var(--ok); }                            /* mirror variant 2 wears the alternate colour */
   /* Tremolo body — fills the glide-time slot; Free/Sync rides the speed label as a mini seg */
   .mini-seg { display: inline-flex; padding: 2px; gap: 2px; margin-left: 8px; vertical-align: middle; border-radius: 7px; }
   .mini-seg button { flex: 0 0 auto; padding: 2px 8px; font-size: 8.5px; }
@@ -751,7 +755,11 @@
   .apcap { font-family: var(--mono); font-size: 9.5px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--bone-faint); margin: 14px 2px 8px; }
   .apdivs { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
   .apdivs .panmode { flex: 1 1 auto; padding: 6px 4px; font-size: 9.5px; }
-  .apduo { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  /* Leslie rotors — one compact grid: Horn/Drum rows × Spread/Speed columns, values inline */
+  .leslie-grid { display: grid; grid-template-columns: auto 1fr 1fr; gap: 6px 9px; align-items: center; margin-top: 11px; }
+  .leslie-grid .lcell { display: flex; align-items: center; gap: 6px; min-width: 0; }
+  .leslie-grid .lcell .slider { flex: 1 1 auto; min-width: 0; width: auto; }
+  .leslie-grid .lcell b { font-family: var(--mono); font-size: 10px; color: var(--brass); flex: 0 0 auto; min-width: 36px; text-align: right; }
   /* Segmented toggle (Free/Sync, Shape) — deliberately lighter than the preset chips */
   .seg { display: flex; gap: 3px; padding: 3px; background: var(--ink); border: 1px solid var(--edge); border-radius: 9px; }
   .seg button { flex: 1; font-family: var(--mono); font-size: 10.5px; font-weight: 700; padding: 7px 6px; border: none; border-radius: 6px; background: transparent; color: var(--bone-dim); cursor: pointer; letter-spacing: 0.3px; transition: color .12s, background .12s; }
@@ -1371,7 +1379,7 @@
       <summary>Panning &amp; tremolo</summary>
       <div class="docgrp-body"><ul>
         <li>Available in <b>Panning mode</b> only (<em>⚙ Settings → Mode</em>) — in Classic those CC slots carry the ALT&nbsp;TUNE pitches, so the section hides.</li>
-        <li><b>Placements</b> (Center, Narrow, Equal Spread, Pairs, Split, Zig-Zag) put each string in the stereo field — clicking a paired mode again <b>flips its mirror image</b> (the small ¹/² shows which). Clicking a mode <b>glides</b> the strings so you feel the sweep; the <em>Pan glide</em> toggle sets the time (Instant → Long). Drag the <b>Current Panning balls</b> to place strings by hand — your layout appears as a <b>Custom</b> chip.</li>
+        <li><b>Placements</b> (Center, Narrow, Equal Spread, Pairs, Split, Zig-Zag) put each string in the stereo field — every mode but Center has a mirrored twin: click again to <b>flip the sides</b> (the ¹/² marker and the alternate colour show which is live). Clicking a mode <b>glides</b> the strings so you feel the sweep; the <em>Pan glide</em> toggle sets the time (Instant → Long). <b>Custom</b> freezes the live positions for hand-editing — drag the <b>Current Panning balls</b> to place strings yourself.</li>
         <li><b>Tremolo</b> — the last chip in the row: each string runs its own pan LFO. Set the <b>speed</b> (Free Hz or Tempo-synced BPM + division), pick a <b>character</b> (Rotate, Leslie, Fan Breathe, Ping-Pong, Drift — hover for what each does), then fine-tune Width, Phase and Shape. Pick any placement to stop it.</li>
       </ul></div>
     </details>
@@ -1812,10 +1820,12 @@ function escAttr(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;')
 let activePan='center', customPan=null;   // customPan = per-string positions forked by dragging the Current Panning balls
 const PANMODES=[
   {id:'center',  name:'Center',         pos:[0,0,0,0,0,0]},
-  {id:'narrow',  name:'Narrow',         pos:[0.5,0.3,0.1,-0.1,-0.3,-0.5]}, // gentle spread
+  {id:'narrow',  name:'Narrow 1',       pos:[0.5,0.3,0.1,-0.1,-0.3,-0.5]}, // gentle spread
+  {id:'narrow2', name:'Narrow 2',       pos:[-0.5,-0.3,-0.1,0.1,0.3,0.5]},
   {id:'spread1', name:'Equal Spread 1', pos:[1,0.6,0.2,-0.2,-0.6,-1]},   // low E left → high E right, none centered
   {id:'spread2', name:'Equal Spread 2', pos:[-1,-0.6,-0.2,0.2,0.6,1]},   // kept next to Equal Spread 1
-  {id:'pairs',   name:'Pairs',          pos:[-1,-1,0,0,1,1]},            // high pair L · mid pair C · low pair R
+  {id:'pairs',   name:'Pairs 1',        pos:[-1,-1,0,0,1,1]},            // high pair L · mid pair C · low pair R
+  {id:'pairs2',  name:'Pairs 2',        pos:[1,1,0,0,-1,-1]},
   {id:'split1',  name:'Split 1',        pos:[-1,-1,-1,1,1,1]},           // top 3 (high) left, bottom 3 (low) right
   {id:'split2',  name:'Split 2',        pos:[1,1,1,-1,-1,-1]},
   {id:'zig1',    name:'Zig-Zag 1',      pos:[-1,1,-1,1,-1,1]},           // hard-alternate L/R per string
@@ -1824,9 +1834,9 @@ const PANMODES=[
 // Placement-row buttons — mirrored presets share one button that cycles its variants on repeat clicks.
 const PAN_GROUPS=[
   {label:'Center', ids:['center']},
-  {label:'Narrow', ids:['narrow']},
+  {label:'Narrow', ids:['narrow','narrow2']},
   {label:'Equal Spread', ids:['spread1','spread2']},
-  {label:'Pairs', ids:['pairs']},
+  {label:'Pairs', ids:['pairs','pairs2']},
   {label:'Split', ids:['split1','split2']},
   {label:'Zig-Zag', ids:['zig1','zig2']},
 ];
@@ -2601,8 +2611,8 @@ function placeBench(){
     if(curpan && pan && curpan.previousElementSibling!==pan) pan.after(curpan);
     const anchor=curpan||pan||guitar;
     if(bench.parentElement!==nav || (anchor && bench.previousElementSibling!==anchor)){ if(anchor) anchor.after(bench); else nav.appendChild(bench); }
-    if(hist && hist.previousElementSibling!==bench) bench.after(hist);
     if(rail && pedals && pedals.parentElement!==rail) rail.appendChild(pedals);
+    if(hist && rail && pedals && (hist.parentElement!==rail || hist.previousElementSibling!==pedals)) rail.appendChild(hist);   // Clipboard parks at the bottom-left corner
     if(typeof syncGtrH==='function') syncGtrH();
   } else {
     if(mid){   // narrow sidebar keeps the readouts; Guitar + Bends flow inline in the center
@@ -3113,6 +3123,7 @@ function apShapeVal(x,shape){
 function sendPan(pos){ if(!midiOut||settings.realBend) return; const st=0xB0|((settings.channel-1)&0x0F); pos.forEach((p,i)=> midiOut.send([st, settings.panCCs[i]&0x7F, panToCC(p)&0x7F])); }   // Classic: never send pan — those CC slots drive ALT TUNE pitch on that preset
 function applyPan(id){
   const m=PANMODES.find(x=>x.id===id);
+  if(id==='custom' && !customPan) customPan=panCur.slice();   // first Custom tap freezes the live positions for hand-editing
   if(!m && !(id==='custom' && customPan)) return;   // 'custom' = the user's dragged layout
   const wasAuto=autoPanOn;
   if(autoPanOn) stopAutoPan();
@@ -3207,24 +3218,23 @@ function renderPan(){
   // Placement row — paired presets collapse into one cycling button; Tremolo (the pan LFO) closes the same row
   const grpBtns=PAN_GROUPS.map(g=>{
     const k=g.ids.indexOf(activePan), on=!autoPanOn&&k>=0;
-    return `<button class="${on?'on':''}" data-pangrp="${g.ids.join(',')}" title="${g.ids.length>1?g.label+' — click again to flip the sides':g.label}">${g.label}${g.ids.length>1&&on?`<sup>${k+1}</sup>`:''}</button>`;
+    return `<button class="${on?'on':''}${on&&k>0?' v2':''}" data-pangrp="${g.ids.join(',')}" title="${g.ids.length>1?g.label+' — click again to flip the sides':g.label}">${g.label}${g.ids.length>1&&on?`<sup>${k+1}</sup>`:''}</button>`;
   }).join('');
-  const customBtn=customPan?`<button class="${!autoPanOn&&activePan==='custom'?'on':''}" data-pan="custom" title="Your dragged ball layout — drag the Current Panning balls to shape it">Custom</button>`:'';
+  const customBtn=`<button class="${!autoPanOn&&activePan==='custom'?'on':''}" data-pan="custom" title="Custom — drag the Current Panning balls to place each string by hand">Custom</button>`;
   const tremBtn=`<button class="trem${autoPanOn?' on':''}" data-tremolo title="Tremolo — each string sweeps the stereo field on its own LFO">Tremolo</button>`;
   const PG_OPTS=[[0,'Instant'],[500,'Short'],[2000,'Medium'],[5000,'Long']];
   const pgSnap = PG_OPTS.reduce((b,o)=> Math.abs(o[0]-pm)<Math.abs(b-pm)?o[0]:b, 0);   // nearest named option
   const charBtns=AP_CHARLIST.map(([id,nm])=>`<button class="panmode${a.char===id?' on':''}" data-char="${id}" title="${AP_CHARDESC[id]||''}">${nm}</button>`).join('');
   const divBtns=AP_DIVS.map(([id])=>`<button class="panmode${a.div===id?' on':''}" data-div="${id}">${id}</button>`).join('');
   const leslieBlock = a.char==='leslie' ? `
-      <div class="apcap">Leslie horn · top 3</div>
-      <div class="apduo">
-        <div><div class="pg-lbl"><span>Spread</span><b id="apLTSv">${Math.round(a.lTopSpread*100)}%</b></div><input type="range" class="slider" id="apLTS" min="0" max="100" value="${Math.round(a.lTopSpread*100)}"></div>
-        <div><div class="pg-lbl"><span>Speed</span><b id="apLTZv">${a.lTopSpeed.toFixed(2)}×</b></div><input type="range" class="slider" id="apLTZ" min="25" max="200" value="${Math.round(a.lTopSpeed*100)}"></div>
-      </div>
-      <div class="apcap">Leslie bass drum · bottom 3</div>
-      <div class="apduo">
-        <div><div class="pg-lbl"><span>Spread</span><b id="apLBSv">${Math.round(a.lBotSpread*100)}%</b></div><input type="range" class="slider" id="apLBS" min="0" max="100" value="${Math.round(a.lBotSpread*100)}"></div>
-        <div><div class="pg-lbl"><span>Speed</span><b id="apLBZv">${a.lBotSpeed.toFixed(2)}×</b></div><input type="range" class="slider" id="apLBZ" min="25" max="200" value="${Math.round(a.lBotSpeed*100)}"></div>
+      <div class="leslie-grid">
+        <i class="tcap"></i><i class="tcap">Spread</i><i class="tcap">Speed</i>
+        <i class="tcap lrow" title="Treble horn — top 3 strings">Horn</i>
+        <span class="lcell"><input type="range" class="slider" id="apLTS" min="0" max="100" value="${Math.round(a.lTopSpread*100)}"><b id="apLTSv">${Math.round(a.lTopSpread*100)}%</b></span>
+        <span class="lcell"><input type="range" class="slider" id="apLTZ" min="25" max="200" value="${Math.round(a.lTopSpeed*100)}"><b id="apLTZv">${a.lTopSpeed.toFixed(2)}×</b></span>
+        <i class="tcap lrow" title="Bass drum — bottom 3 strings">Drum</i>
+        <span class="lcell"><input type="range" class="slider" id="apLBS" min="0" max="100" value="${Math.round(a.lBotSpread*100)}"><b id="apLBSv">${Math.round(a.lBotSpread*100)}%</b></span>
+        <span class="lcell"><input type="range" class="slider" id="apLBZ" min="25" max="200" value="${Math.round(a.lBotSpeed*100)}"><b id="apLBZv">${a.lBotSpeed.toFixed(2)}×</b></span>
       </div>` : '';
   const shapeBtns = AP_SHAPES.map(s=>`<button class="${a.shape===s.id?'on':''}" data-shape="${s.id}" title="${s.name}">${s.ico||s.label}</button>`).join('');
   const hasSpread = a.char==='rotate' || a.char==='leslie';   // others are always full-spread
@@ -3248,7 +3258,7 @@ function renderPan(){
         ${leslieBlock?`<div class="ap-rv">${leslieBlock}</div>`:''}</div>`
     : `<div class="glide-row"><div class="apcap glide-cap">Pan glide time</div>
         <div class="seg">${PG_OPTS.map(([v,nm])=>`<button class="${pgSnap===v?'on':''}" data-glide="${v}">${nm}</button>`).join('')}</div></div>`;
-  wrap.innerHTML=`<div class="seg panmode-seg">${grpBtns}${customBtn}${tremBtn}</div>${slot}`;
+  wrap.innerHTML=`<div class="seg panmode-seg"><div class="pm-row">${grpBtns}${customBtn}</div><div class="pm-div"></div><div class="pm-row">${tremBtn}</div></div>${slot}`;
   wrap.querySelectorAll('[data-pangrp]').forEach(b=> b.addEventListener('click',()=>{
     const ids=b.dataset.pangrp.split(','), k=ids.indexOf(activePan);
     applyPan(autoPanOn||k<0 ? ids[0] : ids[(k+1)%ids.length]);           // active paired button → cycle to its mirror
