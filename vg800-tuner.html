@@ -6,6 +6,13 @@
 <script>try{var t=localStorage.getItem('vg800_theme');if(t==='workbench')t='dark';if(t==='boss-blue'||t==='cs1')t='cs3';document.documentElement.dataset.theme=t||'dd500';if(localStorage.getItem('vg800_compact')==='1')document.documentElement.classList.add('compact');if((JSON.parse(localStorage.getItem('vg800_settings')||'{}')||{}).realBend!==false)document.documentElement.classList.add('realbend');}catch(e){}</script>
 <title>VG800 MIDI Control</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="theme-color" content="#cbc1a8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">   <!-- not black-translucent: that pulls the page under the iOS clock and clips the header buttons -->
+<meta name="apple-mobile-web-app-title" content="VG800">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -919,6 +926,7 @@
   .about-btn { width: 42px; height: 42px; flex-shrink: 0; background: none; border: 1px solid var(--edge); border-radius: 50%; color: var(--bone-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color .15s, color .15s, transform .15s; }
   .about-btn:hover { border-color: var(--brass-deep); color: var(--brass); transform: translateY(-1px); }
   .about-btn svg { width: 20px; height: 20px; }
+  .about-btn[hidden] { display: none; }   /* the flex above would otherwise defeat the hidden attribute on #installBtn */
   @media (max-width: 560px) {   /* shrink the header buttons a touch so all four fit comfortably */
     .hdr-btns { gap: 8px; }
     .gear, .themebtn, .jumpbtn, .about-btn { width: 36px; height: 36px; }
@@ -1067,6 +1075,7 @@
           </div>
         </div>
       </div>
+      <button class="about-btn" id="installBtn" title="Install as an app" aria-label="Install as an app" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 11l4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></button>
       <button class="about-btn" id="aboutBtn" title="About & help" aria-label="About & help"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></button>
       <button class="gear" id="settingsBtn" title="MIDI settings" aria-label="MIDI settings">⚙</button>
     </div>
@@ -3588,7 +3597,14 @@ function updateAbLock(){ const rb=!!settings.realBend, on=document.getElementByI
   if(box){ box.classList.toggle('locked', !on||rb); box.querySelectorAll('input,select').forEach(el=> el.disabled=!on||rb); } }
 document.getElementById('autoBendChk').addEventListener('change', updateAbLock);
 function markThemeBtns(){ const t=document.documentElement.dataset.theme||'dd500'; document.querySelectorAll('[data-theme-set]').forEach(b=>b.classList.toggle('on', b.dataset.themeSet===t)); }
-function applyTheme(t){ document.documentElement.dataset.theme=t; try{ localStorage.setItem('vg800_theme',t); }catch(e){} markThemeBtns(); }
+function applyTheme(t){ document.documentElement.dataset.theme=t; try{ localStorage.setItem('vg800_theme',t); }catch(e){} markThemeBtns(); syncThemeColor(); }
+/* Installed as a PWA the OS paints its chrome with theme-color, so it has to track the live theme. */
+function syncThemeColor(){
+  const m=document.querySelector('meta[name="theme-color"]'); if(!m) return;
+  const c=getComputedStyle(document.documentElement).getPropertyValue('--ink').trim();
+  if(c) m.setAttribute('content',c);
+}
+syncThemeColor();
 /* ===== Themed dropdowns — one shared popover replaces every stock <select> list (select.num + the MIDI port
    picker). The native <select> stays the source of truth: picking an item sets .value and dispatches 'change',
    so all existing handlers keep working; keyboard arrows on a focused select still work natively. Touch too. ===== */
@@ -3704,6 +3720,29 @@ function toast(m,err,action){
   t.classList.toggle('err',!!err); t.classList.toggle('act',!!action); t.classList.add('show');
   clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('show','act'), action?6000:2000);
 }
+
+/* ===== PWA — offline cache + install ===== */
+if('serviceWorker' in navigator && location.protocol!=='file:'){
+  window.addEventListener('load',()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
+  /* The worker caches the app then refreshes it in the background, so a deploy only lands
+     on the next launch. Offer the reload rather than yanking the page out from under a session. */
+  let reloading=false;
+  navigator.serviceWorker.addEventListener('message',e=>{
+    if(!e.data || e.data.type!=='update-ready' || reloading) return;
+    toast('New version available', false, {label:'Reload', fn:()=>{ reloading=true; location.reload(); }});
+  });
+}
+
+let installPrompt=null;
+const installBtn=document.getElementById('installBtn');
+window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); installPrompt=e; if(installBtn) installBtn.hidden=false; });
+if(installBtn) installBtn.addEventListener('click',async()=>{
+  if(!installPrompt) return;
+  installPrompt.prompt();
+  await installPrompt.userChoice;
+  installPrompt=null; installBtn.hidden=true;
+});
+window.addEventListener('appinstalled',()=>{ installPrompt=null; if(installBtn) installBtn.hidden=true; toast('Installed'); });
 
 /* ===== Played history — logs every sound-changing selection (tunings, chords, ethnic, steel, transpose) ===== */
 let history=[], histTracking=false;          // histTracking = a Manual-mode capture session is live

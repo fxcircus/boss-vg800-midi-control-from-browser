@@ -187,6 +187,19 @@ Then open **http://localhost:8765/vg800-tuner.html** in **Chrome or Edge**, allo
 
 ---
 
+## Install it as an app
+
+The app ships a web manifest and a service worker, so it can be installed and launched fullscreen with no browser chrome.
+
+- **Chrome / Edge (desktop and Android):** an **install** icon appears in the header once the site qualifies — click it, or use the browser's own install button in the address bar.
+- **iOS Safari:** **Share → Add to Home Screen**.
+
+Once installed, the service worker keeps the whole app cached, so it opens instantly and works with no network at all. (Web MIDI still needs Chromium — an offline install on iOS gives you the tuner and chord reference, not device control.)
+
+Updates land on the next launch: the worker serves the cached copy immediately, refreshes it in the background, and shows a **Reload** toast when a newer version is ready, rather than reloading mid-session.
+
+---
+
 ## Troubleshooting
 
 - **Nothing changes?** Check the **green dot** on ⚙ (MIDI connected), that the app's **Mode** (⚙ Settings) matches the preset loaded on the VG-800 — Classic wants ALT TUNE ON with the 16-slot table; Panning wants **BEND CONTROL = 100** — and that the app's CC numbers match your assigns.
