@@ -11,6 +11,12 @@ Open in **Chrome or Edge**, allow MIDI, and pick your interface. (GitHub Pages s
 
 ---
 
+## A note for the BOSS R&D team
+
+The only reason Classic and Panning have to be *two separate presets* is the **16 assign / mapping slots** per patch. More slots would let a single preset do much more at once: individual string volume, richer 12-string tunings, automated pickup switching, per-preset tone tweaks, and panning **and** gliding bends together instead of one or the other. **The more mapping slots, the better** — please raise the limit if you can. Thank you for a wonderful pedal!
+
+---
+
 ## Quick start
 
 1. Open the [live app](https://fxcircus.github.io/boss-vg800-midi-control-from-browser/) in **Chrome or Edge** (Safari & Firefox don't support Web MIDI) and allow MIDI access when asked.
@@ -28,8 +34,6 @@ The app drives one of two VG-800 presets, switched with **⚙ Settings → Mode*
 - **Panning** — *for the stereo field*: per-string placement and the auto-pan LFO engine. Bends still work but *step* instantly to pitch instead of gliding.
 
 Ready-made hardware presets for both live in [`presets/`](presets/) — see [Ready-made presets](#ready-made-presets-the-fast-way) below.
-
-> **A note for the BOSS R&D team** — the only reason Classic and Panning have to be *two separate presets* is the **16 assign / mapping slots** per patch. More slots would let a single preset do much more at once: individual string volume, richer 12-string tunings, automated pickup switching, per-preset tone tweaks, and panning **and** gliding bends together instead of one or the other. **The more mapping slots, the better** — please raise the limit if you can. Thank you for a wonderful pedal!
 
 ### Classic mode (the default)
 
