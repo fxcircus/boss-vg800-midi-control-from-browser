@@ -891,6 +891,7 @@
   .ch { margin: 16px 0; }
   .subhd { font-family: var(--mono); font-size: 10px; color: var(--brass-deep); letter-spacing: 2px; text-transform: uppercase; margin: 20px 0 10px; }
   .note-hint { font-size: 11px; color: var(--bone-faint); margin: 14px 0 0; line-height: 1.5; }
+  .note-hint a { color: var(--brass); }
 
   .ab-slider { margin-bottom: 15px; }
   .ab-controls { transition: opacity .18s; }
@@ -1214,6 +1215,7 @@
       <summary>Mode</summary>
       <div class="settgrp-body">
         <div class="hist-set-row"><label class="chord-key-lbl">Mode</label><div class="seg" id="rbSeg"><button data-rb="1">Classic</button><button data-rb="0">Panning</button></div></div>
+        <p class="note-hint"><b>Download the ready-made preset for your mode</b> and import it in Boss Tone Studio → <em>LIBRARIAN</em>, then write it to the pedal: <a href="presets/royClassic.tsl" download><b>royClassic.tsl</b></a> (Classic) · <a href="presets/royPanning.tsl" download><b>royPanning.tsl</b></a> (Panning).</p>
         <p class="note-hint"><em>Classic</em> (default) drives the VG-800 preset where <em>ALT&nbsp;TUNE</em> (User mode, saved ON in the patch) carries the tuning, and each bend is the pedal's true two-step gesture: set the target <em>BEND&nbsp;DEPTH</em>, then sweep <em>BEND&nbsp;CONTROL</em> 0→100 so the pitch <b>glides</b> into the note (and glides back on release) instead of stepping. <b>Panning is unavailable</b> in Classic — its CC slots drive the ALT&nbsp;TUNE pitches instead (the VG-800 has only 16 assign slots).<br><br><em>Panning</em> drives the older preset: bends write straight to BEND&nbsp;DEPTH (the note steps to pitch), and CC 71–76 place each string in the stereo field.<br><br>Classic mapping: <em>STR&nbsp;BEND(A) · DEPTH&nbsp;1–6</em> ← CC 30, 31, 64, 65, 66, 68 (−12/+12) · <em>BEND&nbsp;CONTROL</em> ← CC 69 (0–100) · <em>INST · TYPE</em> ← CC 70 (MIN E.GUITAR / MAX ACOUSTIC) · <em>ALT&nbsp;TUNE(A) · PITCH&nbsp;1–6</em> ← CC 71–76 (<em>−24/+24</em>) · <em>INST:E.GTR · TYPE</em> ← CC 77 · <em>INST:ACOUSTIC · TYPE</em> ← CC 78. <b>12-string has no CC</b> here — toggle it on the pedal (▲) — and <em>ALT&nbsp;TUNE ON</em> is stored in the patch itself.<br><br><em>Guitar model</em> (Auto): each tuning selects its instrument model with two messages — <em>INST TYPE</em> first (electric vs acoustic), then the model on CC 77/78. <em>Bend time</em> now lives in the <b>Bends</b> panel.</p>
       </div>
     </details>
