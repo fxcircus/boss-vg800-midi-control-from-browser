@@ -1035,6 +1035,9 @@
 
   @media (max-width: 480px) {
     body { padding: 22px 14px 50px; }
+    /* Stack the header onto two rows so the button cluster stops crowding the title */
+    header { flex-direction: column; align-items: stretch; gap: 12px; }
+    .hdr-btns { align-self: flex-end; }
     .mast h1 { font-size: 38px; }
     .grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 9px; }
     .card-off { opacity: 1; max-height: 20px; }
