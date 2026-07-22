@@ -29,6 +29,8 @@ The app drives one of two VG-800 presets, switched with **⚙ Settings → Mode*
 
 Ready-made hardware presets for both live in [`presets/`](presets/) — see [Ready-made presets](#ready-made-presets-the-fast-way) below.
 
+> **A note for the BOSS R&D team** — the only reason Classic and Panning have to be *two separate presets* is the **16 assign / mapping slots** per patch. More slots would let a single preset do much more at once: individual string volume, richer 12-string tunings, automated pickup switching, per-preset tone tweaks, and panning **and** gliding bends together instead of one or the other. **The more mapping slots, the better** — please raise the limit if you can. Thank you for a wonderful pedal!
+
 ### Classic mode (the default)
 
 The tuning lives on **INST:ALT TUNE** (User mode — save it **ON in the patch**; there's no CC for it in this preset). Each string's base pitch is one **ALT TUNE · PITCH** assign with **MIN `−24` / MAX `+24`**, so a semitone offset maps to a CC value as `CC = round((st + 24) / 48 × 127)`:

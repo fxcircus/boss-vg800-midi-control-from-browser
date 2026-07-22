@@ -956,6 +956,8 @@
   .docgrp-body li { margin-bottom: 8px; }
   .docgrp-body kbd { font-family: var(--mono); font-size: 10.5px; background: var(--ink); border: 1px solid var(--edge); border-radius: 4px; padding: 1px 5px; color: var(--bone); white-space: nowrap; }
   .docgrp-body a { color: var(--brass); }
+  .doc-boss-note { margin: 4px 0 12px; padding: 11px 13px; border: 1px dashed var(--brass-deep); border-radius: 9px; background: color-mix(in srgb, var(--brass) 8%, transparent); font-size: 12px; line-height: 1.55; }
+  .doc-boss-note b { color: var(--brass); }
   .docgrp-body .doc-tbl { border-collapse: collapse; width: 100%; margin: 4px 0 12px; font-family: var(--mono); font-size: 10.5px; }
   .docgrp-body .doc-tbl th, .docgrp-body .doc-tbl td { border: 1px solid var(--edge-soft); padding: 4px 5px; text-align: center; }
   .docgrp-body .doc-tbl th { color: var(--brass-deep); font-weight: 700; letter-spacing: 0.5px; background: rgba(255,255,255,0.02); }
@@ -1320,6 +1322,7 @@
           <li><b>Guitar model auto-select</b> (⚙ Settings → Mode) — in Classic, each tuning can switch the VG-800's instrument model with two messages: <em>INST TYPE</em> (CC 70) picks electric vs acoustic, then CC 77 / CC 78 picks the model. <b>12-string</b> has no CC in Classic — toggle it on the pedal (▲).</li>
           <li><em>Bend time</em> (in the <b>Bends</b> panel) sets how long the Classic glide takes.</li>
         </ul>
+        <p class="doc-boss-note"><b>A note for the BOSS R&amp;D team</b> — the reason Classic and Panning have to be two separate presets is the <b>16 assign / mapping slots</b> per patch. More slots would let a single preset do much more at once: individual string volume, richer 12-string tunings, automated pickup switching, per-preset tone tweaks, and panning + gliding bends together instead of one or the other. <b>The more mapping slots, the better</b> — please raise the limit if you can. Thank you for a wonderful pedal!</p>
       </div>
     </details>
 
