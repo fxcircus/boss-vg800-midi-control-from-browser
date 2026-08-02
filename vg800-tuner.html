@@ -1064,6 +1064,7 @@
         <div class="jump-menu" id="jumpMenu" role="menu"></div>
       </div>
       <a class="about-btn coffee" id="coffeeBtn" href="https://buymeacoffee.com/fxcircus" target="_blank" rel="noopener noreferrer" title="Buy me a coffee" aria-label="Buy me a coffee"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a3 3 0 0 1 0 6h-1"/><path d="M4 8h13v6a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z"/><path d="M7 2v2M11 2v2M15 2v2"/></svg></a>
+      <button class="about-btn" id="fretBtn" title="Fretboard" aria-label="Fretboard visualizer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></button>
       <div class="theme-wrap">
         <button class="themebtn" id="themeBtn" title="Theme" aria-label="Theme" aria-haspopup="true" aria-expanded="false"><svg class="pedal-ico"><use href="#pedalIco"/></svg></button>
         <div class="theme-menu" id="themeMenu" role="menu">
@@ -1465,6 +1466,15 @@
     <div class="acts">
       <button class="btn" id="tlCancel">Cancel</button>
       <button class="btn go" id="tlCopy">Copy selection</button>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="fretModal">
+  <div class="sheet" style="max-width:min(1150px,96vw);width:min(1150px,96vw)">
+    <div id="fretMount" style="min-height:320px">Loading the fretboard…</div>
+    <div class="acts">
+      <button class="btn" id="fretClose">Close</button>
     </div>
   </div>
 </div>
@@ -3723,8 +3733,8 @@ function renderTestBtns(){
 
 function open(id){ document.getElementById(id).classList.add('open'); }
 function close(id){ document.getElementById(id).classList.remove('open'); }
-['editorModal','settingsModal','aboutModal','exportModal','importModal','timelineModal'].forEach(id=>document.getElementById(id).addEventListener('click',e=>{ if(e.target.id===id) close(id); }));
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ close('editorModal'); close('settingsModal'); close('aboutModal'); close('exportModal'); close('importModal'); close('timelineModal'); } });
+['editorModal','settingsModal','aboutModal','exportModal','importModal','timelineModal','fretModal'].forEach(id=>document.getElementById(id).addEventListener('click',e=>{ if(e.target.id===id) close(id); }));
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ close('editorModal'); close('settingsModal'); close('aboutModal'); close('exportModal'); close('importModal'); close('timelineModal'); close('fretModal'); } });
 
 let tt;
 function toast(m,err,action){
@@ -3890,6 +3900,159 @@ curModelName=settings.curModel;   // restore the persisted model (display-only: 
 gtrRender();
 placeBench();
 initMIDI();
+</script>
+
+<script type="module">
+/* ── Fretboard visualizer bridge ─────────────────────────────────────────────
+   Hosts github.com/fxcircus/guitar-fretboard-visualizer inside #fretModal.
+   The bundle (fretboard/fretboard-embed.es.js) is a committed build artifact
+   from that repo (`npm run sync:vg800` there) and lazy-loads on first open.
+   Design notes: plans/fretboard-integration.md. Runs as a deferred module, so
+   the main script's globals (FAMILIES, apply, tuningSend…) already exist.
+   All names here are fret-prefixed to stay clear of the app's global scope. */
+
+const fretMount = document.getElementById('fretMount');
+let fretMod = null, fretCtl = null, fretLoadP = null, fretSyncing = false;
+
+const fretVar = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+/* Relative luminance of a #rgb/#rrggbb color; anything unparseable reads dark. */
+function fretLum(c){
+  const m = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(c); if(!m) return 0;
+  let h = m[1]; if(h.length===3) h = h.replace(/./g, x=>x+x);
+  const [r,g,b] = [0,2,4].map(i=>parseInt(h.slice(i,i+2),16)/255)
+    .map(v => v<=0.03928 ? v/12.92 : ((v+0.055)/1.055)**2.4);
+  return 0.2126*r + 0.7152*g + 0.0722*b;
+}
+
+/* The visualizer inherits the ACTIVE host theme: its tokens map onto the
+   embed theme, with the dark/light base picked from the text color (light
+   text = dark theme). Re-runs on every applyTheme via the wrapper below. */
+function fretTheme(){
+  return fretMod.makeEmbedTheme({
+    base: fretLum(fretVar('--bone')) > 0.5 ? 'dark' : 'light',
+    colors: {
+      background: fretVar('--ink'),
+      card: fretVar('--wood'),
+      inputBackground: fretVar('--felt'),
+      border: fretVar('--edge'),
+      text: fretVar('--bone'),
+      textSecondary: fretVar('--bone-dim'),
+      primary: fretVar('--brass'),
+      secondary: fretVar('--brass-deep') || fretVar('--brass'),
+      accent: fretVar('--brass'),
+    },
+    fonts: {
+      fontFamily: fretVar('--sans') || undefined,
+      monoFamily: fretVar('--mono') || undefined,
+      titleFamily: fretVar('--cond') || undefined,
+    },
+  });
+}
+
+/* Host tuning → board. Mappable names show the catalog instrument (steel
+   selections get the full 10-string neck); everything else — user customs,
+   re-rooted Modes, Transpose — shows the actual pitches as a custom stack.
+   While a chord is held, `active` carries the CHORD's name (which could
+   collide with a tuning name), so chords always take the custom-stack path. */
+function fretHostTuningId(){
+  return (!activeChord && active) ? fretMod.tuningIdForName(active) : null;
+}
+function fretPush(offsets){
+  if(!fretCtl || !fretMod) return;
+  const id = fretHostTuningId();
+  if(id) fretCtl.setTuning(id);
+  else if(Array.isArray(offsets) && offsets.length===6)
+    fretCtl.setCustomTuning(offsets.map((o,i)=>STD_MIDI[i]+o).reverse());
+}
+
+/* Board dropdown → host. apply() re-renders the cards, sends the MIDI and
+   loops back through tuningSend — fretSyncing keeps that echo out. Names
+   without a host entity (B11 TK Smith, Custom…) stay modal-local. */
+function fretFromViz(id){
+  if(fretSyncing || !fretMod) return;
+  const name = fretMod.tuningNameForId(id);
+  if(!name) return;
+  let hit = null;
+  for(const fam of FAMILIES){ const t = fam.tunings.find(x=>x.name===name); if(t){ hit = {kind:'t', t}; break; } }
+  if(!hit){ const t = MODES.find(x=>x.name===name); if(t) hit = {kind:'t', t}; }
+  if(!hit){ const t = ETHNIC.find(x=>x.name===name); if(t) hit = {kind:'ethnic', t}; }
+  if(!hit){ const t = STEEL.find(x=>x.name===name); if(t) hit = {kind:'steel', t}; }
+  if(!hit) return;
+  fretSyncing = true;
+  try{
+    if(hit.kind==='ethnic') applyInst(hit.t, 0);
+    else if(hit.kind==='steel') applySteel(hit.t, 0);
+    else apply(hit.t);
+  } finally { fretSyncing = false; }
+}
+
+/* Every tuning change funnels through tuningSend with `active` already set —
+   the one hook that covers cards, ethnic, steel, modes and transposes.
+   Chord taps (activeChord set) are not tunings and stay off the board. */
+const fretOrigTuningSend = tuningSend;
+tuningSend = function(offsets){
+  fretOrigTuningSend(offsets);
+  if(fretCtl && !fretSyncing && !activeChord) fretPush(offsets);
+};
+
+/* A failed dynamic import is cached as failed in the document's module map —
+   retries need a fresh specifier, hence the ?retry= cache-buster. */
+let fretRetry = 0;
+function fretImport(){
+  return import('./fretboard/fretboard-embed.es.js' + (fretRetry ? '?retry=' + fretRetry : ''));
+}
+
+/* Live re-theme while the modal is open. */
+const fretOrigApplyTheme = applyTheme;
+applyTheme = function(t){
+  fretOrigApplyTheme(t);
+  if(fretCtl) fretCtl.setTheme(fretTheme());
+};
+
+/* Strings stop when the modal closes, however it closes (button, backdrop,
+   Escape — they all route through close()). */
+const fretOrigClose = close;
+close = function(id){
+  fretOrigClose(id);
+  if(id==='fretModal' && fretCtl) fretCtl.stopAudio();
+};
+
+/* Escape peels one layer at a time: an open picker menu or popover inside
+   the board closes first (capture phase, before the close-all handler);
+   only a bare Escape closes the modal. */
+window.addEventListener('keydown', e=>{
+  if(e.key!=='Escape') return;
+  if(!document.getElementById('fretModal').classList.contains('open')) return;
+  if(fretCtl && fretCtl.closeTopLayer()){ e.stopPropagation(); e.preventDefault(); }
+}, true);
+
+async function fretOpen(){
+  setThemeMenu(false); setJumpMenu(false);
+  open('fretModal');
+  try{
+    if(!fretLoadP) fretLoadP = fretImport();
+    fretMod = await fretLoadP;
+    if(!fretCtl){
+      fretMount.textContent = '';
+      /* Mounted once and kept across opens: browsers cap live AudioContexts,
+         and a warm board reopens instantly. The initial tuningId seeds the
+         very first render so the board never flashes its default tuning. */
+      fretCtl = fretMod.mountFretboard(fretMount, {
+        theme: fretTheme(),
+        tuningId: fretHostTuningId() || undefined,
+        onTuningChange: fretFromViz,
+      });
+    }
+    fretPush(baseOffsets);
+  } catch(err){
+    fretLoadP = null; fretRetry++;
+    fretMount.textContent = 'Could not load the fretboard — check the connection and try again. (' + err + ')';
+  }
+}
+
+document.getElementById('fretBtn').addEventListener('click', fretOpen);
+document.getElementById('fretClose').addEventListener('click', ()=>close('fretModal'));
 </script>
 </body>
 </html>
