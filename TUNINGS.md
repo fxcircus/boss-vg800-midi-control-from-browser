@@ -74,7 +74,7 @@ Every tuning built into the app, with its open-string notes (low→high), the pe
 | **Am. Football** | F A C G C E | `[0, +1, 0, -2, 0, +1]` | `MOD-ST` | American Football · “Never Meant” (Fmaj9) |
 | **SoundG Wave** | E E B B B B | `[-5, 0, +4, -3, -5, 0]` | `BRIGHT HUM` | Soundgarden · “My Wave” |
 | **SoundG Sun** | D A D G B E | `[0, 0, 0, 0, 0, -2]` | `BRIGHT HUM` | Soundgarden · “Black Hole Sun” (Drop D) |
-| **Young Cinnamon** | D A D G B E | `[0, 0, 0, 0, 0, -2]` | `RICK` | Neil Young · “Cinnamon Girl” (Drop D) |
+| **Young Cinnamon** | D A D G B D | `[-2, 0, 0, 0, 0, -2]` | `RICK` | Neil Young · “Cinnamon Girl” (Double Drop D) |
 | **Joni Cab** | E B E G# B E | `[0, 0, +1, +2, +2, 0]` | `MA28` | Joni Mitchell · “Big Yellow Taxi” (Open E) |
 | **Joni Sides** | D A D F# A D | `[-2, -2, -1, 0, 0, -2]` | `MA28` | Joni Mitchell — Open D, no capo. Recording uses capo 4 (sounds in F# major); this is the no-capo base tuning. |
 | **Radio Pyramid** | F# A# C# F# A# F# | `[+2, -1, -1, -1, +1, +2]` | `335` | Radiohead — Open F# major. Let the top F# ring as a pedal; barre strings 6-2 for Gmaj7 (fret 1) and A6 (fret 3). |

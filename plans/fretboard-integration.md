@@ -112,7 +112,9 @@ SHELL-precachable for offline, and gives a real props/callbacks API.
    - **Modal → host**: `onTuningChange(id)` → map id→name → call the host's
      `apply(t)` (sets `active`, re-renders cards, sends MIDI). The host's own
      values are what go to the hardware (for the 2 known value divergences —
-     Young Cinnamon, B6 Universal — the host stays MIDI source of truth).
+     the host stays MIDI source of truth; Young Cinnamon has since been
+     corrected to double drop D on the host side, leaving B6 Universal as
+     the one remaining divergence).
      Visualizer-only `b11-tk-smith`: modal-local, no host action.
    - **Echo guard**: a `syncing` flag around both programmatic directions
      (duplicate offsets are common — Drop D ≡ Blur Song2 ≡ SoundG Sun — so
