@@ -926,7 +926,7 @@
   /* About modal */
   .about-btn { width: 42px; height: 42px; flex-shrink: 0; background: none; border: 1px solid var(--edge); border-radius: 50%; color: var(--bone-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color .15s, color .15s, transform .15s; }
   .about-btn:hover { border-color: var(--brass-deep); color: var(--brass); transform: translateY(-1px); }
-  .about-btn.coffee { background: #FBB034; border-color: #e59c1f; color: #3a2905; }   /* yellow so the coffee button pops out of the header row */
+  .about-btn.coffee { background: #FBB034; border-color: #e59c1f; color: #3a2905; width: auto; padding: 0 14px 0 11px; border-radius: 21px; gap: 6px; font-family: var(--cond); font-weight: 700; font-size: 13.5px; letter-spacing: 0.4px; text-transform: uppercase; text-decoration: none; }   /* yellow pill so the donate button pops out of the header row */
   .about-btn.coffee:hover { border-color: #e59c1f; color: #3a2905; filter: brightness(1.06); transform: translateY(-1px); }
   .about-btn svg { width: 20px; height: 20px; }
   .about-btn[hidden] { display: none; }   /* the flex above would otherwise defeat the hidden attribute on #installBtn */
@@ -936,6 +936,7 @@
     .gear { font-size: 14px; }
     .themebtn .pedal-ico { width: 17px; height: 19px; }
     .jumpbtn svg, .about-btn svg { width: 17px; height: 17px; }
+    .about-btn.coffee { padding: 0 11px 0 9px; font-size: 12.5px; }
     .gear::after { width: 9px; height: 9px; }
   }
   .about-intro { font-family: var(--sans); font-size: 13px; color: var(--bone-dim); line-height: 1.6; margin: 0 0 18px; }
@@ -1063,7 +1064,7 @@
         <button class="jumpbtn" id="jumpBtn" title="Jump to section" aria-label="Jump to section" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg></button>
         <div class="jump-menu" id="jumpMenu" role="menu"></div>
       </div>
-      <a class="about-btn coffee" id="coffeeBtn" href="https://buymeacoffee.com/fxcircus" target="_blank" rel="noopener noreferrer" title="Buy me a coffee" aria-label="Buy me a coffee"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a3 3 0 0 1 0 6h-1"/><path d="M4 8h13v6a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z"/><path d="M7 2v2M11 2v2M15 2v2"/></svg></a>
+      <a class="about-btn coffee" id="coffeeBtn" href="https://buymeacoffee.com/fxcircus" target="_blank" rel="noopener noreferrer" title="Buy me a coffee" aria-label="Buy me a coffee"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a3 3 0 0 1 0 6h-1"/><path d="M4 8h13v6a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z"/><path d="M7 2v2M11 2v2M15 2v2"/></svg><span>Donate</span></a>
       <button class="about-btn" id="fretBtn" title="Fretboard" aria-label="Fretboard visualizer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></button>
       <div class="theme-wrap">
         <button class="themebtn" id="themeBtn" title="Theme" aria-label="Theme" aria-haspopup="true" aria-expanded="false"><svg class="pedal-ico"><use href="#pedalIco"/></svg></button>
