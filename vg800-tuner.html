@@ -1485,13 +1485,25 @@
 @media (prefers-reduced-motion: reduce){
   #fretModal.open, #fretModal.open .sheet, #fretModal.closing, #fretModal.closing .sheet { animation: none; }
 }
+#fretModal .sheet { position: relative; }
+#fretModal .fret-x {
+  position: absolute; top: 10px; right: 10px; z-index: 5;
+  width: 32px; height: 32px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--edge); border-radius: 50%;
+  background: transparent; color: var(--bone-dim); cursor: pointer;
+}
+#fretModal .fret-x:hover { color: var(--bone); border-color: var(--brass-deep); }
+#fretModal .fret-x svg { width: 14px; height: 14px; }
+/* The app's own Bends panel docks here while the modal is open. */
+#fretBends:not(:empty) { margin-top: 12px; }
+#fretBends #sec-pedals { margin: 0; }
 </style>
 <div class="scrim" id="fretModal">
   <div class="sheet" style="max-width:min(1150px,96vw);width:min(1150px,96vw)">
+    <button class="fret-x" id="fretClose" aria-label="Close" title="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <div id="fretMount" style="min-height:320px">Loading the fretboard…</div>
-    <div class="acts">
-      <button class="btn" id="fretClose">Close</button>
-    </div>
+    <div id="fretBends"></div>
   </div>
 </div>
 
@@ -2499,7 +2511,7 @@ document.addEventListener('keydown', e=>{                 // rebind capture (chi
 });
 document.addEventListener('keydown', e=>{                 // pedal engage
   if(e.repeat || e.metaKey || e.ctrlKey || e.altKey || bindingCtrl) return;
-  if(document.querySelector('.scrim.open')) return;
+  if(document.querySelector('.scrim.open:not(#fretModal)')) return;   // the fretboard modal keeps live pedal keys (its text inputs are guarded below)
   const tag=e.target.tagName||''; if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT') return;
   const ctrl=KEYMAP[(e.key||'').toLowerCase()]; if(!ctrl) return;
   e.preventDefault(); pressCtrl(ctrl);
@@ -2509,7 +2521,7 @@ document.addEventListener('keyup', e=>{ if(bindingCtrl) return; const ctrl=KEYMA
 // Uses e.code so Shift's symbol remapping doesn't matter; ignores Ctrl/Meta/Alt, modals, text fields, and pedal-owned keys.
 document.addEventListener('keydown', e=>{
   if(e.repeat || e.metaKey || e.ctrlKey || e.altKey || bindingCtrl) return;
-  if(document.querySelector('.scrim.open')) return;
+  if(document.querySelector('.scrim.open:not(#fretModal)')) return;   // the fretboard modal keeps live pedal keys (its text inputs are guarded below)
   const tag=e.target.tagName||''; if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT') return;
   if(KEYMAP[(e.key||'').toLowerCase()]) return;            // a pedal owns this key
   const code=e.code||'', CK=settings.chordKeys||{};
@@ -4019,6 +4031,38 @@ function fretImport(){
   return import('./fretboard/fretboard-embed.es.js' + (fretRetry ? '?retry=' + fretRetry : ''));
 }
 
+/* Live bends → board. renderStrings() paints the EFFECTIVE offsets (base
+   tuning + engaged pedals / per-string benders) on every change, so wrapping
+   it mirrors each press and release as per-string pulls: the board's notes,
+   chord names and bar relationships all recompute — a bend changes the whole
+   neck, not just one marker. Diffed against baseOffsets (tuning changes set
+   baseOffsets before rendering, so those always diff to zero). */
+function fretPushPulls(offsets){
+  if(!fretCtl || !Array.isArray(offsets) || offsets.length!==6) return;
+  const pulls = offsets.map((o,i)=> o - baseOffsets[i]).reverse();
+  fretCtl.setPulls(pulls.some(p=>p!==0) ? pulls : []);
+}
+const fretOrigRenderStrings = renderStrings;
+renderStrings = function(offsets){
+  fretOrigRenderStrings(offsets);
+  fretPushPulls(offsets);
+};
+
+/* The app's Bends panel docks under the fretboard while the modal is open —
+   the real panel, not a copy: pedals, combos, latch, per-string benders and
+   presets all keep working. placeBench() re-parents panels on resize, so its
+   wrapper keeps the dock while the modal is up; closing restores the bench. */
+const fretBendsSlot = document.getElementById('fretBends');
+function fretDockBends(){
+  const p = document.getElementById('sec-pedals');
+  if(p && p.parentElement !== fretBendsSlot) fretBendsSlot.appendChild(p);
+}
+const fretOrigPlaceBench = placeBench;
+placeBench = function(){
+  fretOrigPlaceBench();
+  if(document.getElementById('fretModal').classList.contains('open')) fretDockBends();
+};
+
 /* Live re-theme while the modal is open. */
 const fretOrigApplyTheme = applyTheme;
 applyTheme = function(t){
@@ -4036,7 +4080,7 @@ close = function(id){
     if(!m.classList.contains('open') || m.classList.contains('closing')) return;
     if(fretCtl) fretCtl.stopAudio();
     m.classList.add('closing');
-    setTimeout(()=>{ m.classList.remove('closing'); fretOrigClose(id); }, 185);
+    setTimeout(()=>{ m.classList.remove('closing'); fretOrigClose(id); placeBench(); }, 185);
     return;
   }
   fretOrigClose(id);
@@ -4069,6 +4113,8 @@ async function fretOpen(){
       });
     }
     fretPush(baseOffsets);
+    fretPushPulls(dispOffsets);   // any bend held right now shows immediately
+    fretDockBends();
   } catch(err){
     fretLoadP = null; fretRetry++;
     fretMount.textContent = 'Could not load the fretboard — check the connection and try again. (' + err + ')';
