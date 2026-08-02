@@ -14506,6 +14506,12 @@ var so = [
   button {
     font-family: inherit;
   }
+
+  /* The host sheet already pads the modal — keep the shell lean inside it. */
+  ${ho} {
+    padding: 4px 0 10px;
+    gap: 10px;
+  }
 `, Ro = ({ embedded: e = !1, embedTheme: t, externalTuning: n = null, externalPulls: r = null, onTuningChange: i, registerEmbedHandlers: a }) => {
 	let [o, s] = (0, L.useState)(() => {
 		if (!e) return io();
@@ -14727,241 +14733,254 @@ var so = [
 			$n(e.match, re),
 			/* @__PURE__ */ (0, z.jsxs)(Po, { children: ["fret ", e.fret] })
 		]
-	}, `${e.home ? "home" : e.roman ?? ""}${pe(e.match)}`), je = /* @__PURE__ */ (0, z.jsxs)(ho, { children: [
-		/* @__PURE__ */ (0, z.jsxs)(go, { children: [!e && /* @__PURE__ */ (0, z.jsxs)(_o, { children: [/* @__PURE__ */ (0, z.jsx)(vo, { children: "Fretboard Visualizer" }), /* @__PURE__ */ (0, z.jsxs)(yo, { children: [
+	}, `${e.home ? "home" : e.roman ?? ""}${pe(e.match)}`), je = /* @__PURE__ */ (0, z.jsxs)(z.Fragment, { children: [
+		/* @__PURE__ */ (0, z.jsxs)(So, {
+			ref: m,
+			children: [/* @__PURE__ */ (0, z.jsx)(xo, {
+				$open: f,
+				onClick: () => p((e) => !e),
+				"aria-label": "Sound",
+				"aria-haspopup": "dialog",
+				"aria-expanded": f,
+				title: "Sound",
+				children: /* @__PURE__ */ (0, z.jsx)(uo, {})
+			}), f && /* @__PURE__ */ (0, z.jsxs)(Co, {
+				role: "dialog",
+				"aria-label": "Sound settings",
+				children: [
+					/* @__PURE__ */ (0, z.jsxs)(Eo, {
+						"aria-pressed": h,
+						onClick: () => g((e) => !e),
+						title: "Chord cards sound the moment you tap them — no play button needed",
+						children: [/* @__PURE__ */ (0, z.jsx)(Do, { $on: h }), "Play chords on tap"]
+					}),
+					/* @__PURE__ */ (0, z.jsx)(Ri, { children: "Tone" }),
+					/* @__PURE__ */ (0, z.jsx)(Bi, {
+						role: "group",
+						"aria-label": "Synth voice",
+						style: { width: "fit-content" },
+						children: qa.map((e) => /* @__PURE__ */ (0, z.jsxs)(Vi, {
+							$active: o.tone === e,
+							"aria-pressed": o.tone === e,
+							onClick: () => C({ tone: e }),
+							style: {
+								display: "flex",
+								alignItems: "center",
+								gap: 5
+							},
+							children: [H[e], Ka[e].label]
+						}, e))
+					}),
+					/* @__PURE__ */ (0, z.jsx)(Ri, { children: "Play" }),
+					/* @__PURE__ */ (0, z.jsx)(Bi, {
+						role: "group",
+						"aria-label": "Chord delivery",
+						style: { width: "fit-content" },
+						children: Ga.map((e) => /* @__PURE__ */ (0, z.jsxs)(Vi, {
+							$active: o.mode === e,
+							"aria-pressed": o.mode === e,
+							onClick: () => C({ mode: e }),
+							title: Wa[e].hint,
+							style: {
+								display: "flex",
+								alignItems: "center",
+								gap: 5
+							},
+							children: [U[e], Wa[e].label]
+						}, e))
+					}),
+					/* @__PURE__ */ (0, z.jsx)(Ri, { children: "Volume" }),
+					/* @__PURE__ */ (0, z.jsx)(Oo, {
+						type: "range",
+						min: 0,
+						max: 1,
+						step: .01,
+						value: u,
+						"aria-label": "Volume",
+						onChange: (e) => ve(Number(e.target.value))
+					})
+				]
+			})]
+		}),
+		!e && /* @__PURE__ */ (0, z.jsx)(xo, {
+			onClick: () => l((e) => e === "dark" ? "light" : "dark"),
+			"aria-label": c === "dark" ? "Switch to light theme" : "Switch to dark theme",
+			title: c === "dark" ? "Light theme" : "Dark theme",
+			children: c === "dark" ? /* @__PURE__ */ (0, z.jsx)(co, {}) : /* @__PURE__ */ (0, z.jsx)(lo, {})
+		}),
+		/* @__PURE__ */ (0, z.jsxs)(So, {
+			ref: x,
+			children: [/* @__PURE__ */ (0, z.jsx)(xo, {
+				$open: y,
+				onClick: () => b((e) => !e),
+				"aria-label": "Board settings",
+				"aria-haspopup": "dialog",
+				"aria-expanded": y,
+				title: "Board settings",
+				children: /* @__PURE__ */ (0, z.jsx)(po, {})
+			}), y && /* @__PURE__ */ (0, z.jsxs)(wo, {
+				role: "dialog",
+				"aria-label": "Board settings",
+				children: [
+					/* @__PURE__ */ (0, z.jsx)(Ri, { children: "Board settings" }),
+					/* @__PURE__ */ (0, z.jsxs)("div", { children: [/* @__PURE__ */ (0, z.jsx)(Ri, {
+						as: "span",
+						style: { opacity: .75 },
+						children: "Finish"
+					}), /* @__PURE__ */ (0, z.jsx)(Bi, {
+						role: "group",
+						"aria-label": "Finish",
+						style: {
+							marginTop: 6,
+							flexWrap: "wrap",
+							width: "fit-content"
+						},
+						children: Object.keys(yr).filter((t) => !e || t !== "flat").map((e) => /* @__PURE__ */ (0, z.jsxs)(Vi, {
+							$active: _.finish === e,
+							"aria-pressed": _.finish === e,
+							onClick: () => S({ finish: e }),
+							title: `${yr[e].label} board`,
+							style: {
+								display: "flex",
+								alignItems: "center",
+								gap: 6
+							},
+							children: [/* @__PURE__ */ (0, z.jsx)(To, { $c: yr[e].swatch }), yr[e].label]
+						}, e))
+					})] }),
+					/* @__PURE__ */ (0, z.jsxs)("div", { children: [/* @__PURE__ */ (0, z.jsx)(Ri, {
+						as: "span",
+						style: { opacity: .75 },
+						children: "Inlay"
+					}), /* @__PURE__ */ (0, z.jsx)(Bi, {
+						role: "group",
+						"aria-label": "Inlay",
+						style: {
+							marginTop: 6,
+							flexWrap: "wrap",
+							width: "fit-content"
+						},
+						children: br.map((e) => /* @__PURE__ */ (0, z.jsxs)(Vi, {
+							$active: _.inlay === e.id,
+							"aria-pressed": _.inlay === e.id,
+							onClick: () => S({ inlay: e.id }),
+							title: e.full,
+							style: {
+								display: "flex",
+								alignItems: "center",
+								gap: 5
+							},
+							children: [fo[e.id], e.label]
+						}, e.id))
+					})] }),
+					/* @__PURE__ */ (0, z.jsxs)("div", { children: [/* @__PURE__ */ (0, z.jsx)(Ri, {
+						as: "span",
+						style: { opacity: .75 },
+						children: "Bar"
+					}), /* @__PURE__ */ (0, z.jsx)(Bi, {
+						role: "group",
+						"aria-label": "Bar style",
+						style: {
+							marginTop: 6,
+							flexWrap: "wrap",
+							width: "fit-content"
+						},
+						children: xr.map((e) => /* @__PURE__ */ (0, z.jsx)(Vi, {
+							$active: _.barStyle === e.id,
+							"aria-pressed": _.barStyle === e.id,
+							onClick: () => S({ barStyle: e.id }),
+							title: e.hint,
+							children: e.label
+						}, e.id))
+					})] }),
+					/* @__PURE__ */ (0, z.jsxs)("div", { children: [/* @__PURE__ */ (0, z.jsx)(Ri, {
+						as: "span",
+						style: { opacity: .75 },
+						children: "Details"
+					}), /* @__PURE__ */ (0, z.jsxs)(Li, {
+						style: {
+							marginTop: 6,
+							gap: 14,
+							flexWrap: "nowrap"
+						},
+						children: [
+							(() => {
+								let e = yr[_.finish].grain === "none";
+								return /* @__PURE__ */ (0, z.jsxs)(Eo, {
+									$disabled: e,
+									disabled: e,
+									"aria-pressed": _.grain && !e,
+									onClick: () => !e && S({ grain: !_.grain }),
+									title: e ? `No grain on a ${yr[_.finish].label} board` : "Wood grain texture",
+									children: [/* @__PURE__ */ (0, z.jsx)(Do, { $on: _.grain && !e }), "Grain"]
+								});
+							})(),
+							/* @__PURE__ */ (0, z.jsxs)(Eo, {
+								"aria-pressed": _.wire,
+								onClick: () => S({ wire: !_.wire }),
+								title: "Nut, fret wire and fret shadow",
+								children: [/* @__PURE__ */ (0, z.jsx)(Do, { $on: _.wire }), "Nut & frets"]
+							}),
+							/* @__PURE__ */ (0, z.jsxs)(Eo, {
+								"aria-pressed": _.gauges,
+								onClick: () => S({ gauges: !_.gauges }),
+								title: "String gauge variation and sheen",
+								children: [/* @__PURE__ */ (0, z.jsx)(Do, { $on: _.gauges }), "Gauges"]
+							}),
+							/* @__PURE__ */ (0, z.jsxs)(Eo, {
+								"aria-pressed": _.side,
+								onClick: () => S({ side: !_.side }),
+								title: "Fret markers on the neck edge",
+								children: [/* @__PURE__ */ (0, z.jsx)(Do, { $on: _.side }), "Side dots"]
+							})
+						]
+					})] })
+				]
+			})]
+		})
+	] }), Me = /* @__PURE__ */ (0, z.jsxs)(ho, { children: [
+		!e && /* @__PURE__ */ (0, z.jsxs)(go, { children: [/* @__PURE__ */ (0, z.jsxs)(_o, { children: [/* @__PURE__ */ (0, z.jsx)(vo, { children: "Fretboard Visualizer" }), /* @__PURE__ */ (0, z.jsxs)(yo, { children: [
 			_i[w.group],
 			" · ",
 			T,
 			" string"
-		] })] }), /* @__PURE__ */ (0, z.jsxs)(bo, { children: [
-			/* @__PURE__ */ (0, z.jsxs)(So, {
-				ref: m,
-				children: [/* @__PURE__ */ (0, z.jsx)(xo, {
-					$open: f,
-					onClick: () => p((e) => !e),
-					"aria-label": "Sound",
-					"aria-haspopup": "dialog",
-					"aria-expanded": f,
-					title: "Sound",
-					children: /* @__PURE__ */ (0, z.jsx)(uo, {})
-				}), f && /* @__PURE__ */ (0, z.jsxs)(Co, {
-					role: "dialog",
-					"aria-label": "Sound settings",
-					children: [
-						/* @__PURE__ */ (0, z.jsxs)(Eo, {
-							"aria-pressed": h,
-							onClick: () => g((e) => !e),
-							title: "Chord cards sound the moment you tap them — no play button needed",
-							children: [/* @__PURE__ */ (0, z.jsx)(Do, { $on: h }), "Play chords on tap"]
-						}),
-						/* @__PURE__ */ (0, z.jsx)(Ri, { children: "Tone" }),
-						/* @__PURE__ */ (0, z.jsx)(Bi, {
-							role: "group",
-							"aria-label": "Synth voice",
-							style: { width: "fit-content" },
-							children: qa.map((e) => /* @__PURE__ */ (0, z.jsxs)(Vi, {
-								$active: o.tone === e,
-								"aria-pressed": o.tone === e,
-								onClick: () => C({ tone: e }),
-								style: {
-									display: "flex",
-									alignItems: "center",
-									gap: 5
-								},
-								children: [H[e], Ka[e].label]
-							}, e))
-						}),
-						/* @__PURE__ */ (0, z.jsx)(Ri, { children: "Play" }),
-						/* @__PURE__ */ (0, z.jsx)(Bi, {
-							role: "group",
-							"aria-label": "Chord delivery",
-							style: { width: "fit-content" },
-							children: Ga.map((e) => /* @__PURE__ */ (0, z.jsxs)(Vi, {
-								$active: o.mode === e,
-								"aria-pressed": o.mode === e,
-								onClick: () => C({ mode: e }),
-								title: Wa[e].hint,
-								style: {
-									display: "flex",
-									alignItems: "center",
-									gap: 5
-								},
-								children: [U[e], Wa[e].label]
-							}, e))
-						}),
-						/* @__PURE__ */ (0, z.jsx)(Ri, { children: "Volume" }),
-						/* @__PURE__ */ (0, z.jsx)(Oo, {
-							type: "range",
-							min: 0,
-							max: 1,
-							step: .01,
-							value: u,
-							"aria-label": "Volume",
-							onChange: (e) => ve(Number(e.target.value))
-						})
-					]
-				})]
-			}),
-			!e && /* @__PURE__ */ (0, z.jsx)(xo, {
-				onClick: () => l((e) => e === "dark" ? "light" : "dark"),
-				"aria-label": c === "dark" ? "Switch to light theme" : "Switch to dark theme",
-				title: c === "dark" ? "Light theme" : "Dark theme",
-				children: c === "dark" ? /* @__PURE__ */ (0, z.jsx)(co, {}) : /* @__PURE__ */ (0, z.jsx)(lo, {})
-			}),
-			/* @__PURE__ */ (0, z.jsxs)(So, {
-				ref: x,
-				children: [/* @__PURE__ */ (0, z.jsx)(xo, {
-					$open: y,
-					onClick: () => b((e) => !e),
-					"aria-label": "Board settings",
-					"aria-haspopup": "dialog",
-					"aria-expanded": y,
-					title: "Board settings",
-					children: /* @__PURE__ */ (0, z.jsx)(po, {})
-				}), y && /* @__PURE__ */ (0, z.jsxs)(wo, {
-					role: "dialog",
-					"aria-label": "Board settings",
-					children: [
-						/* @__PURE__ */ (0, z.jsx)(Ri, { children: "Board settings" }),
-						/* @__PURE__ */ (0, z.jsxs)("div", { children: [/* @__PURE__ */ (0, z.jsx)(Ri, {
-							as: "span",
-							style: { opacity: .75 },
-							children: "Finish"
-						}), /* @__PURE__ */ (0, z.jsx)(Bi, {
-							role: "group",
-							"aria-label": "Finish",
-							style: {
-								marginTop: 6,
-								flexWrap: "wrap",
-								width: "fit-content"
-							},
-							children: Object.keys(yr).filter((t) => !e || t !== "flat").map((e) => /* @__PURE__ */ (0, z.jsxs)(Vi, {
-								$active: _.finish === e,
-								"aria-pressed": _.finish === e,
-								onClick: () => S({ finish: e }),
-								title: `${yr[e].label} board`,
-								style: {
-									display: "flex",
-									alignItems: "center",
-									gap: 6
-								},
-								children: [/* @__PURE__ */ (0, z.jsx)(To, { $c: yr[e].swatch }), yr[e].label]
-							}, e))
-						})] }),
-						/* @__PURE__ */ (0, z.jsxs)("div", { children: [/* @__PURE__ */ (0, z.jsx)(Ri, {
-							as: "span",
-							style: { opacity: .75 },
-							children: "Inlay"
-						}), /* @__PURE__ */ (0, z.jsx)(Bi, {
-							role: "group",
-							"aria-label": "Inlay",
-							style: {
-								marginTop: 6,
-								flexWrap: "wrap",
-								width: "fit-content"
-							},
-							children: br.map((e) => /* @__PURE__ */ (0, z.jsxs)(Vi, {
-								$active: _.inlay === e.id,
-								"aria-pressed": _.inlay === e.id,
-								onClick: () => S({ inlay: e.id }),
-								title: e.full,
-								style: {
-									display: "flex",
-									alignItems: "center",
-									gap: 5
-								},
-								children: [fo[e.id], e.label]
-							}, e.id))
-						})] }),
-						/* @__PURE__ */ (0, z.jsxs)("div", { children: [/* @__PURE__ */ (0, z.jsx)(Ri, {
-							as: "span",
-							style: { opacity: .75 },
-							children: "Bar"
-						}), /* @__PURE__ */ (0, z.jsx)(Bi, {
-							role: "group",
-							"aria-label": "Bar style",
-							style: {
-								marginTop: 6,
-								flexWrap: "wrap",
-								width: "fit-content"
-							},
-							children: xr.map((e) => /* @__PURE__ */ (0, z.jsx)(Vi, {
-								$active: _.barStyle === e.id,
-								"aria-pressed": _.barStyle === e.id,
-								onClick: () => S({ barStyle: e.id }),
-								title: e.hint,
-								children: e.label
-							}, e.id))
-						})] }),
-						/* @__PURE__ */ (0, z.jsxs)("div", { children: [/* @__PURE__ */ (0, z.jsx)(Ri, {
-							as: "span",
-							style: { opacity: .75 },
-							children: "Details"
-						}), /* @__PURE__ */ (0, z.jsxs)(Li, {
-							style: {
-								marginTop: 6,
-								gap: 14,
-								flexWrap: "nowrap"
-							},
-							children: [
-								(() => {
-									let e = yr[_.finish].grain === "none";
-									return /* @__PURE__ */ (0, z.jsxs)(Eo, {
-										$disabled: e,
-										disabled: e,
-										"aria-pressed": _.grain && !e,
-										onClick: () => !e && S({ grain: !_.grain }),
-										title: e ? `No grain on a ${yr[_.finish].label} board` : "Wood grain texture",
-										children: [/* @__PURE__ */ (0, z.jsx)(Do, { $on: _.grain && !e }), "Grain"]
-									});
-								})(),
-								/* @__PURE__ */ (0, z.jsxs)(Eo, {
-									"aria-pressed": _.wire,
-									onClick: () => S({ wire: !_.wire }),
-									title: "Nut, fret wire and fret shadow",
-									children: [/* @__PURE__ */ (0, z.jsx)(Do, { $on: _.wire }), "Nut & frets"]
-								}),
-								/* @__PURE__ */ (0, z.jsxs)(Eo, {
-									"aria-pressed": _.gauges,
-									onClick: () => S({ gauges: !_.gauges }),
-									title: "String gauge variation and sheen",
-									children: [/* @__PURE__ */ (0, z.jsx)(Do, { $on: _.gauges }), "Gauges"]
-								}),
-								/* @__PURE__ */ (0, z.jsxs)(Eo, {
-									"aria-pressed": _.side,
-									onClick: () => S({ side: !_.side }),
-									title: "Fret markers on the neck edge",
-									children: [/* @__PURE__ */ (0, z.jsx)(Do, { $on: _.side }), "Side dots"]
-								})
-							]
-						})] })
-					]
-				})]
-			})
-		] })] }),
+		] })] }), /* @__PURE__ */ (0, z.jsx)(bo, { children: je })] }),
 		/* @__PURE__ */ (0, z.jsxs)(Ii, { children: [
-			/* @__PURE__ */ (0, z.jsxs)(Li, { children: [/* @__PURE__ */ (0, z.jsx)(Fi, {
-				tuningId: o.tuningId,
-				current: w,
-				onSelect: Ce,
-				menuRef: ke
-			}), /* @__PURE__ */ (0, z.jsxs)(Bi, {
-				role: "group",
-				"aria-label": "Neck view",
-				children: [/* @__PURE__ */ (0, z.jsx)(Vi, {
-					$active: o.view === "bar",
-					"aria-pressed": o.view === "bar",
-					onClick: () => C({ view: "bar" }),
-					title: "One straight bar across every string — how a lap steel is played",
-					children: "Bar"
-				}), /* @__PURE__ */ (0, z.jsx)(Vi, {
-					$active: o.view === "map",
-					"aria-pressed": o.view === "map",
-					onClick: () => C({ view: "map" }),
-					title: "Every note of the key, everywhere on the neck",
-					children: "Map"
-				})]
-			})] }),
+			/* @__PURE__ */ (0, z.jsxs)(Li, { children: [
+				/* @__PURE__ */ (0, z.jsx)(Fi, {
+					tuningId: o.tuningId,
+					current: w,
+					onSelect: Ce,
+					menuRef: ke
+				}),
+				/* @__PURE__ */ (0, z.jsxs)(Bi, {
+					role: "group",
+					"aria-label": "Neck view",
+					children: [/* @__PURE__ */ (0, z.jsx)(Vi, {
+						$active: o.view === "bar",
+						"aria-pressed": o.view === "bar",
+						onClick: () => C({ view: "bar" }),
+						title: "One straight bar across every string — how a lap steel is played",
+						children: "Bar"
+					}), /* @__PURE__ */ (0, z.jsx)(Vi, {
+						$active: o.view === "map",
+						"aria-pressed": o.view === "map",
+						onClick: () => C({ view: "map" }),
+						title: "Every note of the key, everywhere on the neck",
+						children: "Map"
+					})]
+				}),
+				e && /* @__PURE__ */ (0, z.jsx)("div", {
+					style: {
+						marginLeft: "auto",
+						display: "flex",
+						alignItems: "center",
+						gap: 8,
+						paddingRight: 30
+					},
+					children: je
+				})
+			] }),
 			(w.description || w.song) && /* @__PURE__ */ (0, z.jsxs)(zi, { children: [
 				w.description,
 				w.song && /* @__PURE__ */ (0, z.jsxs)(z.Fragment, { children: [" ", /* @__PURE__ */ (0, z.jsx)("strong", { children: w.song })] }),
@@ -15050,7 +15069,7 @@ var so = [
 	] });
 	return /* @__PURE__ */ (0, z.jsx)(An, {
 		theme: Oe,
-		children: e ? /* @__PURE__ */ (0, z.jsx)(Lo, { children: je }) : /* @__PURE__ */ (0, z.jsxs)(z.Fragment, { children: [/* @__PURE__ */ (0, z.jsx)(mo, {}), je] })
+		children: e ? /* @__PURE__ */ (0, z.jsx)(Lo, { children: Me }) : /* @__PURE__ */ (0, z.jsxs)(z.Fragment, { children: [/* @__PURE__ */ (0, z.jsx)(mo, {}), Me] })
 	});
 }, zo = "/* eslint-disable */\n/**\n * steel-ks — a 10-voice Extended Karplus-Strong string bank.\n *\n * Plain dependency-free JS on purpose: Vite ships AudioWorklet modules as raw\n * assets (new URL('./steel-processor.js', import.meta.url)), untranspiled.\n *\n * The design follows Julius O. Smith's EKS reference (ccrma.stanford.edu,\n * \"Making Virtual Electric Guitars and Associated Effects Using Faust\"):\n *   - delay-line loop, read distance D = sampleRate/f − 2 (the FIR3 damping\n *     filter contributes exactly 1 sample of phase delay, the Lagrange read\n *     centering another ~1)\n *   - 4th-order Lagrange fractional-delay read — robust under the gliding\n *     delay of the bar scoop and vibrato (allpass interpolation artifacts\n *     under fast delay changes; linear interp buzzes with light damping)\n *   - linear-phase FIR3 damping  y = ρ·(h0·x1 + h1·(x0 + x2)),\n *     h0 = (1+B)/2, h1 = (1−B)/4 — brightness B never detunes the string\n *   - loop gain ρ = 0.001^(1/(f·t60)) — every register decays −60 dB in the\n *     same t60, so trebles ring like a real steel\n *   - excitation: one period of mean-subtracted white noise, lowpassed by\n *     velocity (louder = brighter pick), minus a pick-position comb copy\n *   - DC blocker outside the loop\n *\n * Messages: {type:'pluck', voice, freq, vel, when, gl, gr}\n *           {type:'off', voice, when}   — damp like blocking (t60 0.2 s)\n *           {type:'alloff', when}\n */\n\nconst NV = 10;\nconst BUFLEN = 4096; // power of two; covers fundamentals down to ~12 Hz\nconst MASK = BUFLEN - 1;\n\nconst BRIGHTNESS = 0.72; // steel range 0.6–0.8 (0.5 = ordinary guitar)\nconst T60_HELD = 6.0; // seconds — pedal-steel sustain band 4–8 s\nconst T60_RELEASE = 0.2; // blocking damp on note-off\nconst SCOOP_CENTS = -45; // bar slides in from below\nconst SCOOP_TAU = 0.02; // exponential approach, ~95% settled at 60 ms\nconst VIB_RATE = 5.7; // Hz — classic bar vibrato band 5–6.5\nconst VIB_DEPTH = 0.00695; // ±12 cents as a frequency ratio\nconst VIB_START = 0.35; // silent until the note settles…\nconst VIB_FULL = 0.7; // …full depth by here\nconst PICK_POS = 0.12; // β: pick-position comb, near-bridge steel picking\nconst IDLE_LEVEL = 3.2e-5; // −90 dB — below this a voice stops burning CPU\n\nconst H0 = (1 + BRIGHTNESS) / 2;\nconst H1 = (1 - BRIGHTNESS) / 4;\nconst SCOOP_DEPTH = 1 - Math.pow(2, SCOOP_CENTS / 1200); // ≈ 0.0257\n\nclass SteelKS extends AudioWorkletProcessor {\n  constructor() {\n    super();\n    this.voices = [];\n    for (let v = 0; v < NV; v++) {\n      this.voices.push({\n        active: false,\n        buf: new Float32Array(BUFLEN),\n        wi: 0,\n        freq: 220,\n        rho: 0.999,\n        x1: 0,\n        x2: 0,\n        dcX: 0,\n        dcY: 0,\n        exc: null,\n        excPos: 0,\n        scoopEnv: 0, // 1 → 0 exponential; f = freq·(1 − depth·env)\n        vibPhase: 0,\n        age: 0, // frames since pluck\n        peak: 0,\n        gl: 0.5,\n        gr: 0.5,\n      });\n    }\n    this.pending = [];\n    this.scoopDecay = Math.exp(-1 / (SCOOP_TAU * sampleRate));\n    this.vibInc = (2 * Math.PI * VIB_RATE) / sampleRate;\n    this.port.onmessage = (e) => {\n      const m = e.data;\n      if (m && (m.type === 'pluck' || m.type === 'off' || m.type === 'alloff')) {\n        this.pending.push(m);\n      }\n    };\n  }\n\n  makeBurst(freq, vel) {\n    const P = Math.max(2, Math.round(sampleRate / freq));\n    const burst = new Float32Array(P);\n    let mean = 0;\n    for (let i = 0; i < P; i++) {\n      burst[i] = Math.random() * 2 - 1;\n      mean += burst[i];\n    }\n    mean /= P;\n    // Mean-subtract: DC never decays inside the loop.\n    for (let i = 0; i < P; i++) burst[i] -= mean;\n    // Velocity → pick brightness: one-pole lowpass, bw = 300 + vel·9000 Hz.\n    const bw = 300 + vel * 9000;\n    const R = Math.exp((-Math.PI * bw) / sampleRate);\n    let y = 0;\n    for (let i = 0; i < P; i++) {\n      y = (1 - R) * burst[i] + R * y;\n      burst[i] = y;\n    }\n    // Pick-position comb: subtract a copy delayed by β·P (spectral zeros at\n    // the harmonics with a node under the pick).\n    const combD = Math.max(1, Math.floor(PICK_POS * P));\n    for (let i = P - 1; i >= combD; i--) burst[i] -= burst[i - combD];\n    // Headroom for ten voices before the bus compressor.\n    const g = 0.6 * vel;\n    for (let i = 0; i < P; i++) burst[i] *= g;\n    return burst;\n  }\n\n  rhoFor(freq, t60) {\n    return Math.pow(0.001, 1 / (Math.max(20, freq) * t60));\n  }\n\n  handleMsg(m) {\n    if (m.type === 'alloff') {\n      for (const v of this.voices) {\n        if (v.active) v.rho = this.rhoFor(v.freq, T60_RELEASE);\n      }\n      return;\n    }\n    const v = this.voices[m.voice];\n    if (!v) return;\n    if (m.type === 'off') {\n      if (v.active) v.rho = this.rhoFor(v.freq, T60_RELEASE);\n      return;\n    }\n    // pluck\n    if (!v.active) {\n      v.buf.fill(0);\n      v.x1 = 0;\n      v.x2 = 0;\n      v.dcX = 0;\n      v.dcY = 0;\n      v.wi = 0;\n    }\n    v.active = true;\n    v.freq = m.freq;\n    v.rho = this.rhoFor(m.freq, T60_HELD);\n    v.exc = this.makeBurst(m.freq, m.vel);\n    v.excPos = 0;\n    v.scoopEnv = 1;\n    v.vibPhase = 0;\n    v.age = 0;\n    v.peak = 1; // give the new note a grace period before idle detection\n    v.gl = typeof m.gl === 'number' ? m.gl : 0.5;\n    v.gr = typeof m.gr === 'number' ? m.gr : 0.5;\n  }\n\n  process(_inputs, outputs) {\n    const out = outputs[0];\n    const L = out[0];\n    const R = out[1] || out[0];\n    const frames = L.length;\n    L.fill(0);\n    if (R !== L) R.fill(0);\n\n    // Fire any messages due within this block (sample-accurate via `when`).\n    const tBlock = currentFrame / sampleRate;\n    const tEnd = tBlock + frames / sampleRate;\n    if (this.pending.length) {\n      const later = [];\n      for (const m of this.pending) {\n        const when = m.when || 0;\n        if (when < tEnd) {\n          m._offset = Math.max(0, Math.round((when - tBlock) * sampleRate));\n          if (m._offset >= frames) m._offset = frames - 1;\n          later.push(m); // handled inside the sample loop below\n        } else {\n          later.push(m);\n        }\n      }\n      this.pending = later;\n    }\n\n    for (let i = 0; i < frames; i++) {\n      // activate messages scheduled for this exact frame\n      if (this.pending.length) {\n        for (let k = 0; k < this.pending.length; k++) {\n          const m = this.pending[k];\n          if (m._offset === i && (m.when || 0) < tEnd) {\n            this.handleMsg(m);\n            this.pending.splice(k, 1);\n            k--;\n          }\n        }\n      }\n\n      for (let vi = 0; vi < NV; vi++) {\n        const v = this.voices[vi];\n        if (!v.active) continue;\n\n        // Current pitch: scoop from below + delayed-onset bar vibrato.\n        const tAge = v.age / sampleRate;\n        let f = v.freq * (1 - SCOOP_DEPTH * v.scoopEnv);\n        if (tAge > VIB_START) {\n          const env = Math.min(1, (tAge - VIB_START) / (VIB_FULL - VIB_START));\n          f *= 1 + VIB_DEPTH * env * Math.sin(v.vibPhase);\n        }\n        v.scoopEnv *= this.scoopDecay;\n        v.vibPhase += this.vibInc;\n\n        // Loop delay: the loop period is D + 1 (the FIR3's one sample of\n        // phase delay; the write→read round trip supplies D exactly, and the\n        // Lagrange read is centred on D). Verified by offline measurement:\n        // D = sr/f − 2 rendered +19 cents sharp at 660 Hz; − 1 is exact.\n        let D = sampleRate / f - 1;\n        if (D < 4) D = 4;\n        if (D > BUFLEN - 8) D = BUFLEN - 8;\n\n        // 4th-order Lagrange read (JOS fdelay4): taps id..id+4, fd ∈ [1.5,2.5)\n        const id = Math.floor(D - 1.499995);\n        const fd = D - id;\n        const a = fd - 1, b = fd - 2, c = fd - 3, d = fd - 4;\n        const w0 = (a * b * c * d) / 24;\n        const w1 = (-fd * b * c * d) / 6;\n        const w2 = (fd * a * c * d) / 4;\n        const w3 = (-fd * a * b * d) / 6;\n        const w4 = (fd * a * b * c) / 24;\n        const base = v.wi - id;\n        const x0 =\n          w0 * v.buf[base & MASK] +\n          w1 * v.buf[(base - 1) & MASK] +\n          w2 * v.buf[(base - 2) & MASK] +\n          w3 * v.buf[(base - 3) & MASK] +\n          w4 * v.buf[(base - 4) & MASK];\n\n        // FIR3 damping × loop gain (linear phase: brightness never detunes).\n        let y = v.rho * (H0 * v.x1 + H1 * (x0 + v.x2));\n        v.x2 = v.x1;\n        v.x1 = x0;\n\n        // Inject the pick burst as loop input over its first period.\n        if (v.exc && v.excPos < v.exc.length) {\n          y += v.exc[v.excPos++];\n          if (v.excPos >= v.exc.length) v.exc = null;\n        }\n        v.buf[v.wi & MASK] = y;\n        v.wi = (v.wi + 1) & MASK;\n\n        // DC blocker OUTSIDE the loop (adds no loop phase → no detune).\n        const dc = y - v.dcX + 0.995 * v.dcY;\n        v.dcX = y;\n        v.dcY = dc;\n\n        L[i] += dc * v.gl;\n        R[i] += dc * v.gr;\n\n        // Idle detection: silent strings must not burn CPU.\n        const mag = dc < 0 ? -dc : dc;\n        v.peak = mag > v.peak ? mag : v.peak * 0.99995;\n        v.age++;\n        if (v.age > sampleRate && v.peak < IDLE_LEVEL) {\n          v.active = false;\n          v.exc = null;\n        }\n      }\n    }\n    return true;\n  }\n}\n\nregisterProcessor('steel-ks', SteelKS);\n", Bo = "1.0.0", Vo = null;
 Va(() => Vo ??= URL.createObjectURL(new Blob([zo], { type: "text/javascript" })));
