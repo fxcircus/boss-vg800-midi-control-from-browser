@@ -1470,6 +1470,22 @@
   </div>
 </div>
 
+<style>
+/* Fretboard modal: the only animated scrim — scoped to #fretModal so the other
+   modals keep their instant open. .closing keeps it visible (and inert) while
+   the exit animation runs; the bridge removes .open after it finishes. */
+#fretModal.open { animation: fretFadeIn .22s ease; }
+#fretModal.open .sheet { animation: fretSheetIn .24s cubic-bezier(.2,.9,.3,1); }
+#fretModal.closing { display: flex; pointer-events: none; animation: fretFadeOut .18s ease forwards; }
+#fretModal.closing .sheet { animation: fretSheetOut .18s ease forwards; }
+@keyframes fretFadeIn { from { opacity: 0; } }
+@keyframes fretFadeOut { to { opacity: 0; } }
+@keyframes fretSheetIn { from { opacity: 0; transform: translateY(16px) scale(.965); } }
+@keyframes fretSheetOut { to { opacity: 0; transform: translateY(12px) scale(.97); } }
+@media (prefers-reduced-motion: reduce){
+  #fretModal.open, #fretModal.open .sheet, #fretModal.closing, #fretModal.closing .sheet { animation: none; }
+}
+</style>
 <div class="scrim" id="fretModal">
   <div class="sheet" style="max-width:min(1150px,96vw);width:min(1150px,96vw)">
     <div id="fretMount" style="min-height:320px">Loading the fretboard…</div>
@@ -4011,11 +4027,19 @@ applyTheme = function(t){
 };
 
 /* Strings stop when the modal closes, however it closes (button, backdrop,
-   Escape — they all route through close()). */
+   Escape — they all route through close()). The fretboard modal exits through
+   a short .closing animation before .open is actually removed. */
 const fretOrigClose = close;
 close = function(id){
+  if(id==='fretModal'){
+    const m = document.getElementById('fretModal');
+    if(!m.classList.contains('open') || m.classList.contains('closing')) return;
+    if(fretCtl) fretCtl.stopAudio();
+    m.classList.add('closing');
+    setTimeout(()=>{ m.classList.remove('closing'); fretOrigClose(id); }, 185);
+    return;
+  }
   fretOrigClose(id);
-  if(id==='fretModal' && fretCtl) fretCtl.stopAudio();
 };
 
 /* Escape peels one layer at a time: an open picker menu or popover inside

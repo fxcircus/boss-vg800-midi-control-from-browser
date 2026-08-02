@@ -14827,7 +14827,7 @@ var oo = [
 								flexWrap: "wrap",
 								width: "fit-content"
 							},
-							children: Object.keys(vr).map((e) => /* @__PURE__ */ (0, B.jsxs)(Bi, {
+							children: Object.keys(vr).filter((t) => !e || t !== "flat").map((e) => /* @__PURE__ */ (0, B.jsxs)(Bi, {
 								$active: g.finish === e,
 								"aria-pressed": g.finish === e,
 								onClick: () => x({ finish: e }),
