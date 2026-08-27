@@ -269,6 +269,7 @@
      the screen, and it still drops from the button row. */
   @media (max-width: 640px) {
     .jump-menu { position: fixed; left: auto; right: 12px; top: var(--jump-top, 108px); max-width: calc(100vw - 24px); max-height: calc(100vh - var(--jump-top, 108px) - 12px); max-height: calc(100dvh - var(--jump-top, 108px) - 12px); }
+    .hdr-btns .jump-wrap { order: 99; }   /* the menu drops at the right screen edge here — put its button at the right end of the cluster too */
   }
   /* Random-tuning action item — a button in the jump menu / sidebar (brass accent to read as an action, not a nav link) */
   .jump-rand { display: flex; align-items: center; gap: 9px; width: 100%; margin-bottom: 4px; font-family: var(--mono); font-size: 12.5px; font-weight: 700; letter-spacing: 0.3px; color: var(--brass); background: transparent; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; text-align: left; transition: color .12s, background .12s; }
