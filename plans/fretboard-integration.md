@@ -167,3 +167,41 @@ than fight it:
   unchanged).
 - npm publishing; the committed-artifact flow is versioned by an exported
   version string until the repos ever merge.
+
+## String windows (added with embed 1.1.0)
+
+The host's Pedal Steel section picks which 6 of a steel tuning's 10 strings
+map onto the guitar (`WINDOWS`, in string-number order 1–6 → 5–10 with 3–8
+as `WIN_DEFAULT`). The board now mirrors that selector instead of always
+showing the full 10-string neck:
+
+- **Board UI** (visualizer `src/lib/stringWindows.ts` +
+  `src/components/StringWindowBar.tsx`): on `pedal-steel` catalog tunings an
+  embedded board shows chips `1–6 | 3–8 | 4–9 | 5–10 | All 10`, each with a
+  10-dot map and its open-string voicing. A window chip zooms the board to
+  that 6-string cut — key, scale, chord cards and audio all recompute from
+  the cut, and re-entrant flags are recomputed per slice (E9 3–8 ascends;
+  1–6 keeps the chromatic dip and its voicing reads in string order).
+  "All 10" keeps the old full neck, with the strings outside the guitar's
+  window drawn faded. The UI only appears when the host passes
+  `onStringWindowChange` — standalone app and older host pages unchanged.
+- **Host → board**: `fretPush` follows `setTuning(id)` with
+  `setStringWindows({selected, disabled})` built by `fretSteelWindows()`
+  (`selected` = `WINDOWS[steelWin].id`; `disabled` = windows whose
+  `computeCluster` won't fit ±12 — none today, same safety net as the host
+  chips). Feature-detected, so a stale cached bundle just keeps the
+  full-neck behavior. null clears when leaving steel.
+- **Board → host**: `onStringWindowChange(id)` → `fretWinFromViz` →
+  `applySteel(steelInst, idx)` under the `fretSyncing` guard, then a
+  confirm-push of the real state (covers a pick that couldn't apply).
+  Picking a steel tuning from the board dropdown now keeps the player's
+  window via `steelWinFor` (it describes their guitar, not the tuning)
+  instead of resetting to the old array index 0.
+- **Bends**: `setPulls` of six values now lands on the selected window's
+  strings — 1:1 on the windowed board, mapped onto rows i0..i0+5 of the
+  full neck in All-10 view. (Before, six pulls on a 10-string board were
+  dropped entirely.)
+- The visualizer-side source lives in the guitar-fretboard-visualizer repo;
+  until it's pushed there, the exact source diff for this bundle is
+  committed alongside the artifact as
+  `fretboard/embed-string-windows.src.patch`.

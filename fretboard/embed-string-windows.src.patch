@@ -1,0 +1,1279 @@
+From 281865b696e91047c30b28867397b5009c3b5aaf Mon Sep 17 00:00:00 2001
+From: Roy Daniel <roydanielr@gmail.com>
+Date: Thu, 27 Aug 2026 22:03:47 +0000
+Subject: [PATCH] String windows: play 6 of a pedal-steel neck's 10 strings
+
+The VG-800 host app maps a 10-string steel tuning onto a 6-string guitar by
+picking a contiguous window (strings 3-8 by default). Embedded boards now
+mirror that: pedal-steel tunings get a Strings chip row (1-6 | 3-8 | 4-9 |
+5-10 | All 10) with a 10-dot map and the open-string voicing on every chip.
+
+- lib/stringWindows.ts: the window table (string-number order, i0 into the
+  low-first midi array) and windowedTuning() - a 6-string cut that keeps the
+  parent's identity/key/copedent and recomputes the re-entrant flag per
+  slice, so E9 3-8 reads low-to-high while 1-6 keeps the chromatic dip.
+- App: the cut IS the baseTuning, so key, scale, chord cards, audio and the
+  board all recompute for the six strings actually shown. All 10 keeps the
+  full neck with the out-of-window strings drawn faded (Fretboard's new
+  fadedStrings prop). Host pulls (six values) land 1:1 on the windowed
+  board and map onto the window's rows in the All-10 view - they used to be
+  dropped on 10-string tunings.
+- embed API 1.1.0: MountOptions.stringWindows + onStringWindowChange (the
+  callback is also the feature switch - without it, and in the standalone
+  app, nothing changes), controller.setStringWindows({selected, disabled} |
+  null) with the buffered-setter pattern the other pushes use.
+
+Apply to guitar-fretboard-visualizer main (built bundle synced into the
+VG-800 repo as fretboard/fretboard-embed.es.js).
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01HfPoqgQqvMeNcyzbShoBEr
+---
+ package-lock.json                  |  96 ---------------
+ src/App.tsx                        | 168 +++++++++++++++++++++++---
+ src/components/Fretboard.tsx       |  25 +++-
+ src/components/StringWindowBar.tsx | 188 +++++++++++++++++++++++++++++
+ src/embed.tsx                      |  64 +++++++++-
+ src/lib/stringWindows.test.ts      | 127 +++++++++++++++++++
+ src/lib/stringWindows.ts           |  72 +++++++++++
+ 7 files changed, 620 insertions(+), 120 deletions(-)
+ create mode 100644 src/components/StringWindowBar.tsx
+ create mode 100644 src/lib/stringWindows.test.ts
+ create mode 100644 src/lib/stringWindows.ts
+
+diff --git a/package-lock.json b/package-lock.json
+index 716bfdf..43b9827 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -530,9 +530,6 @@
+         "x64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -701,9 +698,6 @@
+         "arm64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -721,9 +715,6 @@
+         "arm64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -741,9 +732,6 @@
+         "ppc64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -761,9 +749,6 @@
+         "riscv64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -781,9 +766,6 @@
+         "riscv64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -801,9 +783,6 @@
+         "s390x"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -821,9 +800,6 @@
+         "x64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -841,9 +817,6 @@
+         "x64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1014,9 +987,6 @@
+         "arm64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1034,9 +1004,6 @@
+         "arm64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1054,9 +1021,6 @@
+         "ppc64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1074,9 +1038,6 @@
+         "s390x"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1094,9 +1055,6 @@
+         "x64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1114,9 +1072,6 @@
+         "x64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1292,9 +1247,6 @@
+         "arm"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1309,9 +1261,6 @@
+         "arm"
+       ],
+       "dev": true,
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1326,9 +1275,6 @@
+         "arm64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1343,9 +1289,6 @@
+         "arm64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1360,9 +1303,6 @@
+         "loong64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1377,9 +1317,6 @@
+         "loong64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1394,9 +1331,6 @@
+         "ppc64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1411,9 +1345,6 @@
+         "ppc64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1428,9 +1359,6 @@
+         "riscv64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1445,9 +1373,6 @@
+         "riscv64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1462,9 +1387,6 @@
+         "s390x"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1479,9 +1401,6 @@
+         "x64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -1496,9 +1415,6 @@
+         "x64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "MIT",
+       "optional": true,
+       "os": [
+@@ -2141,9 +2057,6 @@
+         "arm64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MPL-2.0",
+       "optional": true,
+       "os": [
+@@ -2165,9 +2078,6 @@
+         "arm64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "MPL-2.0",
+       "optional": true,
+       "os": [
+@@ -2189,9 +2099,6 @@
+         "x64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "glibc"
+-      ],
+       "license": "MPL-2.0",
+       "optional": true,
+       "os": [
+@@ -2213,9 +2120,6 @@
+         "x64"
+       ],
+       "dev": true,
+-      "libc": [
+-        "musl"
+-      ],
+       "license": "MPL-2.0",
+       "optional": true,
+       "os": [
+diff --git a/src/App.tsx b/src/App.tsx
+index a5aadb2..8606b52 100644
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+ import styled, { ThemeProvider, createGlobalStyle, css, keyframes } from 'styled-components';
+ 
+ import Fretboard from './components/Fretboard';
++import StringWindowBar from './components/StringWindowBar';
+ import TuningPicker from './components/TuningPicker';
+ import { Chip, Hint, IconBtn, Label, Mono, Panel, Row, Toggle, ToggleBtn } from './components/ui';
+ import { darkTheme, lightTheme, type Theme } from './theme';
+@@ -33,6 +34,13 @@ import {
+   type InlayName,
+ } from './lib/boardStyles';
+ import { applyPulls, normalizePulls, resolveTuning } from './lib/tuningState';
++import {
++  DEFAULT_WINDOW_ID,
++  WINDOW_SIZE,
++  getWindow,
++  hasStringWindows,
++  windowedTuning,
++} from './lib/stringWindows';
+ import { deriveKey } from './lib/keyFromTuning';
+ import { collectChordCards, type ChordCard } from './lib/chordCards';
+ import { functionColor } from './lib/noteColors';
+@@ -445,6 +453,17 @@ export type ExternalTuning =
+   | { kind: 'id'; id: string; n: number }
+   | { kind: 'custom'; midi: number[]; n: number };
+ 
++/**
++ * A host-driven string-window push for 10-string steel tunings: the window the
++ * host instrument is set to plus the windows it can't retune to. `cfg: null`
++ * clears the config (the host left the steel tunings); `n` makes every push
++ * distinct.
++ */
++export type ExternalWindows = {
++  cfg: { selected?: string; disabled?: string[] } | null;
++  n: number;
++};
++
+ export interface EmbedHandlers {
+   /** Close one open layer (picker menu, popover). True if something closed. */
+   closeTopLayer: () => boolean;
+@@ -460,8 +479,16 @@ export interface AppProps {
+   externalTuning?: ExternalTuning | null;
+   /** Host-pushed per-string bends, low string first (embedded only). */
+   externalPulls?: { vals: number[]; n: number } | null;
++  /** Host-pushed string-window config for pedal-steel tunings (embedded only). */
++  externalWindows?: ExternalWindows | null;
+   /** Fires when the user picks a tuning inside the app. */
+   onTuningChange?: (id: string) => void;
++  /**
++   * Fires when the user picks a 6-string window on a steel tuning. Also the
++   * switch that turns the window UI on — a host that doesn't listen (or the
++   * standalone app) keeps today's full-neck behavior.
++   */
++  onStringWindowChange?: (id: string) => void;
+   registerEmbedHandlers?: (h: EmbedHandlers) => void;
+ }
+ 
+@@ -470,7 +497,9 @@ const App: React.FC<AppProps> = ({
+   embedTheme,
+   externalTuning = null,
+   externalPulls = null,
++  externalWindows = null,
+   onTuningChange,
++  onStringWindowChange,
+   registerEmbedHandlers,
+ }) => {
+   const [state, setState] = useState<AppState>(() => {
+@@ -618,28 +647,96 @@ const App: React.FC<AppProps> = ({
+     });
+   }, [externalTuning]);
+ 
++  // ── Tuning ───────────────────────────────────────────────────────────────
++  const catalogTuning = useMemo(
++    () => resolveTuning(state.tuningId, state.customTuning),
++    [state.tuningId, state.customTuning]
++  );
++
++  // ── String windows (embedded: which 6 of a steel neck's 10 strings) ──────
++  // Only a host that listens for window picks gets the window UI — the
++  // standalone app (and an older host page) keeps the full-neck behavior.
++  const windowsLive = embedded && !!onStringWindowChange;
++  const [winState, setWinState] = useState<{
++    activeId: string;
++    view: 'win' | 'all';
++    disabled: string[];
++  }>(() => ({
++    activeId: getWindow(externalWindows?.cfg?.selected)?.id ?? DEFAULT_WINDOW_ID,
++    view: 'win',
++    disabled: (externalWindows?.cfg?.disabled ?? []).filter((id) => getWindow(id)),
++  }));
++
++  // Host pushes move the selection and the can't-fit list; the view (zoomed
++  // window vs full neck) is the user's own and never yanked by a push.
++  useEffect(() => {
++    if (!windowsLive || !externalWindows) return;
++    setWinState((prev) => {
++      const cfg = externalWindows.cfg;
++      const activeId = cfg ? (getWindow(cfg.selected)?.id ?? prev.activeId) : DEFAULT_WINDOW_ID;
++      const disabled = cfg ? (cfg.disabled ?? []).filter((id) => getWindow(id)) : [];
++      if (
++        activeId === prev.activeId &&
++        disabled.length === prev.disabled.length &&
++        disabled.every((d, i) => d === prev.disabled[i])
++      ) {
++        return prev;
++      }
++      return { ...prev, activeId, disabled };
++    });
++  }, [windowsLive, externalWindows]);
++
++  const windowsOn = windowsLive && hasStringWindows(catalogTuning);
++  const activeWindow = windowsOn
++    ? (getWindow(winState.activeId) ?? getWindow(DEFAULT_WINDOW_ID)!)
++    : null;
++  // The cut on the board (null = full neck). Everything downstream — key,
++  // scale, chord cards, the fretboard — recomputes from the cut, so the
++  // theory always matches the six strings actually shown.
++  const windowCut = winState.view === 'win' ? activeWindow : null;
++  const baseTuning = useMemo(
++    () => (windowCut ? windowedTuning(catalogTuning, windowCut) : catalogTuning),
++    [catalogTuning, windowCut]
++  );
++  const stringCount = baseTuning.midi.length;
++
+   // Host-pushed bends (the VG-800's pedals and per-string benders) land as
+-  // per-string pulls — the same engine the URL's p= param feeds. Idempotent,
+-  // and ignored when the string counts disagree (a 6-string guitar bend has
+-  // no home on a 10-string pedal-steel board).
++  // per-string pulls — the same engine the URL's p= param feeds. The host
++  // always sends six values (its guitar's strings): on the windowed board
++  // they land 1:1; on the full 10-string neck they land on the window's six
++  // rows; any other mismatch clears to no pulls. Bends belong to the tuning
++  // they were sent for, so a tuning change drops them until fresh ones come.
++  const hostPullsRef = useRef<{ vals: number[]; n: number; sig: string }>({
++    vals: [],
++    n: -1,
++    sig: '',
++  });
+   useEffect(() => {
+-    if (!embedded || !externalPulls) return;
++    if (!embedded) return;
++    const sig = `${catalogTuning.id}|${catalogTuning.midi.join(',')}`;
++    const ref = hostPullsRef.current;
++    if (externalPulls && externalPulls.n !== ref.n) {
++      hostPullsRef.current = { vals: externalPulls.vals, n: externalPulls.n, sig };
++    } else if (ref.sig !== sig) {
++      hostPullsRef.current = { vals: [], n: ref.n, sig };
++    }
++    const count = baseTuning.midi.length;
++    const vals = hostPullsRef.current.vals;
++    let src = vals.length === count ? vals : [];
++    if (!src.length && activeWindow && !windowCut && vals.length === WINDOW_SIZE && count === 10) {
++      const spread = Array<number>(count).fill(0);
++      vals.forEach((v, j) => {
++        spread[activeWindow.i0 + j] = v;
++      });
++      src = spread;
++    }
+     setState((prev) => {
+-      const count = resolveTuning(prev.tuningId, prev.customTuning).midi.length;
+-      const src = externalPulls.vals.length === count ? externalPulls.vals : [];
+       const next = normalizePulls(src, count);
+       const cur = normalizePulls(prev.pulls, count);
+       if (next.every((v, i) => v === cur[i])) return prev;
+       return { ...prev, pulls: next };
+     });
+-  }, [embedded, externalPulls]);
+-
+-  // ── Tuning ───────────────────────────────────────────────────────────────
+-  const baseTuning = useMemo(
+-    () => resolveTuning(state.tuningId, state.customTuning),
+-    [state.tuningId, state.customTuning]
+-  );
+-  const stringCount = baseTuning.midi.length;
++  }, [embedded, externalPulls, catalogTuning, baseTuning, activeWindow, windowCut]);
+   const pulls = useMemo(
+     () => normalizePulls(state.pulls, stringCount),
+     [state.pulls, stringCount]
+@@ -849,6 +946,35 @@ const App: React.FC<AppProps> = ({
+     onTuningChange?.(id);
+   };
+ 
++  // A window pick zooms the board to those six strings AND retunes the host
++  // guitar (the same two-way sync as the tuning picker). "All 10" is a local
++  // view choice — the guitar stays on its window, drawn brighter on the neck.
++  const pickWindow = useCallback(
++    (id: string) => {
++      setWinState((prev) =>
++        prev.activeId === id && prev.view === 'win'
++          ? prev
++          : { ...prev, activeId: id, view: 'win' }
++      );
++      onStringWindowChange?.(id);
++    },
++    [onStringWindowChange]
++  );
++  const pickAllStrings = useCallback(() => {
++    setWinState((prev) => (prev.view === 'all' ? prev : { ...prev, view: 'all' }));
++  }, []);
++
++  // On the full-neck view the strings outside the guitar's window draw faded,
++  // so the whole instrument stays readable while the six live strings pop.
++  const fadedStrings = useMemo(() => {
++    if (windowCut || !activeWindow) return null;
++    const out = new Set<number>();
++    for (let i = 0; i < catalogTuning.midi.length; i++) {
++      if (i < activeWindow.i0 || i >= activeWindow.i0 + WINDOW_SIZE) out.add(i);
++    }
++    return out;
++  }, [windowCut, activeWindow, catalogTuning]);
++
+   const editString = (i: number, delta: number) => {
+     const next = [...baseTuning.midi];
+     next[i] = Math.min(CUSTOM_MIDI_MAX, Math.max(CUSTOM_MIDI_MIN, next[i] + delta));
+@@ -1163,7 +1289,7 @@ const App: React.FC<AppProps> = ({
+           <Row>
+             <TuningPicker
+               tuningId={state.tuningId}
+-              current={baseTuning}
++              current={catalogTuning}
+               onSelect={handleTuningChange}
+               menuRef={pickerMenuRef}
+             />
+@@ -1221,6 +1347,17 @@ const App: React.FC<AppProps> = ({
+             </Hint>
+           )}
+ 
++          {activeWindow && (
++            <StringWindowBar
++              tuning={catalogTuning}
++              view={winState.view}
++              activeId={activeWindow.id}
++              disabled={winState.disabled}
++              onPickWindow={pickWindow}
++              onPickAll={pickAllStrings}
++            />
++          )}
++
+           {state.tuningId === CUSTOM_TUNING_ID && (
+             <Row>
+               <Label>Strings</Label>
+@@ -1322,6 +1459,7 @@ const App: React.FC<AppProps> = ({
+           flats={flats}
+           onPlay={autoPlay ? undefined : () => strum(activeStringIdxs)}
+           board={boardPrefs}
++          fadedStrings={fadedStrings}
+         />
+       </Shell>
+   );
+diff --git a/src/components/Fretboard.tsx b/src/components/Fretboard.tsx
+index 64c2048..88c853e 100644
+--- a/src/components/Fretboard.tsx
++++ b/src/components/Fretboard.tsx
+@@ -29,6 +29,9 @@ const SCALE_DEGREE = ['1', '♭2', '2', '♭3', '3', '4', '♭5', '5', '♭6', '
+ /** How long the bar takes to slide between frets; markers wait for it. */
+ const SLIDE_MS = 160;
+ 
++/** Opacity of strings outside the player's window (fadedStrings prop). */
++const FAINT = 0.32;
++
+ // x of a fret column's centre within the board surface
+ const fretCenterX = (fret: number, fretW: number): number =>
+   fret === 0 ? OPEN_W / 2 : OPEN_W + (fret - 1) * fretW + fretW / 2;
+@@ -71,6 +74,11 @@ export interface FretboardProps {
+   onPlay?: () => void;
+   /** The physical board: finish, inlays, bar style, detail toggles. */
+   board: BoardPrefs;
++  /**
++   * Strings drawn faded (low-first indices) — the rows outside the player's
++   * 6-string window on a 10-string steel neck. Still labelled and clickable.
++   */
++  fadedStrings?: Set<number> | null;
+ }
+ 
+ const BoardScroll = styled.div`
+@@ -256,6 +264,7 @@ const Mark = styled.button<{
+   $fill?: string;
+   $fading?: boolean;
+   $dim: boolean;
++  $faint?: boolean;
+ }>`
+   position: absolute;
+   z-index: 4;
+@@ -272,7 +281,7 @@ const Mark = styled.button<{
+   user-select: none;
+   background: ${({ $fill }) => $fill ?? 'transparent'};
+   transform: translate(-50%, -50%) ${({ $isPlaying }) => ($isPlaying ? 'scale(1.18)' : 'scale(1)')};
+-  opacity: ${({ $fading }) => ($fading ? 0 : 1)};
++  opacity: ${({ $fading, $faint }) => ($fading ? 0 : $faint ? FAINT : 1)};
+   pointer-events: ${({ $fading }) => ($fading ? 'none' : 'auto')};
+   transition:
+     transform ${({ theme }) => theme.transitions.fast},
+@@ -467,6 +476,7 @@ const Fretboard: React.FC<FretboardProps> = ({
+   flats = false,
+   onPlay,
+   board,
++  fadedStrings,
+ }) => {
+   const stringCount = midi.length;
+   const frets = Array.from({ length: maxFret + 1 }, (_, f) => f);
+@@ -612,7 +622,7 @@ const Fretboard: React.FC<FretboardProps> = ({
+                 <StringName
+                   key={s}
+                   $pulled={isPulled}
+-                  style={{ top: rowY(s) }}
++                  style={{ top: rowY(s), opacity: fadedStrings?.has(s) ? FAINT : undefined }}
+                   title={
+                     isPulled
+                       ? `String ${stringCount - s} — pulled ${baseSpellings?.[s] ?? ''} → ${spellings[s]}`
+@@ -688,14 +698,18 @@ const Fretboard: React.FC<FretboardProps> = ({
+                 const y = rowY(s);
+                 const g = Math.round(stringGauge(m, board.gauges) * 10) / 10;
+                 const wound = isWound(m, board.gauges);
++                const faint = fadedStrings?.has(s);
+                 if (paper) {
+                   // Shop drawing: plain solid ink lines, gauge-varied only.
+                   return (
+-                    <div key={s} style={{ position: 'absolute', left: 0, right: 0, top: y, height: g, transform: 'translateY(-50%)', background: fin.ink, opacity: 0.85 }} />
++                    <div key={s} style={{ position: 'absolute', left: 0, right: 0, top: y, height: g, transform: 'translateY(-50%)', background: fin.ink, opacity: faint ? 0.85 * FAINT : 0.85 }} />
+                   );
+                 }
++                // The wrapper only carries the faded-window opacity — plain
++                // (unpositioned), so the absolute children still place
++                // against the Surface.
+                 return (
+-                  <React.Fragment key={s}>
++                  <div key={s} style={faint ? { opacity: FAINT } : undefined}>
+                     <div style={{ position: 'absolute', left: 0, right: 0, top: y + g / 2 + 0.6, height: Math.max(1.5, g * 0.8), background: 'rgba(0,0,0,0.55)', filter: 'blur(1.6px)' }} />
+                     <div style={{ position: 'absolute', left: 0, right: 0, top: y, height: g, transform: 'translateY(-50%)', background: wound ? fin.stringWound : fin.stringPlain, boxShadow: '0 0 1px rgba(0,0,0,0.5)' }} />
+                     {wound && (
+@@ -705,7 +719,7 @@ const Fretboard: React.FC<FretboardProps> = ({
+                     {board.gauges && (
+                       <div style={{ position: 'absolute', left: 0, right: 0, top: y - g / 2, height: 1, background: 'rgba(255,255,255,0.5)', opacity: 0.55 }} />
+                     )}
+-                  </React.Fragment>
++                  </div>
+                 );
+               })}
+             </Layer>
+@@ -758,6 +772,7 @@ const Fretboard: React.FC<FretboardProps> = ({
+                     $dim={dim}
+                     $fill={dim ? undefined : (m.fill ?? fin.inlay)}
+                     $fading={view === 'bar' && sliding}
++                    $faint={fadedStrings?.has(s)}
+                     $isPlaying={playing}
+                     onClick={(e) => {
+                       e.stopPropagation();
+diff --git a/src/components/StringWindowBar.tsx b/src/components/StringWindowBar.tsx
+new file mode 100644
+index 0000000..9b5298e
+--- /dev/null
++++ b/src/components/StringWindowBar.tsx
+@@ -0,0 +1,188 @@
++/**
++ * The string-window selector shown on 10-string pedal-steel tunings when the
++ * board is embedded in the VG-800 app: which six of the ten strings the
++ * player's guitar is set to, plus an "All 10" view of the full neck.
++ *
++ * Every option shows its own voicing so the choice can be made by ear, not by
++ * trial: a 10-dot map of the strings it covers, the string numbers, and the
++ * open notes of the cut. The line underneath explains the selected option in
++ * the same words the VG-800's own Pedal Steel section uses.
++ */
++import React from 'react';
++import styled from 'styled-components';
++
++import { Hint, Label, Row } from './ui';
++import type { Tuning } from '../lib/tunings';
++import {
++  STRING_WINDOWS,
++  WINDOW_SIZE,
++  isReentrant,
++  windowSpan,
++  type StringWindow,
++} from '../lib/stringWindows';
++
++const Section = styled.div`
++  display: flex;
++  flex-direction: column;
++  gap: 6px;
++  padding-top: ${({ theme }) => theme.spacing.sm};
++  border-top: 1px solid ${({ theme }) => `${theme.colors.border}66`};
++`;
++
++// A column chip: dot-map on top, the window's numbers, its open notes below —
++// the same reading order as the VG-800's grouping buttons.
++const WinBtn = styled.button<{ $active?: boolean; $ghost?: boolean }>`
++  display: flex;
++  flex-direction: column;
++  align-items: center;
++  gap: 4px;
++  padding: 6px 10px 5px;
++  border: 1px ${({ $ghost }) => ($ghost ? 'dashed' : 'solid')}
++    ${({ $active, $ghost, theme }) =>
++      $active || $ghost ? theme.colors.primary : theme.colors.border};
++  border-radius: ${({ theme }) => theme.borderRadius.small};
++  cursor: pointer;
++  background: ${({ $active, theme }) => ($active ? `${theme.colors.primary}22` : 'transparent')};
++  color: ${({ $active, theme }) => ($active ? theme.colors.primary : theme.colors.text)};
++  font-family: inherit;
++  font-size: ${({ theme }) => theme.fontSizes.xs};
++  font-weight: 700;
++  transition: all ${({ theme }) => theme.transitions.fast};
++
++  &:hover:not(:disabled) {
++    border-color: ${({ theme }) => theme.colors.primary};
++  }
++
++  &:disabled {
++    cursor: default;
++    opacity: 0.4;
++  }
++`;
++
++const DotRow = styled.span`
++  display: inline-flex;
++  gap: 2px;
++`;
++
++const Dot = styled.i<{ $on: boolean }>`
++  width: 3px;
++  height: 12px;
++  border-radius: 1.5px;
++  background: ${({ $on, theme }) => ($on ? theme.colors.primary : theme.colors.border)};
++  transition: background ${({ theme }) => theme.transitions.fast};
++`;
++
++const WinNotes = styled.span`
++  font-family: ${({ theme }) => theme.monoFamily};
++  font-size: 9px;
++  font-weight: 500;
++  letter-spacing: 0.04em;
++  color: ${({ theme }) => theme.colors.textSecondary};
++  white-space: nowrap;
++`;
++
++export interface StringWindowBarProps {
++  /** The full 10-string catalog tuning the windows cut from. */
++  tuning: Tuning;
++  /** 'win' = the 6-string cut is on the board; 'all' = the full neck. */
++  view: 'win' | 'all';
++  /** The window the host guitar is set to. */
++  activeId: string;
++  /** Window ids the host guitar cannot retune to (shown, but not clickable). */
++  disabled: string[];
++  onPickWindow: (id: string) => void;
++  onPickAll: () => void;
++}
++
++const StringWindowBar: React.FC<StringWindowBarProps> = ({
++  tuning,
++  view,
++  activeId,
++  disabled,
++  onPickWindow,
++  onPickAll,
++}) => {
++  const strings = tuning.midi.length;
++  const cutOf = (w: StringWindow) => ({
++    midi: tuning.midi.slice(w.i0, w.i0 + WINDOW_SIZE),
++    notes: tuning.spellings.slice(w.i0, w.i0 + WINDOW_SIZE).join(' '),
++  });
++
++  // Dots read left→right as string 1..10, matching the VG-800's grouping
++  // buttons; the midi array is low-first, so dot d maps to index strings-1-d.
++  const dots = (lit: (idx: number) => boolean) =>
++    Array.from({ length: strings }, (_, d) => <Dot key={d} $on={lit(strings - 1 - d)} />);
++
++  const active = STRING_WINDOWS.find((w) => w.id === activeId) ?? STRING_WINDOWS[0];
++  const { midi: activeMidi, notes: activeNotes } = cutOf(active);
++  const activeSpan = windowSpan(active);
++
++  return (
++    <Section>
++      <Label>Strings</Label>
++      <Row role="group" aria-label="Which six of the ten strings the guitar plays">
++        {STRING_WINDOWS.map((w) => {
++          const off = disabled.includes(w.id);
++          const isActive = w.id === activeId && view === 'win';
++          const ghost = w.id === activeId && view === 'all';
++          const { notes } = cutOf(w);
++          return (
++            <WinBtn
++              key={w.id}
++              type="button"
++              $active={isActive}
++              $ghost={ghost}
++              disabled={off}
++              aria-pressed={isActive}
++              onClick={() => onPickWindow(w.id)}
++              title={
++                off
++                  ? `Strings ${w.label} won't fit the guitar — a string would land outside the ±12 semitone retuning range`
++                  : ghost
++                    ? `The guitar is on strings ${w.label} — tap to zoom the board to it`
++                    : `Strings ${w.label} — ${w.desc}: ${notes}`
++              }
++            >
++              <DotRow aria-hidden="true">
++                {dots((idx) => idx >= w.i0 && idx < w.i0 + WINDOW_SIZE)}
++              </DotRow>
++              <span>{w.label}</span>
++              <WinNotes>{notes}</WinNotes>
++            </WinBtn>
++          );
++        })}
++        <WinBtn
++          type="button"
++          $active={view === 'all'}
++          aria-pressed={view === 'all'}
++          onClick={onPickAll}
++          title="Show the whole 10-string neck — the strings outside the guitar's group are dimmed"
++        >
++          <DotRow aria-hidden="true">{dots(() => true)}</DotRow>
++          <span>All 10</span>
++          <WinNotes>the full neck</WinNotes>
++        </WinBtn>
++      </Row>
++      {view === 'win' ? (
++        <Hint>
++          <strong>
++            {tuning.name} · strings {active.label}
++          </strong>{' '}
++          — {active.desc}. Voicing (
++          {isReentrant(activeMidi)
++            ? `string ${activeSpan.bottom} → string ${activeSpan.top}`
++            : 'low → high'}
++          ): <strong>{activeNotes}</strong>.
++        </Hint>
++      ) : (
++        <Hint>
++          <strong>{tuning.name} · all 10 strings</strong> — the full neck; the guitar plays{' '}
++          <strong>strings {active.label}</strong> ({activeNotes}) and the strings outside that
++          group are dimmed below.
++        </Hint>
++      )}
++    </Section>
++  );
++};
++
++export default StringWindowBar;
+diff --git a/src/embed.tsx b/src/embed.tsx
+index d4314a5..514930c 100644
+--- a/src/embed.tsx
++++ b/src/embed.tsx
+@@ -17,13 +17,13 @@
+ import React, { useEffect, useState } from 'react';
+ import { createRoot } from 'react-dom/client';
+ 
+-import App, { type EmbedHandlers, type ExternalTuning } from './App';
++import App, { type EmbedHandlers, type ExternalTuning, type ExternalWindows } from './App';
+ import { darkTheme, lightTheme, type Theme } from './theme';
+ import { setWorkletUrl } from './lib/steelEngine';
+ import { TUNINGS, getTuning } from './lib/tunings';
+ import workletSrc from './lib/steel-processor.js?raw';
+ 
+-export const EMBED_VERSION = '1.0.0';
++export const EMBED_VERSION = '1.1.0';
+ 
+ let workletBlobUrl: string | null = null;
+ setWorkletUrl(
+@@ -91,10 +91,28 @@ export function tuningNameForId(id: string): string | null {
+ 
+ // ── Mount ──────────────────────────────────────────────────────────────────
+ 
++/**
++ * The string-window chips shown on 10-string pedal-steel tunings: which six
++ * strings the host instrument is set to ('1-6' | '3-8' | '4-9' | '5-10'),
++ * and which windows it cannot retune to (drawn, but not clickable).
++ */
++export interface StringWindowsConfig {
++  selected?: string;
++  disabled?: string[];
++}
++
+ export interface MountOptions {
+   theme?: Theme | 'dark' | 'light';
+   tuningId?: string;
+   onTuningChange?: (id: string) => void;
++  /** Initial string-window config (see setStringWindows). */
++  stringWindows?: StringWindowsConfig | null;
++  /**
++   * Fires when the user picks a 6-string window on the board. Providing this
++   * is what turns the window UI on — without it, steel tunings show the full
++   * 10-string neck exactly as before.
++   */
++  onStringWindowChange?: (id: string) => void;
+ }
+ 
+ export interface FretboardController {
+@@ -104,10 +122,17 @@ export interface FretboardController {
+   /** Show an ad-hoc stack (absolute MIDI, low string first, 3–10 strings). */
+   setCustomTuning(midiLowFirst: number[]): void;
+   /**
+-   * Per-string bends in semitones, low string first ([] = none). Ignored when
+-   * the length doesn't match the shown tuning's string count.
++   * Per-string bends in semitones, low string first ([] = none). Six values
++   * on a 10-string steel tuning land on the selected window's strings; any
++   * other length mismatch clears the bends.
+    */
+   setPulls(semisLowFirst: number[]): void;
++  /**
++   * Update the string-window chips on pedal-steel tunings: the window the
++   * host instrument is on, and the windows it can't retune to. Pass null
++   * when leaving the steel tunings. No-op without onStringWindowChange.
++   */
++  setStringWindows(cfg: StringWindowsConfig | null): void;
+   setTheme(theme: Theme | 'dark' | 'light'): void;
+   /** Close one open layer (menu/popover). True if something was closed. */
+   closeTopLayer(): boolean;
+@@ -118,6 +143,19 @@ export interface FretboardController {
+ const resolveTheme = (t?: Theme | 'dark' | 'light'): Theme =>
+   t === 'light' ? lightTheme : t === 'dark' || t == null ? darkTheme : t;
+ 
++/** Keep only the well-typed parts of a host-supplied window config. */
++const sanitizeWindows = (
++  cfg: StringWindowsConfig | null | undefined
++): ExternalWindows['cfg'] => {
++  if (!cfg || typeof cfg !== 'object') return null;
++  return {
++    selected: typeof cfg.selected === 'string' ? cfg.selected : undefined,
++    disabled: Array.isArray(cfg.disabled)
++      ? cfg.disabled.filter((x): x is string => typeof x === 'string')
++      : undefined,
++  };
++};
++
+ export function mountFretboard(
+   el: HTMLElement,
+   opts: MountOptions = {}
+@@ -132,9 +170,11 @@ export function mountFretboard(
+     setTheme?: (t: Theme) => void;
+     setExt?: (e: ExternalTuning) => void;
+     setPulls?: (p: ExtPulls) => void;
++    setWins?: (w: ExternalWindows) => void;
+     pendingTheme?: Theme;
+     pendingExt?: ExternalTuning;
+     pendingPulls?: ExtPulls;
++    pendingWins?: ExternalWindows;
+   } = {};
+ 
+   const Host: React.FC = () => {
+@@ -145,20 +185,29 @@ export function mountFretboard(
+         : null
+     );
+     const [pulls, setPulls] = useState<ExtPulls | null>(null);
++    const [wins, setWins] = useState<ExternalWindows | null>(() =>
++      opts.stringWindows !== undefined
++        ? { cfg: sanitizeWindows(opts.stringWindows), n: ++seq }
++        : null
++    );
+     useEffect(() => {
+       api.setTheme = setTheme;
+       api.setExt = setExt;
+       api.setPulls = setPulls;
++      api.setWins = setWins;
+       if (api.pendingTheme) setTheme(api.pendingTheme);
+       if (api.pendingExt) setExt(api.pendingExt);
+       if (api.pendingPulls) setPulls(api.pendingPulls);
++      if (api.pendingWins) setWins(api.pendingWins);
+       api.pendingTheme = undefined;
+       api.pendingExt = undefined;
+       api.pendingPulls = undefined;
++      api.pendingWins = undefined;
+       return () => {
+         api.setTheme = undefined;
+         api.setExt = undefined;
+         api.setPulls = undefined;
++        api.setWins = undefined;
+       };
+     }, []);
+     return (
+@@ -167,7 +216,9 @@ export function mountFretboard(
+         embedTheme={theme}
+         externalTuning={ext}
+         externalPulls={pulls}
++        externalWindows={wins}
+         onTuningChange={opts.onTuningChange}
++        onStringWindowChange={opts.onStringWindowChange}
+         registerEmbedHandlers={(h) => {
+           handlers = h;
+         }}
+@@ -204,6 +255,11 @@ export function mountFretboard(
+       if (api.setPulls) api.setPulls(e);
+       else api.pendingPulls = e;
+     },
++    setStringWindows(cfg) {
++      const e: ExternalWindows = { cfg: sanitizeWindows(cfg), n: ++seq };
++      if (api.setWins) api.setWins(e);
++      else api.pendingWins = e;
++    },
+     closeTopLayer() {
+       return handlers?.closeTopLayer() ?? false;
+     },
+diff --git a/src/lib/stringWindows.test.ts b/src/lib/stringWindows.test.ts
+new file mode 100644
+index 0000000..7667840
+--- /dev/null
++++ b/src/lib/stringWindows.test.ts
+@@ -0,0 +1,127 @@
++/**
++ * String windows: the 6-of-10 cuts a 6-string player takes from a pedal-steel
++ * neck. Gates the window table (order, indices, coverage), the cut tunings
++ * (exact slices of the catalog stacks, correct re-entrant flags), and the
++ * host-bridge contract (ids the VG-800 app syncs on).
++ */
++import { describe, expect, test } from 'vitest';
++
++import {
++  DEFAULT_WINDOW_ID,
++  STRING_WINDOWS,
++  WINDOW_SIZE,
++  getWindow,
++  hasStringWindows,
++  isReentrant,
++  windowSpan,
++  windowedTuning,
++} from './stringWindows';
++import { TUNINGS, getTuning } from './tunings';
++import { noteToPitchClass } from './musicTheory';
++
++const steels = TUNINGS.filter((t) => t.group === 'pedal-steel');
++
++describe('the window table', () => {
++  test('runs in string-number order: 1–6, 3–8, 4–9, 5–10', () => {
++    expect(STRING_WINDOWS.map((w) => w.id)).toEqual(['1-6', '3-8', '4-9', '5-10']);
++  });
++
++  test('each window is a real 6-of-10 slice, and together they span every string', () => {
++    const covered = new Set<number>();
++    for (const w of STRING_WINDOWS) {
++      expect(w.i0).toBeGreaterThanOrEqual(0);
++      expect(w.i0 + WINDOW_SIZE).toBeLessThanOrEqual(10);
++      for (let i = w.i0; i < w.i0 + WINDOW_SIZE; i++) covered.add(i);
++    }
++    expect(covered.size).toBe(10);
++  });
++
++  test('ids agree with the string numbers the i0 index implies', () => {
++    // Low-first index i holds string 10-i, so a window starting at i0 covers
++    // strings (10-i0) down to (10-i0-5) — the id must say exactly that.
++    for (const w of STRING_WINDOWS) {
++      const { top, bottom } = windowSpan(w);
++      expect({ id: w.id, top, bottom }).toEqual({
++        id: w.id,
++        top: 10 - (w.i0 + WINDOW_SIZE - 1),
++        bottom: 10 - w.i0,
++      });
++    }
++  });
++
++  test('the default window exists and is the classic 3–8 grip', () => {
++    expect(DEFAULT_WINDOW_ID).toBe('3-8');
++    expect(getWindow(DEFAULT_WINDOW_ID)?.i0).toBe(2);
++    expect(getWindow('nope')).toBeNull();
++    expect(getWindow(null)).toBeNull();
++  });
++});
++
++describe('which tunings get windows', () => {
++  test('every 10-string pedal-steel neck, and nothing else', () => {
++    expect(steels.length).toBeGreaterThan(0);
++    for (const t of TUNINGS) {
++      expect({ id: t.id, windows: hasStringWindows(t) }).toEqual({
++        id: t.id,
++        windows: t.group === 'pedal-steel',
++      });
++    }
++  });
++});
++
++describe('the cut tunings', () => {
++  test('every window of every steel is the exact catalog slice', () => {
++    for (const t of steels) {
++      for (const w of STRING_WINDOWS) {
++        const cut = windowedTuning(t, w);
++        expect(cut.midi).toEqual(t.midi.slice(w.i0, w.i0 + WINDOW_SIZE));
++        expect(cut.spellings).toEqual(t.spellings.slice(w.i0, w.i0 + WINDOW_SIZE));
++        expect(cut.midi).toHaveLength(WINDOW_SIZE);
++        // Spellings still name the right pitches after the cut.
++        cut.midi.forEach((m, i) => {
++          expect({ t: t.id, w: w.id, i, pc: noteToPitchClass(cut.spellings[i]) }).toEqual({
++            t: t.id,
++            w: w.id,
++            i,
++            pc: ((m % 12) + 12) % 12,
++          });
++        });
++      }
++    }
++  });
++
++  test('a cut keeps its parent identity but cannot shadow a catalog id', () => {
++    for (const t of steels) {
++      const cut = windowedTuning(t, STRING_WINDOWS[1]);
++      expect(cut.name).toBe(t.name);
++      expect(cut.group).toBe(t.group);
++      expect(cut.description).toBe(t.description);
++      expect(cut.key).toEqual(t.key);
++      expect(cut.copedent).toBe(t.copedent);
++      expect(cut.id).toBe(`${t.id}::3-8`);
++      expect(getTuning(cut.id)).toBeUndefined();
++    }
++  });
++
++  test('re-entrant flags follow the slice, not the parent', () => {
++    const e9 = getTuning('ps-e9-nashville')!;
++    expect(e9.reentrant).toBe(true);
++    // 3–8, 4–9 and 5–10 skip the chromatic strings — they ascend cleanly.
++    expect(windowedTuning(e9, getWindow('3-8')!).reentrant).toBeUndefined();
++    expect(windowedTuning(e9, getWindow('4-9')!).reentrant).toBeUndefined();
++    expect(windowedTuning(e9, getWindow('5-10')!).reentrant).toBeUndefined();
++    // 1–6 keeps strings 1–2 (F♯4/D♯4 below string 3's G♯4) — still re-entrant.
++    expect(windowedTuning(e9, getWindow('1-6')!).reentrant).toBe(true);
++
++    // C6's top string (D4) sits below string 2's E4 — 1–6 is re-entrant too.
++    const c6 = getTuning('ps-c6-swing-jazz')!;
++    expect(windowedTuning(c6, getWindow('1-6')!).reentrant).toBe(true);
++    expect(windowedTuning(c6, getWindow('3-8')!).reentrant).toBeUndefined();
++  });
++
++  test('isReentrant: equal neighbours (Lanois doubled strings) do not count', () => {
++    expect(isReentrant([47, 47, 52, 52, 56, 59])).toBe(false);
++    expect(isReentrant([52, 54, 56, 59, 64, 68])).toBe(false);
++    expect(isReentrant([56, 59, 64, 68, 63, 66])).toBe(true);
++  });
++});
+diff --git a/src/lib/stringWindows.ts b/src/lib/stringWindows.ts
+new file mode 100644
+index 0000000..b8cc74d
+--- /dev/null
++++ b/src/lib/stringWindows.ts
+@@ -0,0 +1,72 @@
++/**
++ * String windows — playing a 10-string pedal-steel tuning on a 6-string
++ * instrument by picking a contiguous run of six strings ("play strings 3–8").
++ *
++ * Windows are named by pedal-steel string numbers: string 1 is the top row as
++ * drawn (the treble side), string 10 the bottom. The catalog's midi arrays run
++ * low string first, so window "3–8" (strings 8..3) is the slice starting at
++ * index 2. Windows are listed in string-number order (1–6 first) — the order
++ * the VG-800 host app shows them in; ids are the ASCII contract shared with
++ * that host's bridge, labels the pretty en-dash forms.
++ */
++import type { Tuning } from './tunings';
++
++export interface StringWindow {
++  /** Stable ASCII id, shared with the VG-800 host bridge ('3-8'). */
++  id: string;
++  /** Display label with a proper en dash ('3–8'). */
++  label: string;
++  /** Index of the window's bottom string in the low-first midi array. */
++  i0: number;
++  /** Why a player picks this window. */
++  desc: string;
++}
++
++export const WINDOW_SIZE = 6;
++
++/** In string-number order, 1–6 → 5–10 — the top of the neck to the bottom. */
++export const STRING_WINDOWS: StringWindow[] = [
++  { id: '1-6', label: '1–6', i0: 4, desc: 'the top strings' },
++  { id: '3-8', label: '3–8', i0: 2, desc: 'the classic 6-string country setup' },
++  { id: '4-9', label: '4–9', i0: 1, desc: 'a lower, fuller voicing' },
++  { id: '5-10', label: '5–10', i0: 0, desc: 'the low strings' },
++];
++
++/** Where a steel tuning lands first: the classic country grip. */
++export const DEFAULT_WINDOW_ID = '3-8';
++
++export function getWindow(id: string | null | undefined): StringWindow | null {
++  return STRING_WINDOWS.find((w) => w.id === id) ?? null;
++}
++
++/** Tunings that offer windows: the 10-string pedal-steel necks. */
++export function hasStringWindows(t: Tuning): boolean {
++  return t.group === 'pedal-steel' && t.midi.length === 10;
++}
++
++/** True when a stack does not ascend (E9's chromatic strings dip back down). */
++export function isReentrant(midi: number[]): boolean {
++  return midi.some((m, i) => i > 0 && m < midi[i - 1]);
++}
++
++/** The window's string numbers, bottom row and top row ('3-8' → 8 and 3). */
++export function windowSpan(w: StringWindow): { top: number; bottom: number } {
++  const [top, bottom] = w.id.split('-').map(Number);
++  return { top, bottom };
++}
++
++/**
++ * The 6-string Tuning a window cuts from a 10-string neck. Keeps the parent's
++ * name/description/key/copedent — only the strings change, plus the re-entrant
++ * flag, recomputed for the slice (3–8 of the E9 ascends cleanly; 1–6 keeps the
++ * chromatic dip). The id is suffixed so the cut can never shadow a catalog
++ * entry.
++ */
++export function windowedTuning(t: Tuning, w: StringWindow): Tuning {
++  const midi = t.midi.slice(w.i0, w.i0 + WINDOW_SIZE);
++  const spellings = t.spellings.slice(w.i0, w.i0 + WINDOW_SIZE);
++  const cut: Tuning = { ...t, id: `${t.id}::${w.id}`, midi, spellings };
++  if (isReentrant(midi)) cut.reentrant = true;
++  else delete cut.reentrant;
++  return cut;
++}
+-- 
+2.43.0
+

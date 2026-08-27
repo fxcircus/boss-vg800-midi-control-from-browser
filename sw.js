@@ -3,7 +3,7 @@
    with no API calls, so serving the cached copy instantly and refreshing it in the
    background gives an instant launch that still picks up every deploy. */
 
-const CACHE = 'vg800-v2';
+const CACHE = 'vg800-v3';
 
 /* Cached up front so "Add to Home Screen" then going offline works on the first launch,
    without ever having opened those files. Paths are relative — the app is served from a

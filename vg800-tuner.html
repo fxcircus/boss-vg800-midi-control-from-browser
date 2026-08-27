@@ -2185,13 +2185,21 @@ const STEEL=[
   {id:'c6', name:'C6 Swing/Jazz', sub:'western swing · jazz',   root:0,  copedent:'c6', midi:[48,53,57,60,64,67,69,72,76,86], spell:'C F A C E G A C E D'},
   {id:'b6', name:'B6 Universal',  sub:'6th-flavored hybrid',    root:11, copedent:'e9', midi:[47,50,50,54,56,59,62,68,75,78], spell:'B D D F# G# B D G# D# F#'},
 ];
-const WINDOWS=[   // contiguous 6-of-10; i0 = lowest midi index of the window
-  {label:'3–8', i0:2, desc:'the classic 6-string country setup'},
-  {label:'1–6', i0:4, desc:'the top strings'},
-  {label:'4–9', i0:1, desc:'a lower, fuller voicing'},
-  {label:'5–10',i0:0, desc:'the low strings'},
+const WINDOWS=[   // contiguous 6-of-10; i0 = lowest midi index of the window. Listed in string-number order, 1–6 → 5–10 (string 1 = the top string); ids are the ASCII contract the fretboard bridge syncs on.
+  {id:'1-6', label:'1–6', i0:4, desc:'the top strings'},
+  {id:'3-8', label:'3–8', i0:2, desc:'the classic 6-string country setup'},
+  {id:'4-9', label:'4–9', i0:1, desc:'a lower, fuller voicing'},
+  {id:'5-10',label:'5–10',i0:0, desc:'the low strings'},
 ];
-let copedent=COPEDENTS.generic, steelInst=null, steelWin=0, steelRoot=null;
+const WIN_DEFAULT=1;   // 3–8 — where a steel tuning lands first (the classic country grip)
+// The window a programmatic path should use: entering the steel family lands on the
+// default; moving between steel tunings keeps the player's window (it describes their
+// 6-string guitar, not the tuning) — unless it can't fit the new tuning's range.
+function steelWinFor(t){
+  const win = steelInst ? steelWin : WIN_DEFAULT;
+  return computeCluster(t.midi.slice(WINDOWS[win].i0, WINDOWS[win].i0+6), 0).ok ? win : WIN_DEFAULT;
+}
+let copedent=COPEDENTS.generic, steelInst=null, steelWin=WIN_DEFAULT, steelRoot=null;
 let KEYMAP={}, bindingCtrl=null;
 function ctrlById(id){ return (activeBendPedals&&activeBendPedals.find(c=>c.id===id)) || (activeExtraPedals&&activeExtraPedals.find(c=>c.id===id)) || (perStringActive()&&perStringControls().find(c=>c.id===id)) || copedent.controls.find(c=>c.id===id) || SCALE_BEND.controls.find(c=>c.id===id) || MODE_BEND.controls.find(c=>c.id===id) || null; }   // a tuning's own pedals win over the copedent on id clashes (e.g. 'A')
 function keyFor(id){ const c=ctrlById(id), ov=settings.keys[id]; return (ov!==undefined?ov:(c?c.key:'')); }
@@ -2836,7 +2844,7 @@ function renderSteel(){
   const cards=STEEL.map(steelCardHTML).join('');
   const sel=steelInst?steelWinHTML(steelInst, steelWin):'';
   wrap.innerHTML=`<div class="grid">${cards}</div>${sel}`;
-  wrap.querySelectorAll('.card.steel').forEach(c=> c.addEventListener('click',()=>{ const t=STEEL.find(x=>x.id===c.dataset.id); if(t) applySteel(t, t===steelInst?steelWin:0); }));
+  wrap.querySelectorAll('.card.steel').forEach(c=> c.addEventListener('click',()=>{ const t=STEEL.find(x=>x.id===c.dataset.id); if(t) applySteel(t, steelWinFor(t)); }));
   wrap.querySelectorAll('.clbtn[data-win]').forEach(b=> b.addEventListener('click',()=>{ if(!b.classList.contains('disabled')&&steelInst) applySteel(steelInst, +b.dataset.win); }));
 }
 function applySteel(t, win){
@@ -2858,7 +2866,7 @@ function randomTuning(){
   transposedModes().forEach(t=>{ if(t.name!==active) pool.push({name:t.name, go:()=>apply(t)}); });   // modes at the currently-selected root
   customs.forEach(t=>{ if(t.name!==active) pool.push({name:t.name, go:()=>apply(t)}); });
   ETHNIC.forEach(i=>{ if(i.name!==active) pool.push({name:i.name, go:()=>applyInst(i,0)}); });
-  STEEL.forEach(t=>{ if(t.name!==active) pool.push({name:t.name, go:()=>applySteel(t,0)}); });
+  STEEL.forEach(t=>{ if(t.name!==active) pool.push({name:t.name, go:()=>applySteel(t, steelWinFor(t))}); });
   if(!pool.length) return;
   const pick=pool[Math.floor(Math.random()*pool.length)];
   pick.go(); toast('🎲 '+pick.name);
@@ -2875,7 +2883,7 @@ function randomKey(){
   renderPedals();                                                      // scale-bend targets track the key
   toast('🎲 '+settings.keyRoot+' '+settings.keyScale);
 }
-function clearSteel(){ steelInst=null; steelRoot=null; steelWin=0; copedent=COPEDENTS.generic; }
+function clearSteel(){ steelInst=null; steelRoot=null; steelWin=WIN_DEFAULT; copedent=COPEDENTS.generic; }
 /* ===== Chords — omnichord: tap a chord, retune all 6 strings to a musical voicing ===== */
 const CHORD_ROOTS=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const CHORD_FIXED=[   // suffix = full name (workbench / current-tuning); sym = compact button symbol
@@ -3987,12 +3995,31 @@ function fretTheme(){
 function fretHostTuningId(){
   return (!activeChord && active) ? fretMod.tuningIdForName(active) : null;
 }
+
+/* The board's steel string-window chips mirror this app's grouping selector:
+   which 6-of-10 window the guitar is on, plus any window that won't fit its
+   ±12 retuning range (today every window of every steel tuning fits — the
+   list is the same safety net the host chips already carry). null = not on a
+   steel tuning. Feature-detected so an older cached bundle keeps the
+   full-neck behavior. */
+function fretSteelWindows(){
+  if(!steelInst) return null;
+  return {
+    selected: WINDOWS[steelWin].id,
+    disabled: WINDOWS.filter(w=> !computeCluster(steelInst.midi.slice(w.i0, w.i0+6), 0).ok).map(w=>w.id),
+  };
+}
+function fretPushWindows(){
+  if(fretCtl && fretCtl.setStringWindows) fretCtl.setStringWindows(fretSteelWindows());
+}
+
 function fretPush(offsets){
   if(!fretCtl || !fretMod) return;
   const id = fretHostTuningId();
   if(id) fretCtl.setTuning(id);
   else if(Array.isArray(offsets) && offsets.length===6)
     fretCtl.setCustomTuning(offsets.map((o,i)=>STD_MIDI[i]+o).reverse());
+  fretPushWindows();
 }
 
 /* Board dropdown → host. apply() re-renders the cards, sends the MIDI and
@@ -4011,9 +4038,22 @@ function fretFromViz(id){
   fretSyncing = true;
   try{
     if(hit.kind==='ethnic') applyInst(hit.t, 0);
-    else if(hit.kind==='steel') applySteel(hit.t, 0);
+    else if(hit.kind==='steel') applySteel(hit.t, steelWinFor(hit.t));
     else apply(hit.t);
   } finally { fretSyncing = false; }
+  fretPushWindows();   // the guarded push above skips it, and a steel pick may change selection/validity
+}
+
+/* Board window chips → host: retune the guitar to the grouping the modal
+   picked (the same two-way sync as the tuning dropdown). The confirm-push
+   after keeps both sides honest even when the pick could not apply. */
+function fretWinFromViz(id){
+  if(fretSyncing || !steelInst) return;
+  const idx = WINDOWS.findIndex(w=>w.id===id);
+  if(idx<0 || idx===steelWin) return;
+  fretSyncing = true;
+  try{ applySteel(steelInst, idx); } finally { fretSyncing = false; }
+  fretPushWindows();
 }
 
 /* Every tuning change funnels through tuningSend with `active` already set —
@@ -4111,6 +4151,8 @@ async function fretOpen(){
         theme: fretTheme(),
         tuningId: fretHostTuningId() || undefined,
         onTuningChange: fretFromViz,
+        stringWindows: fretSteelWindows() || undefined,
+        onStringWindowChange: fretWinFromViz,
       });
     }
     fretPush(baseOffsets);
