@@ -262,6 +262,14 @@
   .jump-menu span.group { cursor: default; }   /* the Tunings header is a label, not a jump target */
   .jump-menu a.sub { padding-left: 22px; font-size: 12px; }
   .jump-menu a.sub2 { padding-left: 32px; }
+  /* The jump button sits at the LEFT end of the cluster, so its right-anchored
+     dropdown can run off the left screen edge once the header tightens. On small
+     screens pin the open menu to the viewport's right edge instead (top comes
+     from the button via --jump-top, set in setJumpMenu) — it can never leave
+     the screen, and it still drops from the button row. */
+  @media (max-width: 640px) {
+    .jump-menu { position: fixed; left: auto; right: 12px; top: var(--jump-top, 108px); max-width: calc(100vw - 24px); max-height: calc(100vh - var(--jump-top, 108px) - 12px); max-height: calc(100dvh - var(--jump-top, 108px) - 12px); }
+  }
   /* Random-tuning action item — a button in the jump menu / sidebar (brass accent to read as an action, not a nav link) */
   .jump-rand { display: flex; align-items: center; gap: 9px; width: 100%; margin-bottom: 4px; font-family: var(--mono); font-size: 12.5px; font-weight: 700; letter-spacing: 0.3px; color: var(--brass); background: transparent; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; text-align: left; transition: color .12s, background .12s; }
   .jump-rand:hover { background: var(--felt); }
@@ -3732,7 +3740,7 @@ function jumpTo(hash){ const el=hash&&document.getElementById(hash.slice(1)); if
 document.addEventListener('click', e=>{ const a=e.target.closest && e.target.closest('#sideNav a, #jumpMenu a'); if(a){ const href=a.getAttribute('href')||''; if(href[0]==='#'){ e.preventDefault(); jumpTo(href); } } });
 // Mobile "jump to section" dropdown
 const jumpBtn=document.getElementById('jumpBtn'), jumpMenu=document.getElementById('jumpMenu');
-function setJumpMenu(open){ jumpMenu.classList.toggle('open',open); jumpBtn.classList.toggle('open',open); jumpBtn.setAttribute('aria-expanded',open?'true':'false'); }
+function setJumpMenu(open){ if(open) jumpMenu.style.setProperty('--jump-top', Math.round(jumpBtn.getBoundingClientRect().bottom+8)+'px'); jumpMenu.classList.toggle('open',open); jumpBtn.classList.toggle('open',open); jumpBtn.setAttribute('aria-expanded',open?'true':'false'); }   // --jump-top feeds the small-screen fixed position (menu pinned inside the viewport)
 jumpBtn.addEventListener('click',e=>{ e.stopPropagation(); const willOpen=!jumpMenu.classList.contains('open'); if(willOpen) setThemeMenu(false); setJumpMenu(willOpen); });
 jumpMenu.addEventListener('click',e=>{ if(e.target.closest('a')) setJumpMenu(false); });   // tapping a link scrolls (native) then closes
 document.addEventListener('click',e=>{ if(e.target.closest('[data-rand-tuning]')){ randomTuning(); setJumpMenu(false); } });   // "Random tuning" in the menu / sidebar
