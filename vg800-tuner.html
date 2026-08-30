@@ -4101,11 +4101,17 @@ tuningSend = function(offsets){
   if(fretCtl && !fretSyncing && !activeChord) fretPush(offsets);
 };
 
-/* A failed dynamic import is cached as failed in the document's module map —
-   retries need a fresh specifier, hence the ?retry= cache-buster. */
+/* The ?v= pins the bundle build this HTML was written against (bump it in
+   lock-step with every committed bundle change, together with sw.js's SHELL
+   entry). The service worker caches by full URL, so a fresh page can never
+   be paired with a STALE cached bundle — a version the cache doesn't know
+   goes to the network instead. A failed dynamic import is cached as failed
+   in the document's module map — retries need a fresh specifier, hence the
+   &retry= cache-buster. */
+const FRET_BUNDLE_V = 2;   // embed 1.1.0 (string windows)
 let fretRetry = 0;
 function fretImport(){
-  return import('./fretboard/fretboard-embed.es.js' + (fretRetry ? '?retry=' + fretRetry : ''));
+  return import('./fretboard/fretboard-embed.es.js?v=' + FRET_BUNDLE_V + (fretRetry ? '&retry=' + fretRetry : ''));
 }
 
 /* Live bends → board. renderStrings() paints the EFFECTIVE offsets (base

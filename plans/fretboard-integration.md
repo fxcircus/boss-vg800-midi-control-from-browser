@@ -154,6 +154,13 @@ than fight it:
   restarted launch precaches it. A failed load can be retried (the bridge
   cache-busts the module specifier, since failed dynamic imports are cached
   by the document).
+  Since the string-windows release the bundle URL carries a version pin
+  (`?v=N`, `FRET_BUNDLE_V` in the bridge + the matching SHELL entry in
+  sw.js — bump both with every committed bundle change): the cache keys by
+  full URL, so a new HTML can never be served a STALE cached bundle — an
+  unknown version goes to the network instead. The stale-pairing failure
+  mode (host feature-detects, board silently misses new features) is gone;
+  only the offline-during-the-window case above remains.
 - The SHELL precache is non-atomic by design (`cache.add(...).catch(noop)`),
   so a bundle fetch that fails during SW install is healed lazily by the
   runtime cache on first successful open, not by the install.
