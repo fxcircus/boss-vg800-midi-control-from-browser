@@ -3,6 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+/* Tablet fit — a landscape tablet (iPad & friends) has room for the full
+   three-column workbench, just not at 1:1. Lay the page out at the desktop
+   width (1660, the wide-layout breakpoint) and let the browser scale it to
+   fit, instead of falling back to the stacked mobile layout. Every media
+   query and matchMedia then sees a real desktop viewport, so the whole wide
+   tier — Bends rail left, Guitar/readout column right — just works, only
+   smaller; pinch-zoom stays available. Desktop browsers ignore the viewport
+   meta, so this affects touch devices only. Re-evaluated on rotation
+   (portrait drops back to the true mobile layout). */
+(function(){
+  var meta=document.querySelector('meta[name="viewport"]');
+  if(!meta||!window.screen) return;
+  var MOBILE='width=device-width, initial-scale=1.0', DESKTOP='width=1660';
+  function fit(){
+    var land = screen.orientation ? /landscape/.test(screen.orientation.type||'') : matchMedia('(orientation: landscape)').matches;
+    var hi=Math.max(screen.width||0, screen.height||0), lo=Math.min(screen.width||0, screen.height||0);
+    var w = land ? hi : lo;   /* device width in CSS px right now — screen.* is portrait-fixed on iOS but rotates on Android; max/min covers both */
+    var want = (w>=1080 && w<1660) ? DESKTOP : MOBILE;
+    if(meta.getAttribute('content')!==want) meta.setAttribute('content', want);
+  }
+  fit();
+  var refit=function(){ setTimeout(fit, 60); };
+  window.addEventListener('orientationchange', refit);
+  if(screen.orientation && screen.orientation.addEventListener) screen.orientation.addEventListener('change', refit);
+})();
+</script>
 <script>try{var t=localStorage.getItem('vg800_theme');if(t==='workbench')t='dark';if(t==='boss-blue'||t==='cs1')t='cs3';document.documentElement.dataset.theme=t||'dd500';if(localStorage.getItem('vg800_compact')==='1')document.documentElement.classList.add('compact');if((JSON.parse(localStorage.getItem('vg800_settings')||'{}')||{}).realBend!==false)document.documentElement.classList.add('realbend');}catch(e){}</script>
 <title>VG800 MIDI Control</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
